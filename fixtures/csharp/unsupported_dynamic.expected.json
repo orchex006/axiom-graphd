@@ -1,0 +1,119 @@
+{
+  "fixture": "unsupported_dynamic.cs",
+  "language": "csharp",
+  "analyzer": "graph_analyze::csharp::declarations::analyze",
+  "purpose": "Pin the refusal behaviour for C# constructs this build must never analyse by guessing: dynamic dispatch, reflection and source-generated members.",
+  "supported_evidence_kinds": [
+    "declarations"
+  ],
+  "not_supported_evidence_kinds": [
+    {
+      "id": "dynamic-dispatch",
+      "expect": "the dynamic keyword is a parameter type, not a declaration; target.Run() must produce no declaration and no call target."
+    },
+    {
+      "id": "reflection",
+      "expect": "typeof, GetMethod and Activator.CreateInstance must produce no declaration and no call target; the reflected member name is a value, not a literal callee."
+    },
+    {
+      "id": "source-generators",
+      "expect": "the scan does not detect generated code; it records only the literal GeneratedPart declaration and invents no member that a generator would add."
+    }
+  ],
+  "expected_coverage_status": "complete_for_profile",
+  "expected_error_codes": [],
+  "expected_warning_codes": [],
+  "expected_declarations": [
+    {
+      "kind": "namespace",
+      "name": "App.Unsupported",
+      "semantic_path": [],
+      "span_text": "App.Unsupported"
+    },
+    {
+      "kind": "class",
+      "name": "Reflective",
+      "semantic_path": [
+        "App.Unsupported"
+      ],
+      "span_text": "Reflective"
+    },
+    {
+      "kind": "method",
+      "name": "RunDynamic",
+      "semantic_path": [
+        "App.Unsupported",
+        "Reflective"
+      ],
+      "span_text": "RunDynamic"
+    },
+    {
+      "kind": "method",
+      "name": "RunReflection",
+      "semantic_path": [
+        "App.Unsupported",
+        "Reflective"
+      ],
+      "span_text": "RunReflection"
+    },
+    {
+      "kind": "class",
+      "name": "GeneratedPart",
+      "semantic_path": [
+        "App.Unsupported"
+      ],
+      "span_text": "GeneratedPart"
+    }
+  ],
+  "expected_method_counts": {
+    "App.Unsupported.Reflective": 2,
+    "App.Unsupported.GeneratedPart": 0
+  },
+  "expected_symbol_absence": [
+    "target",
+    "type",
+    "instance",
+    "Run",
+    "GetMethod",
+    "CreateInstance",
+    "Activator",
+    "methodName",
+    "GeneratedCode"
+  ],
+  "inheritance_headers": [
+    {
+      "header": "public class Reflective",
+      "expected_bases": []
+    }
+  ],
+  "resolution_cases": [
+    {
+      "id": "dynamic-receiver",
+      "kind": "dynamic",
+      "expect": "unresolved",
+      "reason": "call-dynamic-dispatch"
+    },
+    {
+      "id": "dynamic-member-not-declared",
+      "kind": "literal",
+      "callee": [
+        "App.Unsupported",
+        "Reflective",
+        "Run"
+      ],
+      "expect": "unresolved",
+      "reason": "call-missing-target"
+    },
+    {
+      "id": "reflected-member-not-declared",
+      "kind": "literal",
+      "callee": [
+        "App.Unsupported",
+        "Reflective",
+        "GetMethod"
+      ],
+      "expect": "unresolved",
+      "reason": "call-missing-target"
+    }
+  ]
+}

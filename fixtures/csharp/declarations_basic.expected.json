@@ -1,0 +1,201 @@
+{
+  "fixture": "declarations_basic.cs",
+  "language": "csharp",
+  "analyzer": "graph_analyze::csharp::declarations::analyze",
+  "purpose": "Pin the declarations the B-048 unnamed-key C# scan must extract from a minimal, fully static source file, and record the evidence kinds this build refuses.",
+  "supported_evidence_kinds": [
+    "declarations",
+    "literal-inheritance-headers"
+  ],
+  "not_supported_evidence_kinds": [
+    {
+      "id": "csharp-using-directive-imports",
+      "expect": "no import statement is emitted for a C# using directive; graph_analyze::imports is a resolver fed by callers, so this build never claims to extract a using as an import edge."
+    },
+    {
+      "id": "csharp-call-site-extraction",
+      "expect": "no call site is extracted from a C# method body by this build; the resolution policy check below is driven by a fixture-declared site shape."
+    }
+  ],
+  "narrow_scan_note": "This is a signature-level narrow line scan, not a compiled semantic model. Constructors such as GreetingHandler(IClock) are recorded with kind method and the same declared name as their type; overload resolution, generic dispatch and runtime DI selection are out of scope.",
+  "expected_coverage_status": "complete_for_profile",
+  "expected_error_codes": [],
+  "expected_warning_codes": [],
+  "expected_declarations": [
+    {
+      "kind": "namespace",
+      "name": "App.Core",
+      "semantic_path": [],
+      "span_text": "App.Core"
+    },
+    {
+      "kind": "interface",
+      "name": "IClock",
+      "semantic_path": [
+        "App.Core"
+      ],
+      "span_text": "IClock"
+    },
+    {
+      "kind": "method",
+      "name": "Now",
+      "semantic_path": [
+        "App.Core",
+        "IClock"
+      ],
+      "span_text": "Now"
+    },
+    {
+      "kind": "class",
+      "name": "SystemClock",
+      "semantic_path": [
+        "App.Core"
+      ],
+      "span_text": "SystemClock"
+    },
+    {
+      "kind": "method",
+      "name": "Now",
+      "semantic_path": [
+        "App.Core",
+        "SystemClock"
+      ],
+      "span_text": "Now"
+    },
+    {
+      "kind": "class",
+      "name": "HandlerBase",
+      "semantic_path": [
+        "App.Core"
+      ],
+      "span_text": "HandlerBase"
+    },
+    {
+      "kind": "method",
+      "name": "HandleAsync",
+      "semantic_path": [
+        "App.Core",
+        "HandlerBase"
+      ],
+      "span_text": "HandleAsync"
+    },
+    {
+      "kind": "class",
+      "name": "GreetingHandler",
+      "semantic_path": [
+        "App.Core"
+      ],
+      "span_text": "GreetingHandler"
+    },
+    {
+      "kind": "method",
+      "name": "GreetingHandler",
+      "semantic_path": [
+        "App.Core",
+        "GreetingHandler"
+      ],
+      "span_text": "GreetingHandler"
+    },
+    {
+      "kind": "method",
+      "name": "Now",
+      "semantic_path": [
+        "App.Core",
+        "GreetingHandler"
+      ],
+      "span_text": "Now"
+    },
+    {
+      "kind": "method",
+      "name": "HandleAsync",
+      "semantic_path": [
+        "App.Core",
+        "GreetingHandler"
+      ],
+      "span_text": "HandleAsync"
+    },
+    {
+      "kind": "struct",
+      "name": "Point",
+      "semantic_path": [
+        "App.Core"
+      ],
+      "span_text": "Point"
+    },
+    {
+      "kind": "record",
+      "name": "Greeting",
+      "semantic_path": [
+        "App.Core"
+      ],
+      "span_text": "Greeting"
+    },
+    {
+      "kind": "enum",
+      "name": "Color",
+      "semantic_path": [
+        "App.Core"
+      ],
+      "span_text": "Color"
+    }
+  ],
+  "expected_method_counts": {
+    "App.Core.IClock": 1,
+    "App.Core.SystemClock": 1,
+    "App.Core.HandlerBase": 1,
+    "App.Core.GreetingHandler": 3,
+    "App.Core.Point": 0,
+    "App.Core.Color": 0
+  },
+  "expected_symbol_absence": [
+    "System",
+    "Threading",
+    "Tasks",
+    "DateTime",
+    "MinValue",
+    "CompletedTask",
+    "X",
+    "Red",
+    "Green",
+    "Name"
+  ],
+  "inheritance_headers": [
+    {
+      "header": "public class SystemClock : IClock",
+      "expected_bases": [
+        "IClock"
+      ]
+    },
+    {
+      "header": "public sealed class GreetingHandler : HandlerBase, IClock",
+      "expected_bases": [
+        "HandlerBase",
+        "IClock"
+      ]
+    },
+    {
+      "header": "public abstract class HandlerBase",
+      "expected_bases": []
+    }
+  ],
+  "resolution_cases": [
+    {
+      "id": "declared-literal-method",
+      "kind": "literal",
+      "callee": [
+        "App.Core",
+        "SystemClock",
+        "Now"
+      ],
+      "expect": "resolved",
+      "edge_kind": "CALLS",
+      "quality": "exact_static"
+    },
+    {
+      "id": "dynamic-receiver",
+      "kind": "dynamic",
+      "expect": "unresolved",
+      "reason": "call-dynamic-dispatch"
+    }
+  ]
+}

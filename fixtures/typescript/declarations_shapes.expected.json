@@ -1,0 +1,58 @@
+{
+  "fixture": "declarations_shapes.ts",
+  "language": "typescript",
+  "analyzer": "graph_analyze::typescript::declarations::analyze",
+  "purpose": "Pin the TypeScript declarations the scan extracts from a minimal source and separate an explicitly named declaration from an anonymous default export and a computed binding, so no declaration is given a name the source does not carry.",
+  "expected_coverage_status": "complete_for_profile",
+  "expected_error_codes": [],
+  "expected_warning_codes": [],
+  "not_supported": [
+    {
+      "id": "typescript-class-body-members",
+      "expect": "class body members are not reported as declarations by this scan; only the class declaration itself is recorded, so a member name is never claimed as a symbol."
+    },
+    {
+      "id": "typescript-destructured-binding-name",
+      "expect": "a destructured binding has no static identity; it is quality computed with no name instead of being given the name of one of its bindings."
+    }
+  ],
+  "expected_declarations": [
+    {
+      "kind": "interface",
+      "name": "Id",
+      "quality": "explicit",
+      "semantic_path": []
+    },
+    {
+      "kind": "class",
+      "name": "Widget",
+      "quality": "explicit",
+      "semantic_path": []
+    },
+    {
+      "kind": "type-alias",
+      "name": "Alias",
+      "quality": "explicit",
+      "semantic_path": []
+    },
+    {
+      "kind": "variable",
+      "name": null,
+      "quality": "computed",
+      "semantic_path": []
+    },
+    {
+      "kind": "default-export",
+      "name": null,
+      "quality": "anonymous",
+      "semantic_path": []
+    }
+  ],
+  "expected_not_explicit": 2,
+  "expected_member_absence": [
+    "label",
+    "value",
+    "left",
+    "right"
+  ]
+}
