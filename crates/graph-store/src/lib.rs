@@ -36,6 +36,7 @@ pub mod files;
 pub mod graph_rows;
 pub mod migrations;
 pub mod open;
+pub mod outbox;
 pub mod repair;
 pub mod reverse_index;
 pub mod solutions;

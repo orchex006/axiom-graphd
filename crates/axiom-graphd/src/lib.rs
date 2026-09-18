@@ -11,11 +11,20 @@
 //! * [`telemetry`] - redacted, rate-limited diagnostics on stderr (task B-007),
 //! * [`version`] - the frozen version report plus runtime facts (task B-008),
 //! * [`commands`] - the operator command slices: explicit changed-file hints
-//!   (task B-032) and queue inspection/retry/cancel (task B-043).
+//!   (task B-032), queue inspection/retry/cancel (task B-043), the solution
+//!   registry (task B-084), doctor/status (task B-085), reconcile (task
+//!   B-086), bounded query (task B-087) and update delegation (task B-092),
+//! * [`control`] - loopback control authentication (task B-083),
+//! * [`checkpoint`] - staged, worktree, export and CI verification of a
+//!   checkpoint (tasks B-088 - B-091),
+//! * [`release`] - the release artifact publication gate (task B-093).
 
+pub mod checkpoint;
 pub mod cli;
 pub mod commands;
+pub mod control;
 pub mod instance_lock;
 pub mod lifecycle;
+pub mod release;
 pub mod telemetry;
 pub mod version;

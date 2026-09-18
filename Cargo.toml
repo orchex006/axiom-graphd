@@ -12,6 +12,7 @@ members = [
     "crates/graph-watch",
     "crates/graph-queue",
     "crates/graph-analyze",
+    "crates/graph-export",
     "crates/axiom-graphd",
 ]
 
@@ -35,6 +36,7 @@ graph-store = { version = "0.0.0-dev", path = "crates/graph-store" }
 graph-watch = { version = "0.0.0-dev", path = "crates/graph-watch" }
 graph-queue = { version = "0.0.0-dev", path = "crates/graph-queue" }
 graph-analyze = { version = "0.0.0-dev", path = "crates/graph-analyze" }
+graph-export = { version = "0.0.0-dev", path = "crates/graph-export" }
 # The native filesystem-notification backend of the watcher (B-021): the only
 # supported cross-platform backend that reports recursive changes without
 # polling. The polling fallback in the same crate is the declared alternative.

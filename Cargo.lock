@@ -7,6 +7,7 @@ name = "axiom-graphd"
 version = "0.0.0-dev"
 dependencies = [
  "graph-core",
+ "graph-export",
  "graph-queue",
  "graph-store",
  "graph-watch",
@@ -159,6 +160,19 @@ dependencies = [
 name = "graph-core"
 version = "0.0.0-dev"
 dependencies = [
+ "libc",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+ "windows-sys 0.60.2",
+]
+
+[[package]]
+name = "graph-export"
+version = "0.0.0-dev"
+dependencies = [
+ "graph-core",
  "serde",
  "serde_json",
  "sha2",
