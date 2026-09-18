@@ -1,0 +1,36 @@
+{
+  "vector_id": "expiry-equal-to-creation",
+  "task": "F-010",
+  "class": "expired-signature",
+  "kind": "boundary",
+  "description": "Boundary: the trust metadata expiry equals the plan creation time exactly.",
+  "spec_contract": {
+    "invariant": "CF-021",
+    "reference_path": "tests/fixtures/update-plan-contract/update.invalid.trust-metadata-expired.json",
+    "reference_sha256": "4e6348530912fdc9c5a57b499f8d270ef130e8adc25f9bc16ff30c11ba88cd95",
+    "contract_reason": "trust_metadata_expired"
+  },
+  "request": {
+    "plan_path": "plan.json",
+    "component": "axiom-graphd",
+    "target_version": "0.2.0",
+    "canonical_digest": "30560e537fa9b0494ac83ffdc900d85dbff88c01c4acbcf2b6f5bf6f576af9d0",
+    "approve_digest": "30560e537fa9b0494ac83ffdc900d85dbff88c01c4acbcf2b6f5bf6f576af9d0",
+    "plan_created_at": "2026-09-18T02:00:00Z",
+    "trust_metadata_expiry": "2026-09-18T02:00:00Z",
+    "trust_root": "5555555555555555555555555555555555555555555555555555555555555555",
+    "allowed_components": [
+      "axiom-graphd"
+    ],
+    "signature_present": true,
+    "candidate_schema_version": 1,
+    "backup_required": true,
+    "backup_relative_path": "state/queue.db.bak",
+    "backup_present": true
+  },
+  "expected": {
+    "decision": "refuse",
+    "reason": "signature-expired"
+  },
+  "why": "The boundary is not-after rather than strictly-before, so an expiry equal to creation is already expired."
+}

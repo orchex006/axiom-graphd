@@ -1,0 +1,36 @@
+{
+  "vector_id": "signer-untrusted",
+  "task": "F-010",
+  "class": "untrusted-signer",
+  "kind": "hazard",
+  "description": "The plan carries no signature at all, so the signer is absent rather than merely unverified.",
+  "spec_contract": {
+    "invariant": "CF-021",
+    "reference_path": "tests/fixtures/update-plan-contract/update.invalid.unsigned-plan.json",
+    "reference_sha256": "29e5d09a9d0021df73bf9081ae9c69c795cf5d0244f6e1ddd26a2bc3d329f35b",
+    "contract_reason": "unsigned_plan"
+  },
+  "request": {
+    "plan_path": "plan.json",
+    "component": "axiom-graphd",
+    "target_version": "0.2.0",
+    "canonical_digest": "4eefd942a530dc71773936578a710a67e43418961fa80687ed9dbf0ca4017e10",
+    "approve_digest": "4eefd942a530dc71773936578a710a67e43418961fa80687ed9dbf0ca4017e10",
+    "plan_created_at": "2026-09-18T02:00:00Z",
+    "trust_metadata_expiry": "2026-09-25T02:00:00Z",
+    "trust_root": "5555555555555555555555555555555555555555555555555555555555555555",
+    "allowed_components": [
+      "axiom-graphd"
+    ],
+    "signature_present": false,
+    "candidate_schema_version": 1,
+    "backup_required": true,
+    "backup_relative_path": "state/queue.db.bak",
+    "backup_present": true
+  },
+  "expected": {
+    "decision": "refuse",
+    "reason": "signer-untrusted"
+  },
+  "why": "An unsigned plan is refused rather than treated as implicitly trusted; the configured trust root cannot vouch for an absent signature."
+}

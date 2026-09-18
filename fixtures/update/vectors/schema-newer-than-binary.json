@@ -1,0 +1,36 @@
+{
+  "vector_id": "schema-newer-than-binary",
+  "task": "F-010",
+  "class": "newer-schema",
+  "kind": "hazard",
+  "description": "The plan would move the store to a schema major newer than this binary understands.",
+  "spec_contract": {
+    "invariant": "CF-026",
+    "reference_path": "tests/fixtures/update-plan-contract/update.invalid.unsupported-schema-version.json",
+    "reference_sha256": "cb1e796c0167e7a08f581a83ac43ca301ce1f1b41436d6b1929cbb603717b890",
+    "contract_reason": "unsupported_schema_version"
+  },
+  "request": {
+    "plan_path": "plan.json",
+    "component": "axiom-graphd",
+    "target_version": "0.2.0",
+    "canonical_digest": "f08d1aa22c5376294041c00ba18451d0e78d3451292b6e5d75ba4b12566c4cc5",
+    "approve_digest": "f08d1aa22c5376294041c00ba18451d0e78d3451292b6e5d75ba4b12566c4cc5",
+    "plan_created_at": "2026-09-18T02:00:00Z",
+    "trust_metadata_expiry": "2026-09-25T02:00:00Z",
+    "trust_root": "5555555555555555555555555555555555555555555555555555555555555555",
+    "allowed_components": [
+      "axiom-graphd"
+    ],
+    "signature_present": true,
+    "candidate_schema_version": 2,
+    "backup_required": true,
+    "backup_relative_path": "state/queue.db.bak",
+    "backup_present": true
+  },
+  "expected": {
+    "decision": "refuse",
+    "reason": "schema-newer-than-binary"
+  },
+  "why": "A newer schema is refused explicitly instead of being migrated downwards, matching the schema future-major invariant."
+}

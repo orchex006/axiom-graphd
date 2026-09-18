@@ -17,7 +17,9 @@
 //! * [`control`] - loopback control authentication (task B-083),
 //! * [`checkpoint`] - staged, worktree, export and CI verification of a
 //!   checkpoint (tasks B-088 - B-091),
-//! * [`release`] - the release artifact publication gate (task B-093).
+//! * [`release`] - the release artifact publication gate (task B-093),
+//! * [`update_guard`] - update and migration safe-refusal admission for the
+//!   portable update fixtures (task F-010).
 
 pub mod checkpoint;
 pub mod cli;
@@ -27,4 +29,5 @@ pub mod instance_lock;
 pub mod lifecycle;
 pub mod release;
 pub mod telemetry;
+pub mod update_guard;
 pub mod version;

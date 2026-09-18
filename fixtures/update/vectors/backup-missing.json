@@ -1,0 +1,36 @@
+{
+  "vector_id": "backup-missing",
+  "task": "F-010",
+  "class": "missing-backup",
+  "kind": "hazard",
+  "description": "The plan declares a required backup and the backup file is not present next to the target tree.",
+  "spec_contract": {
+    "invariant": "CF-021",
+    "reference_path": "tests/fixtures/update-plan-contract/update.invalid.irreversible-migration-without-backup.json",
+    "reference_sha256": "b57ed11464f9481abf9366a79c25e8f764005fd4d14e7e7139b0307bff5a020d",
+    "contract_reason": "irreversible_migration_without_backup"
+  },
+  "request": {
+    "plan_path": "plan.json",
+    "component": "axiom-graphd",
+    "target_version": "0.2.0",
+    "canonical_digest": "9ae340b9d8e009eb087df3b427e22d9bfb6e1e485625ae75760924d810d0c154",
+    "approve_digest": "9ae340b9d8e009eb087df3b427e22d9bfb6e1e485625ae75760924d810d0c154",
+    "plan_created_at": "2026-09-18T02:00:00Z",
+    "trust_metadata_expiry": "2026-09-25T02:00:00Z",
+    "trust_root": "5555555555555555555555555555555555555555555555555555555555555555",
+    "allowed_components": [
+      "axiom-graphd"
+    ],
+    "signature_present": true,
+    "candidate_schema_version": 1,
+    "backup_required": true,
+    "backup_relative_path": "state/queue.db.bak",
+    "backup_present": false
+  },
+  "expected": {
+    "decision": "refuse",
+    "reason": "backup-missing"
+  },
+  "why": "An irreversible step without its required backup is refused; the check is a read-only verification that never creates the missing file."
+}

@@ -21,11 +21,14 @@
 //! * B-029 ([`recovery`]) - full rescan after overflow or reconnect.
 //! * B-030 ([`config_invalidation`]) - config/dependency fingerprints and scope.
 //! * B-031 ([`git_observer`]) - safe Git worktree observation.
+//! * F-009 ([`checkpoint_inputs`]) - distinguish the Git input classes a
+//!   checkpoint must keep apart.
 //!
 //! No module here executes a repository script, a build or a database query:
 //! analysis never discovers graph facts by running the analysed project
 //! (`docs/15-STATIC-ANALYSIS-COVERAGE.md` section 6).
 
+pub mod checkpoint_inputs;
 pub mod config_invalidation;
 pub mod debounce;
 pub mod dirty;
