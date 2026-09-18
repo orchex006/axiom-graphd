@@ -3,6 +3,26 @@
 version = 4
 
 [[package]]
+name = "axiom"
+version = "0.0.0-dev"
+dependencies = [
+ "axiom-graphd",
+ "graph-core",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "axiom-cli"
+version = "0.0.0-dev"
+dependencies = [
+ "axiom",
+ "axiom-graphd",
+ "graph-core",
+ "serde_json",
+]
+
+[[package]]
 name = "axiom-graphd"
 version = "0.0.0-dev"
 dependencies = [

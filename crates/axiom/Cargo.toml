@@ -1,0 +1,22 @@
+[package]
+name = "axiom"
+description = "Axiom installation, bootstrap and operations CLI core: canonical plans, host discovery, verified install, service lifecycle and uninstall"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+graph-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+# The daemon is the other half of the core release; tests compare both halves
+# so a drifting second version fails here instead of at release time.
+axiom-graphd = { version = "0.0.0-dev", path = "../axiom-graphd" }

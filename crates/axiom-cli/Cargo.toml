@@ -1,0 +1,26 @@
+[package]
+name = "axiom-cli"
+description = "Thin axiom executable: the installation/operations CLI of the axiom-graphd core release"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "axiom"
+path = "src/main.rs"
+
+[dependencies]
+axiom.workspace = true
+graph-core.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+# The daemon is the other half of the core release; the CLI tests compare both
+# halves so a drifting second version fails in CI rather than at release time.
+axiom-graphd = { version = "0.0.0-dev", path = "../axiom-graphd" }
