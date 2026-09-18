@@ -1,0 +1,170 @@
+{
+  "corpus": "git-checkpoint-inputs",
+  "task": "F-009",
+  "spec_revision": "1bf754298ba1bb266a77f13cded4bfe69484906f",
+  "description": "Reproducible Git scenarios a checkpoint must keep apart when it is built from --source staged. Each scenario is built in a throwaway repository by fixtures/git/driver.py and by the Rust regression test crates/axiom-graphd/tests/git_input_fixtures.rs, both of which launch git as a program plus argv and never as an interpolated shell string.",
+  "invariant": "CF-012: staged source != working tree -> the checkpoint matches staged only",
+  "input_classes": [
+    "partial-staging",
+    "rename",
+    "merge",
+    "untracked"
+  ],
+  "status_spellings": {
+    "A": "added",
+    "M": "modified",
+    "D": "deleted",
+    "R": "renamed",
+    "C": "copied",
+    "T": "type-changed",
+    "U": "conflicted",
+    "?": "untracked"
+  },
+  "observations": {
+    "status_command": [
+      "status",
+      "--porcelain=v1",
+      "-z"
+    ],
+    "merge_parents_command": [
+      "cat-file",
+      "commit",
+      "HEAD"
+    ],
+    "index_bytes_command": [
+      "show",
+      ":{path}"
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "partial-staging",
+      "class": "partial-staging",
+      "must_distinguish": [
+        "partial-staging"
+      ],
+      "expected_outcome": "the index holds bytes that differ from the working tree, so the checkpoint exports the staged blob and never the worktree bytes",
+      "expected": {
+        "staged": [
+          {
+            "path": "src/app.rs",
+            "status": "modified"
+          }
+        ],
+        "unstaged": [
+          {
+            "path": "src/app.rs",
+            "status": "modified"
+          }
+        ],
+        "untracked": [],
+        "merge_parents": 0,
+        "staged_bytes_equal_worktree_bytes": false
+      }
+    },
+    {
+      "id": "rename",
+      "class": "rename",
+      "must_distinguish": [
+        "rename"
+      ],
+      "expected_outcome": "a delete plus an add of identical bytes is one rename; the old path is refused as not-in-index and the new path is materialized",
+      "expected": {
+        "staged": [
+          {
+            "path": "src/new.rs",
+            "status": "renamed",
+            "previous_path": "src/old.rs"
+          }
+        ],
+        "unstaged": [],
+        "untracked": [],
+        "merge_parents": 0,
+        "staged_bytes_equal_worktree_bytes": true
+      }
+    },
+    {
+      "id": "merge",
+      "class": "merge",
+      "must_distinguish": [
+        "merge"
+      ],
+      "expected_outcome": "HEAD is a merge commit with two parents, so the checkpoint must record the merge relationship and not treat the snapshot as a linear commit",
+      "expected": {
+        "staged": [],
+        "unstaged": [],
+        "untracked": [],
+        "merge_parents": 2,
+        "staged_bytes_equal_worktree_bytes": true
+      }
+    },
+    {
+      "id": "untracked",
+      "class": "untracked",
+      "must_distinguish": [
+        "untracked"
+      ],
+      "expected_outcome": "the path exists on disk but in neither the index nor HEAD, so it is never a staged checkpoint input",
+      "expected": {
+        "staged": [],
+        "unstaged": [],
+        "untracked": [
+          {
+            "path": "notes/new.txt",
+            "status": "untracked"
+          }
+        ],
+        "merge_parents": 0,
+        "staged_bytes_equal_worktree_bytes": true
+      }
+    },
+    {
+      "id": "rename-without-content-change",
+      "class": "rename",
+      "kind": "boundary",
+      "must_distinguish": [
+        "rename"
+      ],
+      "expected_outcome": "a pure rename keeps the blob digest, so it must be reported as one rename and must not be misread as partial staging or an in-place edit",
+      "expected": {
+        "staged": [
+          {
+            "path": "src/moved.rs",
+            "status": "renamed",
+            "previous_path": "src/kept.rs"
+          }
+        ],
+        "unstaged": [],
+        "untracked": [],
+        "merge_parents": 0,
+        "staged_bytes_equal_worktree_bytes": true
+      }
+    },
+    {
+      "id": "staged-then-deleted",
+      "class": "partial-staging",
+      "kind": "boundary",
+      "must_distinguish": [
+        "partial-staging"
+      ],
+      "expected_outcome": "the index still holds the staged bytes while the worktree path is gone; the checkpoint reads the index and must not fail on the missing file",
+      "expected": {
+        "staged": [
+          {
+            "path": "src/gone.rs",
+            "status": "modified"
+          }
+        ],
+        "unstaged": [
+          {
+            "path": "src/gone.rs",
+            "status": "deleted"
+          }
+        ],
+        "untracked": [],
+        "merge_parents": 0,
+        "staged_bytes_equal_worktree_bytes": false
+      }
+    }
+  ]
+}

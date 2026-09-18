@@ -4,6 +4,10 @@
 
 V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned docs/tests. Runtime implementation and platform certification are pending.
 
+### portable-contract-fixtures (F-009 - F-010)
+
+- **F-009** - staged-source Git fixture corpus and input classifier: `fixtures/git/` records reproducible partial-staging, rename, merge and untracked scenarios in `manifest.json` with a deterministic argv-only driver, `graph-watch::checkpoint_inputs` distinguishes the four checkpoint input classes from the real porcelain status parser, and `crates/axiom-graphd/tests/git_input_fixtures.rs` drives real Git plus the real staged materializer to prove the index bytes win over the worktree and that boundary cases (pure rename, staged-then-deleted, untracked) are handled without a worktree fallback.
+
 ### analysis-checkpoints (B-051 - B-093)
 
 - **B-051** - literal imports: `graph-analyze::imports` resolves relative and explicitly aliased imports through the configured rules, keeps an ambiguous or missing target unresolved instead of guessing, and is deterministic in source order.
