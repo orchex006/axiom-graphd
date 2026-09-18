@@ -1,0 +1,10 @@
+# Pinned toolchain for the axiom-graphd workspace (task B-001, CP-01).
+#
+# PROVISIONAL: CP-01 requires an *audited* Rust toolchain pin, and
+# SOURCE-OF-TRUST.md section 12 records the exact production toolchain as
+# unconfigured. The channel below is the declared workspace baseline; it must be
+# confirmed/re-recorded with release evidence before any 0.1.0 release.
+[toolchain]
+channel = "1.85.0"
+components = ["rustfmt", "clippy"]
+profile = "minimal"

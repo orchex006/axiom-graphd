@@ -1,0 +1,11 @@
+{
+  "example_only": true,
+  "spec_version": "2.0.0-draft.1",
+  "spec_repository": "axiom-specs",
+  "spec_revision": null,
+  "spec_content_sha256": null,
+  "owner_repository": "axiom-graphd",
+  "workspace_layout": 2,
+  "graph_payload_schema": 1,
+  "verification": "unconfigured-do-not-use-as-release-pin"
+}

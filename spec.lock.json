@@ -1,0 +1,16 @@
+{
+  "spec_version": "2.0.0-draft.1",
+  "spec_repository": "axiom-specs",
+  "spec_revision": "1bf754298ba1bb266a77f13cded4bfe69484906f",
+  "spec_content_sha256": "c4f90367db6f86d73befcf71cdc1950f9e27636b89504a42d4e93cfce7b43680",
+  "owner_repository": "axiom-graphd",
+  "workspace_layout": 2,
+  "graph_payload_schema": 1,
+  "verification": "unapproved-draft-pin: axiom-specs has no released revision or tag, so this pin records the immutable commit used for B-001..B-010 and each contract digest is verified against that commit. It is not owner approval and not release coverage; re-record it against a released revision before any compatibility or release claim.",
+  "contract_digests": {
+    "contracts/version-dimensions.json": "7717d17d48a8a6dc697c5e78c9f699744bef2c32edf03d7a4b5afeea40b12345",
+    "contracts/sqlite/schema-v1.sql": "0aa68b1bd4c76e0299a13ab431dbf5f86279fecb5c67576776e5210e78b24302",
+    "contracts/schemas/version-report.schema.json": "4f4c68c74873da69fdf0da15550778a5928281d7260ad1c84156799eeec3e8bb",
+    "contracts/control-api-v1.md": "1c6914b857f762974fe1c37151beee2863b46977321af620101ce2f95c16cab0"
+  }
+}
