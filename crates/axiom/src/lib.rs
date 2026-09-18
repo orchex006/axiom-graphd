@@ -13,4 +13,5 @@
 //! back to one reviewable task card.
 
 pub mod cli;
+pub mod plan;
 pub mod version;

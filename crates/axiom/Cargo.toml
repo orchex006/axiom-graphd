@@ -13,6 +13,10 @@ workspace = true
 
 [dependencies]
 graph-core.workspace = true
+# The one canonical byte encoder in this workspace (B-067). The plan digest is
+# defined over those bytes plus the trailing newline, so a second encoder here
+# would be a second digest contract.
+graph-export.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 
