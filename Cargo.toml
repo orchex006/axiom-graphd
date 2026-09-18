@@ -14,6 +14,8 @@ members = [
     "crates/graph-analyze",
     "crates/graph-export",
     "crates/axiom-graphd",
+    "crates/axiom",
+    "crates/axiom-cli",
 ]
 
 [workspace.package]
@@ -37,6 +39,9 @@ graph-watch = { version = "0.0.0-dev", path = "crates/graph-watch" }
 graph-queue = { version = "0.0.0-dev", path = "crates/graph-queue" }
 graph-analyze = { version = "0.0.0-dev", path = "crates/graph-analyze" }
 graph-export = { version = "0.0.0-dev", path = "crates/graph-export" }
+# The installation/operations CLI shares the daemon's release boundary: one
+# workspace, one core version, one publish (tasks E-001, E-002).
+axiom = { version = "0.0.0-dev", path = "crates/axiom" }
 # The native filesystem-notification backend of the watcher (B-021): the only
 # supported cross-platform backend that reports recursive changes without
 # polling. The polling fallback in the same crate is the declared alternative.

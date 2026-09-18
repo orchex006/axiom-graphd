@@ -130,3 +130,25 @@ V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned do
 - Align `Development.md` with the canonical `axiom-specs` §3 policy: `main` is the integration branch, `feature/<task-id>-<slug>` is the mandatory task branch, and `release/vX.Y.Z` is the release branch.
 - Record the merge gate: an agent MAY merge a verified, fully-verified task branch into `main` on its own authority once every gate condition holds; release branches, tags and publishes still require explicit release authorization.
 - Record the worktree rule: work finished in a worktree MUST be integrated into `main` and reflected in the owner's primary checkout, or explicitly reported as not yet delivered to that checkout.
+### axiom-foundation-and-install (E-003)
+- **E-003** - read-only installation discovery: `crates/axiom/src/discovery.rs` answers what is
+  installed, which service owns it and which paths are usable before anything is installed, updated
+  or repaired, and reports a missing privilege as an actionable finding instead of changing the
+  machine. The read-only guarantee is structural: every host read goes through the `ReadOnlyProbe`
+  trait, whose whole surface is `observe`/`read_text` (no create, write, rename, delete, chmod or
+  launch method exists), access is *observed* rather than probed with a sentinel write, and
+  `LocalProbe` uses only `symlink_metadata`, `metadata` and a bounded read-only `File::open`.
+  `discover` resolves `AXIOM_HOME` through `graph-core::paths` and reports
+  `home_unresolved`, `home_missing`, `permission_denied`, `malformed_state`, `system_scoped_service`
+  and `unsafe_storage` findings, each with a concrete remediation; it derives the per-user definition
+  by platform convention (Windows managed-startup record, systemd user unit, macOS LaunchAgent),
+  reports an administrator-owned definition as `owner: system` rather than adopting it, and fails the
+  report closed on a foreign schema or spec baseline. `crates/axiom/examples/discovery_probe.rs` runs
+  the same layer against one `AXIOM_HOME` (exit 0 no findings, 2 findings, 1 usage/IO), and the unit
+  tests cover the denied-privilege negative case, an absent home, a system-scoped service, a
+  mismatched install record, the frozen component-vocabulary subset plus a foreign baseline, and each
+  platform's per-user convention including the no-scope boundary.
+### axiom-foundation-and-install (E-002)
+- **E-002** - canonical update-plan digest and approval binding: `crates/axiom/src/plan.rs` is the one Rust implementation of the frozen `update-plan.schema.json` contract and its approval digest. `canonical_plan_bytes` reuses `graph-export::canonical` (B-067) instead of a second encoder, drops `plan_digest`/`approval` and emits compact sorted-key UTF-8 with one trailing LF, so `plan_digest` is a pure function of the body; `record_approval` can only bind the digest of the body it was handed, and `evaluate` returns the oracle verdict (`ok`, `reasons`, `structural_reasons`, `approval_reasons`, `plan_digest`) with identical reason strings and order. A changed payload is refused as `approval_stale` (plus `plan_digest_not_approved` once re-sealed to the shape the shipped `update.stale.*` fixtures pin). `crates/axiom/src/plan.rs` unit tests re-derive the shipped example digest and cover the negative cases, and `crates/axiom/examples/plan_verify.rs` diffs the Rust rules against `axiom-specs/tools/update_plan_contract.py` over all 54 frozen fixtures with zero divergence.
+### axiom-foundation-and-install (E-001)
+- **E-001** - the `axiom` installation/operations executable is now built by this repository: `crates/axiom-cli` is the thin binary named `axiom` and `crates/axiom` holds its behaviour, added to the existing workspace members and `[workspace.dependencies]` so the CLI shares the daemon's locked toolchain and single core version instead of being a second repository or release. `axiom::version` emits exactly the frozen `version-report.schema.json` object (component `axiom`), `axiom version --all --json` emits one `{"components": [...]}` object covering the CLI and the daemon, and `axiom::cli` renders the frozen exit table into `--help`, rejects invalid flags and unknown commands with the validation code, and answers documented-but-unbuilt verbs with `not ready/stale` plus the command name. `crates/axiom-cli/tests/cli_integration.rs` drives the real binary: it asserts the frozen object, the shared core version against `axiom-graphd::version`, the one-object rule for `--all`, and the negative cases (unknown command, `--all` outside `version`, unbuilt verb).

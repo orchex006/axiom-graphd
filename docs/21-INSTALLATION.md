@@ -123,3 +123,11 @@ Validcheckpoint+trustedrootbindings+localcoordinationlock เพียงพอ�
 ## I. Uninstall
 
 Planremoveservices/runtimecomponents และ ownedbootstrapblocks แยกกัน. Defaultpreserveprojectsource,annotations,checkpointJSON และ userinstructions. Credentials revoke/securedelete ตาม OSpolicy;DBcachecleanup ต้อง explicitoption. เก็บ uninstallreport และไม่ removeotherhostplugins/MCPservers
+
+## J. The `axiom` executable in this release (E-001)
+
+`crates/axiom-cli` is the thin `axiom` binary and `crates/axiom` holds its reviewable behaviour. Both are members of this workspace and are built from the same locked toolchain and the same core version (`0.0.0-dev`) as `axiom-graphd`; `cargo build --locked` produces both executables. There is no separate CLI repository and no separate CLI release.
+
+`axiom version --json` prints exactly one frozen `version-report.schema.json` object with `component: "axiom"` and the shared core version. `axiom version --all --json` prints exactly one object, `{"components": [...]}`, containing the frozen report of every component this build can report honestly (the daemon and the CLI). MCP, skills and pinned spec provenance are added by the work packages that implement their registry lookup.
+
+Documented commands that a later work package implements (`install`, `service`, `bootstrap`, `host`, `skills`, `specs`, `update`, `doctor`, `support-bundle`, `migrate`) exit with the frozen `not ready/stale` code `4` and name the command, instead of being misreported as a typo. Unknown commands and invalid flags exit `2`; in `--json` mode the failure is one error envelope on stdout with the diagnostic on stderr.
