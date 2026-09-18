@@ -8,6 +8,11 @@
 pub mod bindings;
 pub mod config;
 pub mod error;
+pub mod locks;
+#[cfg(unix)]
+pub mod locks_posix;
+#[cfg(windows)]
+pub mod locks_windows;
 pub mod paths;
 pub mod redact;
 pub mod solution;

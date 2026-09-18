@@ -1,6 +1,6 @@
 //! Static analysis for the Axiom graph engine (`axiom-graphd`).
 //!
-//! This crate owns the syntax-and-project-analysis work package (B-045 - B-050)
+//! This crate owns the syntax-and-project-analysis work package (B-045 - B-066)
 //! and the coverage vocabulary of `contracts/schemas/coverage.schema.json`:
 //!
 //! * B-045 ([`adapter`]) - the language registry and parser adapter contract.
@@ -10,6 +10,16 @@
 //! * B-049 ([`typescript`]) - TypeScript declarations with explicit identity
 //!   quality for anonymous and computed names.
 //! * B-050 ([`identity`]) - canonical length-delimited symbol identity.
+//! * B-051 ([`imports`]) - within-project literal import resolution.
+//! * B-052 ([`calls`]) - conservative call-site evidence with explicit
+//!   dynamic-dispatch handling.
+//! * B-053 ([`types`]) - inheritance and interface facts from explicit
+//!   declarations.
+//! * B-054 ([`incremental`]) - owner-scoped incremental file replacement.
+//! * B-055 ([`invalidation`]) - exported-signature invalidation propagation.
+//! * B-056 ([`coverage`]) - per-file parse failure and coverage reporting.
+//! * L3 adapters ([`l3`]) - B-057 - B-066 literal route, SQL, mapping,
+//!   messaging, manifest, annotation and report extraction.
 //!
 //! Two rules shape every module here.
 //!
@@ -24,10 +34,17 @@
 //! with its neighbour.
 
 pub mod adapter;
+pub mod calls;
+pub mod coverage;
 pub mod csharp;
 pub mod grammar;
 pub mod identity;
+pub mod imports;
+pub mod incremental;
+pub mod invalidation;
+pub mod l3;
 pub mod project_manifests;
+pub mod types;
 pub mod typescript;
 
 use serde::{Deserialize, Serialize};

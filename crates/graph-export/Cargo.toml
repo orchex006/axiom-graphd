@@ -1,6 +1,6 @@
 [package]
-name = "axiom-graphd"
-description = "Axiom graph daemon and core CLI: instance lock, lifecycle, diagnostics, version reporting"
+name = "graph-export"
+description = "Axiom graph engine: canonical publication bytes, deterministic sharding, manifests, staging, validation, atomic pointer replacement, recovery, catalog pinning, guarded reading, GC, disk budget and archive verification (tasks B-067 - B-082)."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -8,22 +8,14 @@ license.workspace = true
 repository.workspace = true
 publish.workspace = true
 
-[[bin]]
-name = "axiom-graphd"
-path = "src/main.rs"
-
 [lints]
 workspace = true
 
 [dependencies]
 graph-core.workspace = true
-graph-store.workspace = true
-graph-watch.workspace = true
-graph-queue.workspace = true
-graph-export.workspace = true
-rusqlite.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+sha2.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true

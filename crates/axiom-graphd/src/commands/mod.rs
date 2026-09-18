@@ -8,9 +8,21 @@
 //! * [`changed`] - accept explicit changed-file hints (task B-032).
 //! * [`queue`] - queue inspection, retry and cooperative cancellation
 //!   (task B-043).
+//! * [`solution`] - solution registry administration (task B-084).
+//! * [`doctor`] - doctor and status health reports (task B-085).
+//! * [`reconcile`] - the three reconcile scopes and the bounded wait
+//!   (task B-086).
+//! * [`query`] - bounded context and impact over a pinned snapshot
+//!   (task B-087).
+//! * [`update`] - delegated, approval-bound update apply (task B-092).
 
 pub mod changed;
+pub mod doctor;
+pub mod query;
 pub mod queue;
+pub mod reconcile;
+pub mod solution;
+pub mod update;
 
 /// Map an underlying storage or I/O failure onto the shared internal code.
 ///
