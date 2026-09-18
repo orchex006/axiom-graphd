@@ -24,3 +24,6 @@ serde_json.workspace = true
 # The daemon is the other half of the core release; tests compare both halves
 # so a drifting second version fails here instead of at release time.
 axiom-graphd = { version = "0.0.0-dev", path = "../axiom-graphd" }
+# Fixture trees for the read-only discovery tests (E-003): tests build a home
+# in a temporary directory so nothing under the real AXIOM_HOME is touched.
+tempfile.workspace = true

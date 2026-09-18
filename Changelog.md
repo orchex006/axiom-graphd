@@ -2,6 +2,24 @@
 
 ## Unreleased
 V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned docs/tests. Runtime implementation and platform certification are pending.
+### axiom-foundation-and-install (E-003)
+- **E-003** - read-only installation discovery: `crates/axiom/src/discovery.rs` answers what is
+  installed, which service owns it and which paths are usable before anything is installed, updated
+  or repaired, and reports a missing privilege as an actionable finding instead of changing the
+  machine. The read-only guarantee is structural: every host read goes through the `ReadOnlyProbe`
+  trait, whose whole surface is `observe`/`read_text` (no create, write, rename, delete, chmod or
+  launch method exists), access is *observed* rather than probed with a sentinel write, and
+  `LocalProbe` uses only `symlink_metadata`, `metadata` and a bounded read-only `File::open`.
+  `discover` resolves `AXIOM_HOME` through `graph-core::paths` and reports
+  `home_unresolved`, `home_missing`, `permission_denied`, `malformed_state`, `system_scoped_service`
+  and `unsafe_storage` findings, each with a concrete remediation; it derives the per-user definition
+  by platform convention (Windows managed-startup record, systemd user unit, macOS LaunchAgent),
+  reports an administrator-owned definition as `owner: system` rather than adopting it, and fails the
+  report closed on a foreign schema or spec baseline. `crates/axiom/examples/discovery_probe.rs` runs
+  the same layer against one `AXIOM_HOME` (exit 0 no findings, 2 findings, 1 usage/IO), and the unit
+  tests cover the denied-privilege negative case, an absent home, a system-scoped service, a
+  mismatched install record, the frozen component-vocabulary subset plus a foreign baseline, and each
+  platform's per-user convention including the no-scope boundary.
 ### axiom-foundation-and-install (E-002)
 - **E-002** - canonical update-plan digest and approval binding: `crates/axiom/src/plan.rs` is the one Rust implementation of the frozen `update-plan.schema.json` contract and its approval digest. `canonical_plan_bytes` reuses `graph-export::canonical` (B-067) instead of a second encoder, drops `plan_digest`/`approval` and emits compact sorted-key UTF-8 with one trailing LF, so `plan_digest` is a pure function of the body; `record_approval` can only bind the digest of the body it was handed, and `evaluate` returns the oracle verdict (`ok`, `reasons`, `structural_reasons`, `approval_reasons`, `plan_digest`) with identical reason strings and order. A changed payload is refused as `approval_stale` (plus `plan_digest_not_approved` once re-sealed to the shape the shipped `update.stale.*` fixtures pin). `crates/axiom/src/plan.rs` unit tests re-derive the shipped example digest and cover the negative cases, and `crates/axiom/examples/plan_verify.rs` diffs the Rust rules against `axiom-specs/tools/update_plan_contract.py` over all 54 frozen fixtures with zero divergence.
 ### axiom-foundation-and-install (E-001)
