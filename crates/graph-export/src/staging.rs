@@ -246,7 +246,10 @@ impl StagedGeneration {
         let normalized = relative_path.replace('\\', "/");
         let rejected =
             |why: &str| ExportError::new(ERR_STAGING_PATH, format!("{relative_path}: {why}"));
-        if normalized.is_empty() || Path::new(&normalized).is_absolute() {
+        if normalized.is_empty()
+            || Path::new(&normalized).is_absolute()
+            || graph_core::paths::is_absolute_host_path(&normalized)
+        {
             return Err(rejected("a staged path must be relative"));
         }
         if normalized.split('/').any(|part| part == "..") {
