@@ -14,8 +14,11 @@ safe updates. Bootstrap/CLI/daemon modules share one core release.
 Cargo.toml              workspace, shared dependency and lint policy
 rust-toolchain.toml     pinned toolchain (provisional - see the file header)
 deny.toml               dependency audit policy for `cargo deny check`
-crates/graph-core/      pure domain logic: errors/exit codes, path resolution, config
-crates/graph-store/     SQLite: patched-runtime gate, pragmas, ordered migrations
+crates/graph-core/      pure domain logic: errors/exit codes, path resolution, config,
+                        solution membership, trusted repository bindings
+crates/graph-store/     SQLite: patched-runtime gate, pragmas, ordered migrations,
+                        single writer actor, solution registration, inventory,
+                        graph rows, reverse index, backup, repair, unregister
 crates/axiom-graphd/    daemon/CLI: instance lock, lifecycle, diagnostics, version
 docs/                   engine, CLI, installation and operations documentation
 ```

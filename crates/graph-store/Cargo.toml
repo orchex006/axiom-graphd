@@ -1,6 +1,6 @@
 [package]
 name = "graph-store"
-description = "Axiom graph engine: SQLite runtime gate, pragmas and ordered migrations (tasks B-009, B-010)"
+description = "Axiom graph engine: SQLite runtime gate, ordered migrations, single-writer actor, solution registration, generation-aware inventory, graph rows, reverse index, backup, repair and unregister (tasks B-009 - B-020)"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
