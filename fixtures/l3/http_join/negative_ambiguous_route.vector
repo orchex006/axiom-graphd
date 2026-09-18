@@ -1,0 +1,17 @@
+# Static join vector for task F-006. Declarative text only: no runtime log,
+# no captured traffic and no executed user source.
+# Grammar, one directive per line:
+#   vector <name>
+#   alias <host> <project>
+#   endpoint <project> <file> <VERB> <template>
+#   client <project> <file> <VERB> <absolute-url|-> <path|->
+#   expect-relation <client-project> <server-project> <VERB> <request-path>
+#   expect-unresolved <client-project> <pattern> <reason>
+#   expect-ambiguous <client-project> <candidate-count>
+
+vector negative-ambiguous-route
+alias api.contoso.example OrdersApi
+endpoint OrdersApi Api/OrdersController.cs GET api/items/{id}
+endpoint OrdersApi Api/LegacyController.cs GET api/items/{name}
+client Web Web/api.ts GET https://api.contoso.example/api/items/7 -
+expect-ambiguous Web 2

@@ -1,16 +1,11 @@
 # Changelog — axiom-graphd
 
 ## Unreleased
-
 V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned docs/tests. Runtime implementation and platform certification are pending.
-
 ### portable-contract-fixtures (F-009 - F-010)
-
 - **F-009** - staged-source Git fixture corpus and input classifier: `fixtures/git/` records reproducible partial-staging, rename, merge and untracked scenarios in `manifest.json` with a deterministic argv-only driver, `graph-watch::checkpoint_inputs` distinguishes the four checkpoint input classes from the real porcelain status parser, and `crates/axiom-graphd/tests/git_input_fixtures.rs` drives real Git plus the real staged materializer to prove the index bytes win over the worktree and that boundary cases (pure rename, staged-then-deleted, untracked) are handled without a worktree fallback.
 - **F-010** - update and migration safe-refusal fixture corpus and admission guard: `fixtures/update/` records an expired-signature, an absent-signer, a future-major schema, a missing-backup, an approval-not-bound boundary and a valid control vector in `manifest.json` with a deterministic local driver that also re-checks each referenced specification digest, `axiom_graphd::update_guard` is the single read-only admission surface over the real `commands::update::delegate` argv delegation, the real `graph_store::migrations` schema ceiling and the real `graph_store::backup` verification, and `crates/axiom-graphd/tests/update_fixtures.rs` proves every hazard is refused with its declared reason, that the control is admitted and delegated as program plus argv, and that a refusal leaves the target tree byte-identical.
-
 ### analysis-checkpoints (B-051 - B-093)
-
 - **B-051** - literal imports: `graph-analyze::imports` resolves relative and explicitly aliased imports through the configured rules, keeps an ambiguous or missing target unresolved instead of guessing, and is deterministic in source order.
 - **B-052** - conservative call sites: `graph-analyze::calls` records only high-confidence literal or explicit call evidence against resolved symbols, keeps an unresolved receiver as an explicit unresolved edge, and never synthesizes a caller relation from name similarity alone.
 - **B-053** - inheritance and interface facts: `graph-analyze::types` extracts explicit declaration, inheritance and interface-implementation facts, preserves multiple members in a stable order, and reports an ambiguous base name as unresolved rather than picking one.
@@ -55,7 +50,6 @@ V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned do
 - **B-092** - safe update delegation: `axiom-graphd::commands::update` plans an update against a declared trust root and delegates through an explicit argv list, failing closed on unconfigured trust, a missing approval, a digest mismatch or a shell metacharacter.
 - **B-093** - versioned release artifacts: `axiom-graphd::release` and `release/build-matrix.md` describe the Windows, Linux and macOS release artifacts with pinned-commit attribution, refuse to publish unsigned or placeholder metadata, and state explicitly that only the Windows artifact is built on this host.
 ### watcher-queue-and-analysis (B-021 - B-050)
-
 - **B-021** - notify native watcher adapter: `graph-watch::native` wraps the `notify` crate behind a declared backend, debounces raw events into normalized hints, and reports an explicit failure when the root is missing instead of silently watching nothing.
 - **B-022** - polling fallback: `graph-watch::poll` finds changes without any native event, switches backends only by the declared policy, and never lets a snapshot exceed the hint bound or escape the root.
 - **B-023** - normalize create/write/rename/delete: `graph-watch::normalize` maps create, write and delete to one action each, covers both paths of a rename, and keeps the correct tombstone plus new state for a case-only rename.
@@ -86,9 +80,7 @@ V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned do
 - **B-048** - C# declarations: `graph-analyze::csharp::declarations` records namespaces, types, interfaces and methods with source spans, keeps keys stable across runs, and reports malformed syntax as diagnostics instead of a silent empty result.
 - **B-049** - TypeScript declarations: `graph-analyze::typescript::declarations` gives classes, functions and exported members explicit stable keys and marks anonymous, computed or destructured names with an explicit syntax identity quality.
 - **B-050** - unambiguous stable ids: `graph-analyze::identity` builds canonical length-delimited tuples so concatenation cannot collide, and an unchanged symbol keeps its id across repeated runs.
-
 ### store-and-registration (B-011 - B-020)
-
 - **B-011** - single writer actor: `graph-store::writer` serializes worker mutations through one bounded queue, applies each in its own short `BEGIN IMMEDIATE` transaction, rolls a failed mutation back alone, and reports `Backpressure { depth, capacity }` instead of growing without limit.
 - **B-012** - solution instance registration: `graph-store::solutions` derives a stable `inst-` key from the normalized worktree root and profile, so two worktrees or profiles never share a mutable database, and records `solutions` rows with `full_scan_required` on first use.
 - **B-013** - project membership validation: `graph-core::solution` refuses duplicate project ids and overlapping source or generated-output claims by whole path segment, while allowing two projects in one repository.
@@ -99,9 +91,7 @@ V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned do
 - **B-018** - consistent backup: `graph-store::backup` takes backups with `VACUUM INTO` and restores through the SQLite backup API, so WAL frames are included and a live `.db` copy is never the algorithm.
 - **B-019** - repair decision: `graph-store::repair` plans a quarantine move plus a `Repair` rebuild job and refuses any plan whose operations leave the Axiom state root.
 - **B-020** - trusted unregister: `graph-store::unregister` refuses a busy instance unless the caller chooses a cancellation policy, cancels queued work, and removes only the one solution's rows so other checkpoints and all user source survive.
-
 ### rust-runtime-foundation (B-001 - B-010)
-
 - **B-001** - Rust workspace foundation: `Cargo.toml`, pinned `rust-toolchain.toml` (1.85.0), committed `Cargo.lock`, `.cargo/config.toml` lint/verify/fmt-check aliases, `deny.toml` dependency-audit policy, `rustfmt.toml`, `.editorconfig`, `.gitattributes`, `.gitignore`, `VERSION`, the unapproved `spec.lock.json` draft pin with `spec.lock.example.json`, and the component `README.md`.
 - **B-002** - `graph-core` typed errors and exit codes: stable `ErrorCode` wire spellings, redacted `AxiomError`/`ErrorEnvelope`, the frozen `ExitCode` table (`0,2,3,4,5,6,7,8,9,10,20`; `1` unassigned) and `docs/CLI-EXIT-CODES.md` pinned to that table by a compile-time test.
 - **B-003** - AXIOM_HOME and path policy: `AxiomHome`, lexical `StorageClass` classification, `is_portable_id`, `Platform` and `PathEnvironment`, so resolution stays testable without touching the real user profile.
@@ -112,9 +102,27 @@ V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned do
 - **B-008** - `version` reports the frozen `VersionReport` properties plus runtime properties (SQLite, WAL baseline/support, analyzers); the documented property gap is recorded in the task evidence.
 - **B-009** - patched-SQLite gate and pragmas: `open()` with `MIN_SQLITE_VERSION` 3.51.3, a volume probe, `PragmaReport`, and honest refusal (`SQLITE_UNSUPPORTED_VERSION`, exit 9) when the linked runtime is below the floor.
 - **B-010** - ordered migrations: `SCHEMA_V1_SQL` byte-identical to the canonical `axiom-specs` schema, checksum/order verification, and a migration plan that refuses to move a newer database downward.
-
 ### governance-alignment (branch/merge/release policy)
-
 - Align `Development.md` with the canonical `axiom-specs` §3 policy: `main` is the integration branch, `feature/<task-id>-<slug>` is the mandatory task branch, and `release/vX.Y.Z` is the release branch.
 - Record the merge gate: an agent MAY merge a verified, fully-verified task branch into `main` on its own authority once every gate condition holds; release branches, tags and publishes still require explicit release authorization.
 - Record the worktree rule: work finished in a worktree MUST be integrated into `main` and reflected in the owner's primary checkout, or explicitly reported as not yet delivered to that checkout.
+### portable-contract-fixtures (F-006, F-008)
+- **F-006** - L3 fixture vectors: `fixtures/l3/` holds static positive and negative conformance vectors
+  for the Level-3 HTTP, SQL and messaging adapters (ASP.NET attribute routes, minimal API mappings,
+  Angular `HttpClient`, literal SQL, messaging topics and the configured-alias HTTP join). Each rule
+  carries a provenance note naming the implementing source file, the function and the invariant it
+  serves, and the corpus README records the `PATTERN_*` constants that never reach an output.
+  `crates/graph-analyze/tests/l3_fixtures.rs` loads every vector from disk and asserts both the
+  positive fact set and the exact refusal pattern and reason, including the boundary cases. No vector
+  contains a runtime log, captured traffic or executed user source.
+- **F-008** - bootstrap human-edit vectors: `fixtures/bootstrap/` holds static before/after fixture trees
+  for the managed AGENTS.md bootstrap/update contract. The corpus pins LF, CRLF and UTF-8 BOM variants
+  of the same managed block, a managed file with a missing begin or end marker, an owner-edited policy
+  inside the block, a non-literal marker placed in a fenced code sample, and a repository with unrelated
+  human instructions that must survive. Every vector records its expected non-destructive outcome
+  (append, replace, conflict or unchanged) and the exact set of paths that may change.
+  `crates/axiom-graphd/tests/bootstrap_fixtures.rs` copies each before tree into a temporary directory,
+  runs the managed-merge oracle, and asserts the outcome, the changed-path set, byte-identical survival
+  of every other file, the preserved literals and the BOM/newline properties. A failed marker, an edited
+  policy or a stale plan must be refused and must leave the tree byte-identical, so a human edit is never
+  truncated. The vectors are static input text: no runtime log, no captured output.

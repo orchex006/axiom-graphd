@@ -1,0 +1,241 @@
+{
+  "schema_version": 1,
+  "task": "F-008",
+  "contract": {
+    "begin_marker": "<!-- axiom-graph:begin -->",
+    "end_marker": "<!-- axiom-graph:end -->",
+    "block_template": "templates/AGENTS.block.md",
+    "policy_template": "templates/POLICY.md",
+    "policy_sha256": "1b4972d3197a7579c7f31ea297da71e679d63e1d46e368aff6c5002f689c6d16",
+    "template_version": "2.0.0-draft.1",
+    "sources": [
+      "axiom-graphd/docs/18-BOOTSTRAP-AND-MANAGED-INSTRUCTIONS.md sections 4 and 5",
+      "axiom-specs/docs/24-TEST-STRATEGY-AND-RELEASE-GATES.md CF-018, CF-019, CF-020",
+      "axiom-specs/SOURCE-OF-TRUST.md section 9",
+      "axiom-specs/reference/bootstrap_reference.py"
+    ],
+    "block_file_sha256": "39c2b714efbcfdf61f62ff60f43616254d4fb855c9babe0c2c871d1be4d06f5d",
+    "block_span_sha256": "883dc46acab1cf4a834f3a2b24a63623ac1dd531841ee651f5301397aab13cde"
+  },
+  "vectors": [
+    {
+      "id": "lf_new_repo",
+      "outcome": "append",
+      "reason_contains": null,
+      "changes": [
+        "AGENTS.md",
+        ".axiom/agent/POLICY.md",
+        ".axiom/agent/bootstrap.lock.json"
+      ],
+      "preserve_literals": [],
+      "expect_prefix": false,
+      "expect_bom": false,
+      "expect_crlf": false,
+      "note": "A repository without AGENTS.md receives the managed block appended and a new policy and ownership manifest; nothing pre-existing exists to preserve."
+    },
+    {
+      "id": "lf_no_markers_human_text",
+      "outcome": "append",
+      "reason_contains": null,
+      "changes": [
+        "AGENTS.md",
+        ".axiom/agent/POLICY.md",
+        ".axiom/agent/bootstrap.lock.json"
+      ],
+      "preserve_literals": [
+        "Human-authored instructions live here.",
+        "Never delete this line."
+      ],
+      "expect_prefix": true,
+      "expect_bom": false,
+      "expect_crlf": false,
+      "note": "Human AGENTS.md text with no managed markers is kept and the block is appended; the original bytes stay an exact prefix of the result."
+    },
+    {
+      "id": "crlf_no_markers_human_text",
+      "outcome": "append",
+      "reason_contains": null,
+      "changes": [
+        "AGENTS.md",
+        ".axiom/agent/POLICY.md",
+        ".axiom/agent/bootstrap.lock.json"
+      ],
+      "preserve_literals": [
+        "Human-authored instructions live here.\r\n",
+        "Never delete this line.\r\n"
+      ],
+      "expect_prefix": true,
+      "expect_bom": false,
+      "expect_crlf": true,
+      "note": "The CRLF variant must keep the original CRLF bytes outside the block and use CRLF inside the appended block; a repository must not be converted to LF by bootstrap."
+    },
+    {
+      "id": "bom_no_markers_human_text",
+      "outcome": "append",
+      "reason_contains": null,
+      "changes": [
+        "AGENTS.md",
+        ".axiom/agent/POLICY.md",
+        ".axiom/agent/bootstrap.lock.json"
+      ],
+      "preserve_literals": [
+        "Human text after a BOM."
+      ],
+      "expect_prefix": true,
+      "expect_bom": true,
+      "expect_crlf": false,
+      "note": "A UTF-8 BOM must stay a single leading BOM and must not be duplicated or dropped when the block is appended."
+    },
+    {
+      "id": "missing_begin_marker",
+      "outcome": "conflict",
+      "reason_contains": "marker",
+      "changes": [],
+      "preserve_literals": [],
+      "expect_prefix": false,
+      "expect_bom": false,
+      "expect_crlf": false,
+      "note": "A lone end marker is unbalanced. The update must refuse and leave every byte untouched rather than truncate from the marker."
+    },
+    {
+      "id": "missing_end_marker",
+      "outcome": "conflict",
+      "reason_contains": "marker",
+      "changes": [],
+      "preserve_literals": [],
+      "expect_prefix": false,
+      "expect_bom": false,
+      "expect_crlf": false,
+      "note": "A lone begin marker is unbalanced. Refusing here is the boundary that stops an append from nesting a second block inside an unterminated one."
+    },
+    {
+      "id": "markers_out_of_order",
+      "outcome": "conflict",
+      "reason_contains": "marker",
+      "changes": [],
+      "preserve_literals": [],
+      "expect_prefix": false,
+      "expect_bom": false,
+      "expect_crlf": false,
+      "note": "Two markers in end-before-begin order are not a valid span; the range would be inverted, so the update refuses."
+    },
+    {
+      "id": "duplicate_markers",
+      "outcome": "conflict",
+      "reason_contains": "marker",
+      "changes": [],
+      "preserve_literals": [],
+      "expect_prefix": false,
+      "expect_bom": false,
+      "expect_crlf": false,
+      "note": "Four markers mean two candidate blocks. Appending or picking one silently would corrupt ownership, so the update refuses."
+    },
+    {
+      "id": "edited_managed_block",
+      "outcome": "conflict",
+      "reason_contains": "edited",
+      "changes": [],
+      "preserve_literals": [],
+      "expect_prefix": false,
+      "expect_bom": false,
+      "expect_crlf": false,
+      "note": "The managed block no longer matches the recorded ownership hash. The update must report the conflict and preserve the owner edit."
+    },
+    {
+      "id": "edited_policy_file",
+      "outcome": "conflict",
+      "reason_contains": "policy",
+      "changes": [],
+      "preserve_literals": [],
+      "expect_prefix": false,
+      "expect_bom": false,
+      "expect_crlf": false,
+      "note": "The policy file hash differs from the recorded policy hash, so the whole-file owned policy is treated as human-edited and is not overwritten."
+    },
+    {
+      "id": "unowned_policy",
+      "outcome": "conflict",
+      "reason_contains": "unowned",
+      "changes": [],
+      "preserve_literals": [],
+      "expect_prefix": false,
+      "expect_bom": false,
+      "expect_crlf": false,
+      "note": "An existing policy file without an ownership manifest is not adopted implicitly; bootstrap refuses rather than overwrite human content."
+    },
+    {
+      "id": "managed_policy_missing",
+      "outcome": "conflict",
+      "reason_contains": "policy",
+      "changes": [],
+      "preserve_literals": [],
+      "expect_prefix": false,
+      "expect_bom": false,
+      "expect_crlf": false,
+      "note": "Ownership exists but the owned policy file was removed. The update refuses instead of recreating owned content over an unknown state."
+    },
+    {
+      "id": "unrelated_human_instructions",
+      "outcome": "unchanged",
+      "reason_contains": null,
+      "changes": [],
+      "preserve_literals": [],
+      "expect_prefix": false,
+      "expect_bom": false,
+      "expect_crlf": false,
+      "note": "A re-apply of the same template is a no-op: the block already matches, and every unrelated human file outside owned content is byte-identical afterwards."
+    },
+    {
+      "id": "crlf_managed_block_reapply",
+      "outcome": "replace",
+      "reason_contains": null,
+      "changes": [
+        "AGENTS.md",
+        ".axiom/agent/bootstrap.lock.json"
+      ],
+      "preserve_literals": [
+        "# Demo repository\r\n\r\n",
+        "\r\n\r\nHuman trailer after the block.\r\n"
+      ],
+      "expect_prefix": false,
+      "expect_bom": false,
+      "expect_crlf": true,
+      "note": "Only the owned span changes. All CRLF bytes before and after the block are preserved and the replacement block keeps CRLF."
+    },
+    {
+      "id": "bom_managed_block_reapply",
+      "outcome": "replace",
+      "reason_contains": null,
+      "changes": [
+        "AGENTS.md",
+        ".axiom/agent/bootstrap.lock.json"
+      ],
+      "preserve_literals": [
+        "# Demo repository\n\n",
+        "\n\nHuman trailer after the block.\n"
+      ],
+      "expect_prefix": false,
+      "expect_bom": true,
+      "expect_crlf": false,
+      "note": "The BOM is preserved as a single leading BOM and every byte outside the owned span, including the human trailer, is unchanged."
+    },
+    {
+      "id": "markers_in_fence",
+      "outcome": "append",
+      "reason_contains": null,
+      "changes": [
+        "AGENTS.md",
+        ".axiom/agent/POLICY.md",
+        ".axiom/agent/bootstrap.lock.json"
+      ],
+      "preserve_literals": [
+        "```markdown",
+        "Real human text after the fence."
+      ],
+      "expect_prefix": true,
+      "expect_bom": false,
+      "expect_crlf": false,
+      "note": "Marker text inside a Markdown code fence is an example, not an owned block. The detector must ignore it and append a real block while keeping the quoted example."
+    }
+  ]
+}
