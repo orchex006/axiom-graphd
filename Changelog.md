@@ -15,6 +15,18 @@ V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned do
   positive fact set and the exact refusal pattern and reason, including the boundary cases. No vector
   contains a runtime log, captured traffic or executed user source.
 
+- **F-008** - bootstrap human-edit vectors: `fixtures/bootstrap/` holds static before/after fixture trees
+  for the managed AGENTS.md bootstrap/update contract. The corpus pins LF, CRLF and UTF-8 BOM variants
+  of the same managed block, a managed file with a missing begin or end marker, an owner-edited policy
+  inside the block, a non-literal marker placed in a fenced code sample, and a repository with unrelated
+  human instructions that must survive. Every vector records its expected non-destructive outcome
+  (append, replace, conflict or unchanged) and the exact set of paths that may change.
+  `crates/axiom-graphd/tests/bootstrap_fixtures.rs` copies each before tree into a temporary directory,
+  runs the managed-merge oracle, and asserts the outcome, the changed-path set, byte-identical survival
+  of every other file, the preserved literals and the BOM/newline properties. A failed marker, an edited
+  policy or a stale plan must be refused and must leave the tree byte-identical, so a human edit is never
+  truncated. The vectors are static input text: no runtime log, no captured output.
+
 ### analysis-checkpoints (B-051 - B-093)
 
 - **B-051** - literal imports: `graph-analyze::imports` resolves relative and explicitly aliased imports through the configured rules, keeps an ambiguous or missing target unresolved instead of guessing, and is deterministic in source order.
