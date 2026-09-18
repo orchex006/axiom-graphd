@@ -1,0 +1,104 @@
+{
+  "fixture": "services_http.ts",
+  "language": "typescript",
+  "analyzer": "graph_analyze::l3::angular_http::analyze",
+  "purpose": "Pin the Angular HttpClient subset the l3 adapter supports (a literal verb plus a literal relative route, a literal absolute URL, and request() with literal verb and route) and the shapes it must refuse (template-literal route, computed route, non-literal request() verb, and a method call on a receiver that is not an HTTP client).",
+  "supported_patterns": [
+    "angular-http-literal-route",
+    "angular-http-absolute-url",
+    "angular-http-request-verb"
+  ],
+  "not_supported": [
+    {
+      "id": "angular-http-template-literal-url",
+      "pattern": "angular-http-template-literal",
+      "reason": "unresolved-dynamic-route",
+      "expect": "a route written as a template literal is refused; the interpolated value is a runtime value and no concrete route is invented."
+    },
+    {
+      "id": "angular-http-computed-route",
+      "pattern": "angular-http-dynamic-route",
+      "reason": "unresolved-dynamic-route",
+      "expect": "a route argument that is not exactly one string literal is refused instead of being approximated by the nearest literal."
+    },
+    {
+      "id": "angular-http-dynamic-verb",
+      "pattern": "angular-http-request-verb",
+      "reason": "unresolved-non-literal-verb",
+      "expect": "request() with a non-literal verb is refused; the adapter never defaults to a verb the source does not literally name."
+    },
+    {
+      "id": "angular-http-non-client-receiver",
+      "pattern": "angular-http-non-client-receiver",
+      "reason": "unresolved-not-an-http-client",
+      "expect": "a get()/post() shape on a receiver whose leaf token is neither http-like nor client-suffixed is not an HTTP call; it is recorded as refused, not as a route."
+    },
+    {
+      "id": "angular-interceptors-and-runtime-base-urls",
+      "expect": "HTTP interceptors and runtime environment values are out of scope; a relative route keeps its base URL marked as a runtime value and is never resolved to a server here."
+    }
+  ],
+  "normalization_note": "normalize_route collapses repeated separators and trims leading and trailing slashes, so an absolute URL is recorded as https:/cdn.example.com/health (one slash after the scheme) while absolute_url is still Some, which keeps base_url_is_runtime() false. The collapse is the adapter's real published normal form; this fixture pins it rather than normalising it away.",
+  "expected_declared_base_urls": [
+    {
+      "value": "/api"
+    }
+  ],
+  "expected_warning_codes": [
+    "angular-http-dynamic-route",
+    "angular-http-request-verb",
+    "angular-http-template-literal"
+  ],
+  "expected_calls": [
+    {
+      "client": "this.http",
+      "method": "GET",
+      "route": "api/items",
+      "absolute_url": null,
+      "quality": "exact_static"
+    },
+    {
+      "client": "this.http",
+      "method": "POST",
+      "route": "api/items",
+      "absolute_url": null,
+      "quality": "exact_static"
+    },
+    {
+      "client": "this.http",
+      "method": "GET",
+      "route": "https:/cdn.example.com/health",
+      "absolute_url": "https:/cdn.example.com/health",
+      "quality": "exact_static"
+    },
+    {
+      "client": "this.http",
+      "method": "PUT",
+      "route": "api/items/1",
+      "absolute_url": null,
+      "quality": "exact_static"
+    }
+  ],
+  "expected_unresolved": [
+    {
+      "client": "this.http",
+      "pattern": "angular-http-template-literal",
+      "reason": "unresolved-dynamic-route"
+    },
+    {
+      "client": "this.http",
+      "pattern": "angular-http-dynamic-route",
+      "reason": "unresolved-dynamic-route"
+    },
+    {
+      "client": "this.http",
+      "pattern": "angular-http-request-verb",
+      "reason": "unresolved-non-literal-verb"
+    },
+    {
+      "client": "map",
+      "pattern": "angular-http-non-client-receiver",
+      "reason": "unresolved-not-an-http-client"
+    }
+  ]
+}

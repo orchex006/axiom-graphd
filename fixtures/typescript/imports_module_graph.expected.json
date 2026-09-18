@@ -1,0 +1,169 @@
+{
+  "fixture": "imports_module_graph.ts",
+  "language": "typescript",
+  "analyzer": "graph_analyze::imports::resolve_all",
+  "purpose": "Pin the TypeScript module-graph statement shapes the graph-analyze import resolver must resolve and the shapes it must refuse instead of guessing, so a statically resolvable import is never conflated with a computed one and an ambiguous match is never collapsed to its first candidate.",
+  "known_files": [
+    "src/app/consumer.ts",
+    "src/app/clock.ts",
+    "src/app/format.ts",
+    "src/app/widget.ts",
+    "src/app/widget.tsx",
+    "src/shared/ticker.ts",
+    "src/vendor/shared/ticker.ts"
+  ],
+  "path_config": {
+    "extensions": [
+      "ts",
+      "tsx"
+    ],
+    "index_names": [
+      "index"
+    ],
+    "aliases": [
+      {
+        "prefix": "@app",
+        "targets": [
+          "src/app"
+        ]
+      },
+      {
+        "prefix": "@shared",
+        "targets": [
+          "src/shared",
+          "src/vendor/shared"
+        ]
+      }
+    ]
+  },
+  "supported_kinds": [
+    "relative",
+    "alias"
+  ],
+  "not_supported": [
+    {
+      "id": "typescript-computed-specifier",
+      "expect": "no import statement is constructed for a computed or interpolated specifier, so the resolver reports unresolved-not-a-literal with kind unsupported instead of naming a target."
+    },
+    {
+      "id": "typescript-reexport-symbol-identity",
+      "not_claimed_symbol": "Clock",
+      "expect": "a re-export resolves the literal module path only; the re-exported symbol identity is not claimed, because the resolver returns no symbol field and must not fabricate one."
+    },
+    {
+      "id": "typescript-bare-package-specifier",
+      "expect": "a bare package specifier carries no configured alias and is reported as unresolved-external-package instead of being guessed from a node_modules scan."
+    },
+    {
+      "id": "typescript-directory-listing",
+      "expect": "candidate discovery uses configured extensions and index names only; it never lists a directory, so a specifier that matches several configured extensions stays ambiguous."
+    }
+  ],
+  "statements": [
+    {
+      "id": "relative-unique",
+      "statement_text": "import { Clock } from './clock';",
+      "file": "src/app/consumer.ts",
+      "specifier": "./clock",
+      "expected_kind": "relative",
+      "expect": "resolved",
+      "target": "src/app/clock.ts",
+      "rule": "relative",
+      "quality": "exact_static"
+    },
+    {
+      "id": "relative-ambiguous-extension",
+      "statement_text": "import { Widget } from './widget';",
+      "file": "src/app/consumer.ts",
+      "specifier": "./widget",
+      "expected_kind": "relative",
+      "expect": "ambiguous",
+      "rule": "relative",
+      "candidates": [
+        "src/app/widget.ts",
+        "src/app/widget.tsx"
+      ]
+    },
+    {
+      "id": "alias-unique",
+      "statement_text": "import { Formatter } from '@app/format';",
+      "file": "src/app/consumer.ts",
+      "specifier": "@app/format",
+      "expected_kind": "alias",
+      "expect": "resolved",
+      "target": "src/app/format.ts",
+      "rule": "alias",
+      "quality": "exact_static"
+    },
+    {
+      "id": "alias-ambiguous-multi-root",
+      "statement_text": "import { Ticker } from '@shared/ticker';",
+      "file": "src/app/consumer.ts",
+      "specifier": "@shared/ticker",
+      "expected_kind": "alias",
+      "expect": "ambiguous",
+      "rule": "alias",
+      "candidates": [
+        "src/shared/ticker.ts",
+        "src/vendor/shared/ticker.ts"
+      ]
+    },
+    {
+      "id": "external-package",
+      "statement_text": "import { readFileSync } from 'node:fs';",
+      "file": "src/app/consumer.ts",
+      "specifier": "node:fs",
+      "expected_kind": "external",
+      "expect": "unresolved",
+      "reason": "unresolved-external-package"
+    },
+    {
+      "id": "relative-missing-target",
+      "statement_text": "import { Missing } from './missing';",
+      "file": "src/app/consumer.ts",
+      "specifier": "./missing",
+      "expected_kind": "relative",
+      "expect": "unresolved",
+      "reason": "unresolved-missing-target"
+    },
+    {
+      "id": "relative-escapes-project-root",
+      "statement_text": "import { Escaped } from '../../../../outside/thing';",
+      "file": "src/app/consumer.ts",
+      "specifier": "../../../../outside/thing",
+      "expected_kind": "relative",
+      "expect": "unresolved",
+      "reason": "unresolved-outside-project"
+    },
+    {
+      "id": "re-export-literal-module-path",
+      "statement_text": "export { Clock } from './clock';",
+      "file": "src/app/consumer.ts",
+      "specifier": "./clock",
+      "expected_kind": "relative",
+      "expect": "resolved",
+      "target": "src/app/clock.ts",
+      "rule": "relative",
+      "quality": "exact_static",
+      "not_claimed_symbol": "Clock"
+    },
+    {
+      "id": "re-export-computed-module-path",
+      "statement_text": "export * from computedPath;",
+      "file": "src/app/consumer.ts",
+      "specifier": null,
+      "expected_kind": "unsupported",
+      "expect": "unresolved",
+      "reason": "unresolved-not-a-literal"
+    },
+    {
+      "id": "dynamic-import-computed-specifier",
+      "statement_text": "const lazyModule = await import(moduleName);",
+      "file": "src/app/consumer.ts",
+      "specifier": null,
+      "expected_kind": "unsupported",
+      "expect": "unresolved",
+      "reason": "unresolved-not-a-literal"
+    }
+  ]
+}

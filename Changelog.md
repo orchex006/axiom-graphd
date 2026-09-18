@@ -7,6 +7,7 @@ V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned do
 ### analyzer-language-fixtures (F-004 - F-005)
 
 - **F-004** - C# narrow-scan fixtures: `fixtures/csharp/` and `fixtures/README.md` pin the declarations, literal inheritance headers and resolution outcomes the B-048 C# scan must extract, and record the constructs it must NOT claim to support (dynamic dispatch, reflection, source generators, partial-class merge) as documented unsupported cases asserted by `crates/graph-analyze/tests/csharp_fixtures.rs`. The fixtures are component-local regression fixtures, not shared contract fixtures.
+- **F-005** - TypeScript and Angular fixtures: `fixtures/typescript/` and `crates/graph-analyze/tests/typescript_fixtures.rs` pin the module-graph statement shapes `graph-analyze::imports` must resolve (relative, alias and re-export module paths) and refuse (computed specifiers, computed re-exports, bare packages, missing targets, escaping specifiers and multi-candidate ambiguity), and pin the Angular subset `l3::angular_http` supports (literal verb plus literal relative route, literal absolute URL, `request()` with literal verb and route) against the shapes it must report unresolved (template-literal route, computed route, non-literal verb, non-client receiver). `typescript::declarations` fixtures separate explicit, anonymous and computed identity, and the truncated fixture is a partial-coverage boundary. The fixtures are component-local regression fixtures, not shared contract fixtures.
 
 ### analysis-checkpoints (B-051 - B-093)
 

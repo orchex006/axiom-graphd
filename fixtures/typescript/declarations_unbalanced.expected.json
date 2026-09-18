@@ -1,0 +1,21 @@
+{
+  "fixture": "declarations_unbalanced.ts",
+  "language": "typescript",
+  "analyzer": "graph_analyze::typescript::declarations::analyze",
+  "purpose": "Boundary case: a truncated TypeScript source must be reported with a diagnostic and partial coverage instead of being silently accepted as an empty complete analysis.",
+  "expected_coverage_status": "partial",
+  "expected_error_codes": [
+    "typescript-unbalanced-braces"
+  ],
+  "expected_declarations": [
+    {
+      "kind": "class",
+      "name": "Broken",
+      "quality": "explicit",
+      "semantic_path": []
+    }
+  ],
+  "expected_claims_completeness": false,
+  "expected_processed_files": 0,
+  "expected_input_files": 1
+}
