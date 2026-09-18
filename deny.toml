@@ -20,6 +20,10 @@ private = { ignore = true }
 allow = [
   "MIT",
   "Apache-2.0",
+  # The native watcher backend (B-021) is the CC0-1.0 `notify` crate. CC0-1.0 is
+  # a permissive public-domain dedication with no attribution or copyleft term,
+  # so it is allowed for the same reason MIT and Apache-2.0 are.
+  "CC0-1.0",
   "Apache-2.0 WITH LLVM-exception",
   "BSD-2-Clause",
   "BSD-3-Clause",

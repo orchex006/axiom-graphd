@@ -18,6 +18,9 @@ workspace = true
 [dependencies]
 graph-core.workspace = true
 graph-store.workspace = true
+graph-watch.workspace = true
+graph-queue.workspace = true
+rusqlite.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 

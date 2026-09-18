@@ -6,7 +6,14 @@
 # release boundary, so they stay in one workspace.
 [workspace]
 resolver = "2"
-members = ["crates/graph-core", "crates/graph-store", "crates/axiom-graphd"]
+members = [
+    "crates/graph-core",
+    "crates/graph-store",
+    "crates/graph-watch",
+    "crates/graph-queue",
+    "crates/graph-analyze",
+    "crates/axiom-graphd",
+]
 
 [workspace.package]
 version = "0.0.0-dev"
@@ -25,6 +32,13 @@ publish = false
 # `workspace.package.version`.
 graph-core = { version = "0.0.0-dev", path = "crates/graph-core" }
 graph-store = { version = "0.0.0-dev", path = "crates/graph-store" }
+graph-watch = { version = "0.0.0-dev", path = "crates/graph-watch" }
+graph-queue = { version = "0.0.0-dev", path = "crates/graph-queue" }
+graph-analyze = { version = "0.0.0-dev", path = "crates/graph-analyze" }
+# The native filesystem-notification backend of the watcher (B-021): the only
+# supported cross-platform backend that reports recursive changes without
+# polling. The polling fallback in the same crate is the declared alternative.
+notify = "8.0.0"
 serde = { version = "1.0.210", features = ["derive"] }
 serde_json = "1.0.128"
 sha2 = "0.10.8"

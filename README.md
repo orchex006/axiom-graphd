@@ -19,7 +19,15 @@ crates/graph-core/      pure domain logic: errors/exit codes, path resolution, c
 crates/graph-store/     SQLite: patched-runtime gate, pragmas, ordered migrations,
                         single writer actor, solution registration, inventory,
                         graph rows, reverse index, backup, repair, unregister
-crates/axiom-graphd/    daemon/CLI: instance lock, lifecycle, diagnostics, version
+crates/graph-watch/     hint source: notify adapter, polling fallback, normalization,
+                        ignore/secret policy, debounce, dirty generations, inventory,
+                        recovery, config invalidation, read-only Git observation
+crates/graph-queue/     durable job queue: enqueue, claim, heartbeat, ack, scheduling,
+                        budget, retry, cancel, recovery, pressure, freshness barrier
+crates/graph-analyze/   static analysis: parser adapter and grammar registry, project
+                        manifests, C#/TypeScript declarations, stable symbol ids
+crates/axiom-graphd/    daemon/CLI: instance lock, lifecycle, diagnostics, version,
+                        changed-file hints and queue inspection commands
 docs/                   engine, CLI, installation and operations documentation
 ```
 
