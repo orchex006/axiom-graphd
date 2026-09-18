@@ -16,3 +16,9 @@ V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned do
 - **B-008** - `version` reports the frozen `VersionReport` properties plus runtime properties (SQLite, WAL baseline/support, analyzers); the documented property gap is recorded in the task evidence.
 - **B-009** - patched-SQLite gate and pragmas: `open()` with `MIN_SQLITE_VERSION` 3.51.3, a volume probe, `PragmaReport`, and honest refusal (`SQLITE_UNSUPPORTED_VERSION`, exit 9) when the linked runtime is below the floor.
 - **B-010** - ordered migrations: `SCHEMA_V1_SQL` byte-identical to the canonical `axiom-specs` schema, checksum/order verification, and a migration plan that refuses to move a newer database downward.
+
+### governance-alignment (branch/merge/release policy)
+
+- Align `Development.md` with the canonical `axiom-specs` §3 policy: `main` is the integration branch, `feature/<task-id>-<slug>` is the mandatory task branch, and `release/vX.Y.Z` is the release branch.
+- Record the merge gate: an agent MAY merge a verified, fully-verified task branch into `main` on its own authority once every gate condition holds; release branches, tags and publishes still require explicit release authorization.
+- Record the worktree rule: work finished in a worktree MUST be integrated into `main` and reflected in the owner's primary checkout, or explicitly reported as not yet delivered to that checkout.
