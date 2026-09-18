@@ -1,0 +1,36 @@
+{
+  "vector_id": "approval-missing",
+  "task": "F-010",
+  "class": "approval-not-bound",
+  "kind": "boundary",
+  "description": "Boundary: a plausible plan with no explicit approval digest supplied.",
+  "spec_contract": {
+    "invariant": "CF-021",
+    "reference_path": "tests/fixtures/update-plan-contract/update.valid.upgrade.json",
+    "reference_sha256": "115ed0cd21a9c9d880bcc6d8f85b5227095c5e16962b430a6d747bb381d4415d",
+    "contract_reason": null
+  },
+  "request": {
+    "plan_path": "plan.json",
+    "component": "axiom-graphd",
+    "target_version": "0.2.0",
+    "canonical_digest": "5d3cf9f2b4868e79b7626782a54b3a662e371c5eb824f6b251a8946657a7891f",
+    "approve_digest": null,
+    "plan_created_at": "2026-09-18T02:00:00Z",
+    "trust_metadata_expiry": "2026-09-25T02:00:00Z",
+    "trust_root": "5555555555555555555555555555555555555555555555555555555555555555",
+    "allowed_components": [
+      "axiom-graphd"
+    ],
+    "signature_present": true,
+    "candidate_schema_version": 1,
+    "backup_required": false,
+    "backup_relative_path": "state/queue.db.bak",
+    "backup_present": true
+  },
+  "expected": {
+    "decision": "refuse",
+    "reason": "delegation-refused"
+  },
+  "why": "Supplying a plan is not approval, so admission still refuses through the real argv delegation rather than admitting by default."
+}

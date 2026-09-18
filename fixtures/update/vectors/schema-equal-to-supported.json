@@ -1,0 +1,36 @@
+{
+  "vector_id": "schema-equal-to-supported",
+  "task": "F-010",
+  "class": "newer-schema",
+  "kind": "boundary",
+  "description": "Boundary: the candidate schema major equals the schema this binary supports.",
+  "spec_contract": {
+    "invariant": "CF-026",
+    "reference_path": "tests/fixtures/update-plan-contract/update.invalid.unsupported-schema-version.json",
+    "reference_sha256": "cb1e796c0167e7a08f581a83ac43ca301ce1f1b41436d6b1929cbb603717b890",
+    "contract_reason": "unsupported_schema_version"
+  },
+  "request": {
+    "plan_path": "plan.json",
+    "component": "axiom-graphd",
+    "target_version": "0.2.0",
+    "canonical_digest": "06bd939e992745837325968cae81670fdda15526e523bdfcf02624ee15c4cd8a",
+    "approve_digest": "06bd939e992745837325968cae81670fdda15526e523bdfcf02624ee15c4cd8a",
+    "plan_created_at": "2026-09-18T02:00:00Z",
+    "trust_metadata_expiry": "2026-09-25T02:00:00Z",
+    "trust_root": "5555555555555555555555555555555555555555555555555555555555555555",
+    "allowed_components": [
+      "axiom-graphd"
+    ],
+    "signature_present": true,
+    "candidate_schema_version": 1,
+    "backup_required": false,
+    "backup_relative_path": "state/queue.db.bak",
+    "backup_present": true
+  },
+  "expected": {
+    "decision": "admit",
+    "reason": null
+  },
+  "why": "Equality with the supported schema major is compatible and admitted; only a strictly newer major is refused."
+}

@@ -1,0 +1,140 @@
+{
+  "corpus": "update-safe-refusal",
+  "task": "F-010",
+  "spec_revision": "1bf754298ba1bb266a77f13cded4bfe69484906f",
+  "description": "Portable update and migration vectors an installation must refuse safely. Each vector is a plan document shape derived from the pinned specification update-plan contract, carrying the four hazard classes plus a valid control and three boundary cases. fixtures/update/driver.py checks the corpus is self-consistent and crates/axiom-graphd/tests/update_fixtures.rs replays every vector through the real axiom_graphd::update_guard admission surface, the real commands::update delegation, the real graph_store::migrations schema ceiling and the real graph_store::backup verification.",
+  "invariant": "CF-021: tampered, expired or incompatible update input is never installed. CF-026: a schema future major produces an explicit incompatible error instead of a downgrade.",
+  "supported_schema_major": 1,
+  "decisions": [
+    "admit",
+    "refuse"
+  ],
+  "refusal_reasons": [
+    "signature-expired",
+    "signer-untrusted",
+    "schema-newer-than-binary",
+    "backup-missing",
+    "delegation-refused"
+  ],
+  "hazard_classes": [
+    "expired-signature",
+    "untrusted-signer",
+    "newer-schema",
+    "missing-backup",
+    "approval-not-bound"
+  ],
+  "scenarios": [
+    {
+      "id": "signature-expired",
+      "class": "expired-signature",
+      "kind": "hazard",
+      "vector": "vectors/signature-expired.json",
+      "must_distinguish": [
+        "expired-signature"
+      ],
+      "expected": {
+        "decision": "refuse",
+        "reason": "signature-expired"
+      },
+      "expected_outcome": "The trust metadata expiry is before the plan creation time, so the plan is refused before any delegation and the target tree keeps its bytes."
+    },
+    {
+      "id": "signer-untrusted",
+      "class": "untrusted-signer",
+      "kind": "hazard",
+      "vector": "vectors/signer-untrusted.json",
+      "must_distinguish": [
+        "untrusted-signer"
+      ],
+      "expected": {
+        "decision": "refuse",
+        "reason": "signer-untrusted"
+      },
+      "expected_outcome": "The plan carries no signature, so the signer is absent and the plan is refused rather than treated as implicitly trusted."
+    },
+    {
+      "id": "schema-newer-than-binary",
+      "class": "newer-schema",
+      "kind": "hazard",
+      "vector": "vectors/schema-newer-than-binary.json",
+      "must_distinguish": [
+        "newer-schema"
+      ],
+      "expected": {
+        "decision": "refuse",
+        "reason": "schema-newer-than-binary"
+      },
+      "expected_outcome": "The candidate schema major is newer than this binary supports, so the store is never migrated downwards and the existing database is untouched."
+    },
+    {
+      "id": "backup-missing",
+      "class": "missing-backup",
+      "kind": "hazard",
+      "vector": "vectors/backup-missing.json",
+      "must_distinguish": [
+        "missing-backup"
+      ],
+      "expected": {
+        "decision": "refuse",
+        "reason": "backup-missing"
+      },
+      "expected_outcome": "The plan requires a backup that is not present, so the irreversible step is refused and the missing file is never created."
+    },
+    {
+      "id": "valid-control",
+      "class": "valid-control",
+      "kind": "control",
+      "vector": "vectors/valid-control.json",
+      "must_distinguish": [
+        "valid-control"
+      ],
+      "expected": {
+        "decision": "admit",
+        "reason": null
+      },
+      "expected_outcome": "A trusted, unexpired plan at a supported schema with a present backup is admitted and delegated as program plus argv."
+    },
+    {
+      "id": "expiry-equal-to-creation",
+      "class": "expired-signature",
+      "kind": "boundary",
+      "vector": "vectors/expiry-equal-to-creation.json",
+      "must_distinguish": [
+        "expired-signature"
+      ],
+      "expected": {
+        "decision": "refuse",
+        "reason": "signature-expired"
+      },
+      "expected_outcome": "Boundary: an expiry equal to the creation time is already not-after, so it is refused exactly like an expiry in the past."
+    },
+    {
+      "id": "schema-equal-to-supported",
+      "class": "newer-schema",
+      "kind": "boundary",
+      "vector": "vectors/schema-equal-to-supported.json",
+      "must_distinguish": [
+        "newer-schema"
+      ],
+      "expected": {
+        "decision": "admit",
+        "reason": null
+      },
+      "expected_outcome": "Boundary: a candidate schema major equal to the supported major is compatible and admitted, so only a strictly newer major is refused."
+    },
+    {
+      "id": "approval-missing",
+      "class": "approval-not-bound",
+      "kind": "boundary",
+      "vector": "vectors/approval-missing.json",
+      "must_distinguish": [
+        "approval-not-bound"
+      ],
+      "expected": {
+        "decision": "refuse",
+        "reason": "delegation-refused"
+      },
+      "expected_outcome": "Boundary: a plausible plan with no approval digest is still refused by the real delegation, so admission is never the default."
+    }
+  ]
+}
