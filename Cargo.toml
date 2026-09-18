@@ -1,0 +1,50 @@
+# Axiom Graph Ecosystem - axiom-graphd Rust workspace (task B-001).
+#
+# One workspace and one core version publish the daemon (`axiom-graphd`) and the
+# installation/operations CLI (`axiom`); see SOURCE-OF-TRUST.md section 1 and
+# specs/v2/B-axiom-graphd.md. Bootstrap, CLI and daemon modules share this
+# release boundary, so they stay in one workspace.
+[workspace]
+resolver = "2"
+members = ["crates/graph-core", "crates/graph-store", "crates/axiom-graphd"]
+
+[workspace.package]
+version = "0.0.0-dev"
+edition = "2021"
+rust-version = "1.85"
+# Private, unpublished crates. `LicenseRef-` is a valid SPDX user-defined
+# reference; `[licenses] private = { ignore = true }` in deny.toml keeps the
+# workspace crates out of the third-party license audit.
+license = "LicenseRef-Proprietary"
+repository = "https://github.com/orchex006/axiom-graphd"
+publish = false
+
+[workspace.dependencies]
+# Internal path dependencies carry an explicit version so the workspace has no
+# wildcard requirement (`cargo deny check bans`); the version matches
+# `workspace.package.version`.
+graph-core = { version = "0.0.0-dev", path = "crates/graph-core" }
+graph-store = { version = "0.0.0-dev", path = "crates/graph-store" }
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.128"
+sha2 = "0.10.8"
+rusqlite = { version = "0.37.0", features = ["bundled"] }
+libc = "0.2.159"
+windows-sys = { version = "0.60.2", features = ["Win32_Foundation", "Win32_System_Threading", "Win32_Storage_FileSystem"] }
+tempfile = "3.13.0"
+
+# Warnings are errors in every profile, so `cargo build` and `cargo test`
+# enforce the same policy as the Development.md CI command
+# (`cargo clippy --locked --all-targets -- -D warnings`).
+[workspace.lints.rust]
+warnings = "deny"
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+
+# Audited dependency/version policy lives in deny.toml (cargo-deny).
+[profile.release]
+codegen-units = 1
+lto = "thin"
+strip = "debuginfo"

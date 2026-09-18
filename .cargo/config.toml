@@ -1,0 +1,9 @@
+# Repository-local build policy. Cargo invokes the compiler directly with these
+# flags; nothing here is an interpolated shell string.
+[build]
+rustflags = ["-D", "warnings"]
+
+[alias]
+lint = "clippy --locked --all-targets -- -D warnings"
+verify = "test --locked --all-targets"
+fmt-check = "fmt --all -- --check"
