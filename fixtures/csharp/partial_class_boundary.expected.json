@@ -1,0 +1,66 @@
+{
+  "fixture": "partial_class_boundary.cs",
+  "language": "csharp",
+  "analyzer": "graph_analyze::csharp::declarations::analyze",
+  "purpose": "Pin the partial-class boundary: two partial declarations of one type in one file are recorded literally and are not merged.",
+  "supported_evidence_kinds": [
+    "declarations"
+  ],
+  "not_supported_evidence_kinds": [
+    {
+      "id": "partial-class-merge",
+      "expect": "the scan does not merge partial declarations and does not detect that these two declarations are one type, so both class declarations share one identity key; a caller must not treat the repeated key as two distinct symbols."
+    }
+  ],
+  "expected_coverage_status": "complete_for_profile",
+  "expected_error_codes": [],
+  "expected_warning_codes": [],
+  "expected_declarations": [
+    {
+      "kind": "namespace",
+      "name": "App.Partial",
+      "semantic_path": [],
+      "span_text": "App.Partial"
+    },
+    {
+      "kind": "class",
+      "name": "Widget",
+      "semantic_path": [
+        "App.Partial"
+      ],
+      "span_text": "Widget"
+    },
+    {
+      "kind": "method",
+      "name": "First",
+      "semantic_path": [
+        "App.Partial",
+        "Widget"
+      ],
+      "span_text": "First"
+    },
+    {
+      "kind": "class",
+      "name": "Widget",
+      "semantic_path": [
+        "App.Partial"
+      ],
+      "span_text": "Widget"
+    },
+    {
+      "kind": "method",
+      "name": "Second",
+      "semantic_path": [
+        "App.Partial",
+        "Widget"
+      ],
+      "span_text": "Second"
+    }
+  ],
+  "expected_duplicate_key": {
+    "kind": "class",
+    "name": "Widget",
+    "count": 2
+  },
+  "expected_distinct_method_keys": true
+}

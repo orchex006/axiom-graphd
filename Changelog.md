@@ -4,6 +4,10 @@
 
 V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned docs/tests. Runtime implementation and platform certification are pending.
 
+### analyzer-language-fixtures (F-004 - F-005)
+
+- **F-004** - C# narrow-scan fixtures: `fixtures/csharp/` and `fixtures/README.md` pin the declarations, literal inheritance headers and resolution outcomes the B-048 C# scan must extract, and record the constructs it must NOT claim to support (dynamic dispatch, reflection, source generators, partial-class merge) as documented unsupported cases asserted by `crates/graph-analyze/tests/csharp_fixtures.rs`. The fixtures are component-local regression fixtures, not shared contract fixtures.
+
 ### analysis-checkpoints (B-051 - B-093)
 
 - **B-051** - literal imports: `graph-analyze::imports` resolves relative and explicitly aliased imports through the configured rules, keeps an ambiguous or missing target unresolved instead of guessing, and is deterministic in source order.
