@@ -4,6 +4,17 @@
 
 V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned docs/tests. Runtime implementation and platform certification are pending.
 
+### portable-contract-fixtures (F-006, F-008)
+
+- **F-006** - L3 fixture vectors: `fixtures/l3/` holds static positive and negative conformance vectors
+  for the Level-3 HTTP, SQL and messaging adapters (ASP.NET attribute routes, minimal API mappings,
+  Angular `HttpClient`, literal SQL, messaging topics and the configured-alias HTTP join). Each rule
+  carries a provenance note naming the implementing source file, the function and the invariant it
+  serves, and the corpus README records the `PATTERN_*` constants that never reach an output.
+  `crates/graph-analyze/tests/l3_fixtures.rs` loads every vector from disk and asserts both the
+  positive fact set and the exact refusal pattern and reason, including the boundary cases. No vector
+  contains a runtime log, captured traffic or executed user source.
+
 ### analysis-checkpoints (B-051 - B-093)
 
 - **B-051** - literal imports: `graph-analyze::imports` resolves relative and explicitly aliased imports through the configured rules, keeps an ambiguous or missing target unresolved instead of guessing, and is deterministic in source order.

@@ -1,0 +1,16 @@
+# Static join vector for task F-006. Declarative text only: no runtime log,
+# no captured traffic and no executed user source.
+# Grammar, one directive per line:
+#   vector <name>
+#   alias <host> <project>
+#   endpoint <project> <file> <VERB> <template>
+#   client <project> <file> <VERB> <absolute-url|-> <path|->
+#   expect-relation <client-project> <server-project> <VERB> <request-path>
+#   expect-unresolved <client-project> <pattern> <reason>
+#   expect-ambiguous <client-project> <candidate-count>
+
+vector negative-unconfigured-host
+alias api.contoso.example OrdersApi
+endpoint OrdersApi Api/OrdersController.cs GET api/items
+client Web Web/api.ts GET https://other.example.com/api/items -
+expect-unresolved Web http-join-unconfigured-host unresolved-no-configured-alias
