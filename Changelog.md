@@ -2,9 +2,28 @@
 
 ## Unreleased
 V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned docs/tests. Runtime implementation and platform certification are pending.
-### portable-contract-fixtures (F-009 - F-010)
+### portable-contract-fixtures (F-006 - F-010)
 - **F-009** - staged-source Git fixture corpus and input classifier: `fixtures/git/` records reproducible partial-staging, rename, merge and untracked scenarios in `manifest.json` with a deterministic argv-only driver, `graph-watch::checkpoint_inputs` distinguishes the four checkpoint input classes from the real porcelain status parser, and `crates/axiom-graphd/tests/git_input_fixtures.rs` drives real Git plus the real staged materializer to prove the index bytes win over the worktree and that boundary cases (pure rename, staged-then-deleted, untracked) are handled without a worktree fallback.
 - **F-010** - update and migration safe-refusal fixture corpus and admission guard: `fixtures/update/` records an expired-signature, an absent-signer, a future-major schema, a missing-backup, an approval-not-bound boundary and a valid control vector in `manifest.json` with a deterministic local driver that also re-checks each referenced specification digest, `axiom_graphd::update_guard` is the single read-only admission surface over the real `commands::update::delegate` argv delegation, the real `graph_store::migrations` schema ceiling and the real `graph_store::backup` verification, and `crates/axiom-graphd/tests/update_fixtures.rs` proves every hazard is refused with its declared reason, that the control is admitted and delegated as program plus argv, and that a refusal leaves the target tree byte-identical.
+- **F-006** - L3 fixture vectors: `fixtures/l3/` holds static positive and negative conformance vectors
+  for the Level-3 HTTP, SQL and messaging adapters (ASP.NET attribute routes, minimal API mappings,
+  Angular `HttpClient`, literal SQL, messaging topics and the configured-alias HTTP join). Each rule
+  carries a provenance note naming the implementing source file, the function and the invariant it
+  serves, and the corpus README records the `PATTERN_*` constants that never reach an output.
+  `crates/graph-analyze/tests/l3_fixtures.rs` loads every vector from disk and asserts both the
+  positive fact set and the exact refusal pattern and reason, including the boundary cases. No vector
+  contains a runtime log, captured traffic or executed user source.
+- **F-008** - bootstrap human-edit vectors: `fixtures/bootstrap/` holds static before/after fixture trees
+  for the managed AGENTS.md bootstrap/update contract. The corpus pins LF, CRLF and UTF-8 BOM variants
+  of the same managed block, a managed file with a missing begin or end marker, an owner-edited policy
+  inside the block, a non-literal marker placed in a fenced code sample, and a repository with unrelated
+  human instructions that must survive. Every vector records its expected non-destructive outcome
+  (append, replace, conflict or unchanged) and the exact set of paths that may change.
+  `crates/axiom-graphd/tests/bootstrap_fixtures.rs` copies each before tree into a temporary directory,
+  runs the managed-merge oracle, and asserts the outcome, the changed-path set, byte-identical survival
+  of every other file, the preserved literals and the BOM/newline properties. A failed marker, an edited
+  policy or a stale plan must be refused and must leave the tree byte-identical, so a human edit is never
+  truncated. The vectors are static input text: no runtime log, no captured output.
 ### analysis-checkpoints (B-051 - B-093)
 - **B-051** - literal imports: `graph-analyze::imports` resolves relative and explicitly aliased imports through the configured rules, keeps an ambiguous or missing target unresolved instead of guessing, and is deterministic in source order.
 - **B-052** - conservative call sites: `graph-analyze::calls` records only high-confidence literal or explicit call evidence against resolved symbols, keeps an unresolved receiver as an explicit unresolved edge, and never synthesizes a caller relation from name similarity alone.
@@ -106,23 +125,3 @@ V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned do
 - Align `Development.md` with the canonical `axiom-specs` §3 policy: `main` is the integration branch, `feature/<task-id>-<slug>` is the mandatory task branch, and `release/vX.Y.Z` is the release branch.
 - Record the merge gate: an agent MAY merge a verified, fully-verified task branch into `main` on its own authority once every gate condition holds; release branches, tags and publishes still require explicit release authorization.
 - Record the worktree rule: work finished in a worktree MUST be integrated into `main` and reflected in the owner's primary checkout, or explicitly reported as not yet delivered to that checkout.
-### portable-contract-fixtures (F-006, F-008)
-- **F-006** - L3 fixture vectors: `fixtures/l3/` holds static positive and negative conformance vectors
-  for the Level-3 HTTP, SQL and messaging adapters (ASP.NET attribute routes, minimal API mappings,
-  Angular `HttpClient`, literal SQL, messaging topics and the configured-alias HTTP join). Each rule
-  carries a provenance note naming the implementing source file, the function and the invariant it
-  serves, and the corpus README records the `PATTERN_*` constants that never reach an output.
-  `crates/graph-analyze/tests/l3_fixtures.rs` loads every vector from disk and asserts both the
-  positive fact set and the exact refusal pattern and reason, including the boundary cases. No vector
-  contains a runtime log, captured traffic or executed user source.
-- **F-008** - bootstrap human-edit vectors: `fixtures/bootstrap/` holds static before/after fixture trees
-  for the managed AGENTS.md bootstrap/update contract. The corpus pins LF, CRLF and UTF-8 BOM variants
-  of the same managed block, a managed file with a missing begin or end marker, an owner-edited policy
-  inside the block, a non-literal marker placed in a fenced code sample, and a repository with unrelated
-  human instructions that must survive. Every vector records its expected non-destructive outcome
-  (append, replace, conflict or unchanged) and the exact set of paths that may change.
-  `crates/axiom-graphd/tests/bootstrap_fixtures.rs` copies each before tree into a temporary directory,
-  runs the managed-merge oracle, and asserts the outcome, the changed-path set, byte-identical survival
-  of every other file, the preserved literals and the BOM/newline properties. A failed marker, an edited
-  policy or a stale plan must be refused and must leave the tree byte-identical, so a human edit is never
-  truncated. The vectors are static input text: no runtime log, no captured output.
