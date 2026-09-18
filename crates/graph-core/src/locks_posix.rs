@@ -28,6 +28,7 @@ pub fn open_and_lock(path: &Path, mode: LockMode) -> Result<File, GuardError> {
         .read(true)
         .write(true)
         .create(true)
+        .truncate(false)
         .open(path)
         .map_err(|error| GuardError::Io {
             path: path.display().to_string(),
