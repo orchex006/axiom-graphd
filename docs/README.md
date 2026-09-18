@@ -8,6 +8,7 @@ These guides are owned and released with `axiom-graphd`. They describe intended 
 - [19-GIT-SNAPSHOTS-AND-MERGES](19-GIT-SNAPSHOTS-AND-MERGES.md)
 - [21-INSTALLATION](21-INSTALLATION.md)
 - [22-OPERATIONS-AND-TROUBLESHOOTING](22-OPERATIONS-AND-TROUBLESHOOTING.md)
+- [WATCHER-QUEUE-AND-ANALYSIS](WATCHER-QUEUE-AND-ANALYSIS.md)
 - [CLI-EXIT-CODES](CLI-EXIT-CODES.md)
 
 Shared storage/wire/layout contracts are canonical in axiom-specs. Do not create a local editable copy of them. A published site can aggregate documentation from immutable revisions without an extra repository.
