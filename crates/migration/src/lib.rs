@@ -1,4 +1,4 @@
-//! Migration support for the Axiom core (V2-009, V2-010, V2-011).
+//! Migration support for the Axiom core (V2-009, V2-010, V2-011, V2-012).
 //!
 //! [`discover`] detects the legacy `graph` and `grahp` layouts independently and
 //! returns `MIGRATION_CONFLICT` instead of a plan when the sources cannot be
@@ -16,10 +16,11 @@ pub mod discover;
 pub mod plan;
 
 pub use apply::{
-    apply_journaled, ApplyError, ApplyIo, ApplyJournal, ApplyOutcome, ApplyPhase, ApplyRequest,
-    ApplyStatus, FenceOutcome, FileState, JournalFile, JournalStore, WriterFence,
-    APPLY_SCHEMA_VERSION, ERR_APPLY_CONFLICT, ERR_APPLY_HASH, ERR_APPLY_INCOMPLETE,
-    ERR_FENCE_REFUSED, ERR_JOURNAL_INVALID, JOURNAL_MAGIC,
+    apply_journaled, check_coexistence, rollback_journaled, ApplyError, ApplyIo, ApplyJournal,
+    ApplyOutcome, ApplyPhase, ApplyRequest, ApplyStatus, FenceOutcome, FileState, JournalFile,
+    JournalStore, RollbackOutcome, RollbackStatus, WriterFence, APPLY_SCHEMA_VERSION,
+    ERR_APPLY_CONFLICT, ERR_APPLY_HASH, ERR_APPLY_INCOMPLETE, ERR_COEXISTENCE, ERR_FENCE_REFUSED,
+    ERR_JOURNAL_INVALID, ERR_ROLLBACK, ERR_ROLLBACK_BLOCKED, JOURNAL_MAGIC,
 };
 pub use discover::{
     discover_from_paths, plan_discovery, ContentRelation, DiscoverError, DiscoveryDecision,

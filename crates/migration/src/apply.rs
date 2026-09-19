@@ -1,4 +1,5 @@
-//! Journaled migration application with writer fencing (V2-011).
+//! Journaled migration application with writer fencing (V2-011) and rollback
+//! with coexistence rejection (V2-012).
 //!
 //! [crate::plan] decides *what* one reviewed V1 to V2 migration may write and
 //! refuses to authorise a plan whose inputs moved underneath it. This module
@@ -28,6 +29,12 @@
 //! destination that a human changed after cutover is never overwritten by that
 //! restore: the run reports the blocking path and asks for a human instead.
 //!
+//! [check_coexistence] refuses the plan before the fence when any destination
+//! would keep the legacy and the V2 layout both live, and [rollback_journaled]
+//! undoes a completed or an interrupted cutover from the same journal, restoring
+//! each verified backup and discarding each staged copy while leaving a
+//! destination that a human changed after cutover exactly as it is.
+//!
 //! As in the plan half, this module performs no filesystem access of its own.
 //! The writer fence, the bytes and the journal are injected ([WriterFence],
 //! [ApplyIo], [JournalStore]), so the policy is exercised for real in tests and
@@ -38,6 +45,7 @@ use std::fmt;
 use axiom_platform::PathKey;
 use graph_core::error::{AxiomError, ErrorCode};
 
+use crate::discover::{AXIOM_GRAPH_DIR, LEGACY_GRAPH_DIR, LEGACY_MISSPELLED_GRAPH_DIR};
 use crate::plan::{
     is_portable_id, write_field, ChangeAction, ContentHash, CurrentSources, DestinationOwnership,
     MigrationPlan, PlanError, PlannedWrite,
@@ -65,6 +73,14 @@ pub const ERR_JOURNAL_INVALID: &str = "MIGRATION_JOURNAL_INVALID";
 /// Stable code: recovery could not restore every file, so the run reports the
 /// blocking paths instead of claiming an atomic undo.
 pub const ERR_APPLY_INCOMPLETE: &str = "MIGRATION_APPLY_INCOMPLETE";
+/// Stable code: the plan would leave the legacy and the V2 layout both live, so
+/// applying it would dual-write one logical output.
+pub const ERR_COEXISTENCE: &str = "MIGRATION_COEXISTENCE_REFUSED";
+/// Stable code: the journal does not describe a cutover this run may undo.
+pub const ERR_ROLLBACK: &str = "MIGRATION_ROLLBACK_REFUSED";
+/// Stable code: a rollback could not restore every file, so the run reports the
+/// blocking paths instead of claiming an atomic undo.
+pub const ERR_ROLLBACK_BLOCKED: &str = "MIGRATION_ROLLBACK_BLOCKED";
 
 /// One phase of the staged cutover, in the order it runs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -81,17 +97,20 @@ pub enum ApplyPhase {
     Cutover,
     /// The journal is closed.
     Complete,
+    /// The cutover was undone from its journal.
+    Rollback,
 }
 
 impl ApplyPhase {
     /// Every phase, in order.
-    pub const ORDER: [ApplyPhase; 6] = [
+    pub const ORDER: [ApplyPhase; 7] = [
         ApplyPhase::Fence,
         ApplyPhase::Backup,
         ApplyPhase::Stage,
         ApplyPhase::Verify,
         ApplyPhase::Cutover,
         ApplyPhase::Complete,
+        ApplyPhase::Rollback,
     ];
 
     /// Stable spelling used in journals and evidence.
@@ -104,6 +123,7 @@ impl ApplyPhase {
             Self::Verify => "verify",
             Self::Cutover => "cutover",
             Self::Complete => "complete",
+            Self::Rollback => "rollback",
         }
     }
 
@@ -916,16 +936,18 @@ pub fn apply_journaled(
     io: &dyn ApplyIo,
     journals: &dyn JournalStore,
 ) -> Result<ApplyOutcome, ApplyError> {
-    // 1. Authorise against the plan and the bytes on disk right now.
-    request.plan.apply(
+    // 1. Authorise against the plan and the bytes on disk right now, and refuse
+    //    a plan that would keep the legacy and the V2 layout both live.
+    let authorized = request.plan.apply(
         request.reviewed_digest,
         request.current,
         request.now_seconds,
     )?;
+    check_coexistence(request.plan, &authorized)?;
 
     // 2. Load or build the journal, and refuse a journal for another run.
     let stored = journals.load()?;
-    let resuming = stored.is_some();
+    let had_journal = stored.is_some();
     let mut journal = match stored {
         Some(existing) => {
             existing.check_belongs_to(request)?;
@@ -934,6 +956,12 @@ pub fn apply_journaled(
         }
         None => ApplyJournal::for_plan(request)?,
     };
+    // A rolled-back journal is a clean start: the previous bytes were restored,
+    // so this is a fresh application rather than a resume.
+    let resuming = had_journal && journal.phase != ApplyPhase::Rollback;
+    if journal.phase == ApplyPhase::Rollback {
+        journal = ApplyJournal::for_plan(request)?;
+    }
 
     if journal.phase == ApplyPhase::Complete {
         return Ok(ApplyOutcome {
@@ -1328,6 +1356,277 @@ fn restore(io: &dyn ApplyIo, journal: &mut ApplyJournal) -> Result<Vec<String>, 
         journal.set_phase(ApplyPhase::Verify);
     }
     Ok(blocked)
+}
+
+/// True when `path` is `root` itself or sits underneath it.
+///
+/// The comparison is on the portable spellings the plan and the discovery half
+/// share, so a destination is only treated as a legacy path when it really is
+/// under the legacy root rather than in a directory that merely shares a prefix.
+fn is_under(root: &str, path: &str) -> bool {
+    path == root || path.starts_with(&format!("{root}/"))
+}
+
+/// Refuse a plan that would leave the legacy and the V2 layout both live.
+///
+/// The legacy tree and the V2 tree are two spellings of the same logical output,
+/// so a cutover may only ever write one of them. A destination under a legacy
+/// root, a destination rewritten in place from itself, and a destination that is
+/// also an inventoried source are all the same defect: after the run two live
+/// copies would exist and neither could be trusted. Nothing is written when this
+/// refuses.
+///
+/// # Errors
+/// [ApplyError::Refused] with code [ERR_COEXISTENCE] and rule
+/// `legacy-destination`, `in-place-legacy-source` or `destination-is-a-source`.
+pub fn check_coexistence(
+    plan: &MigrationPlan,
+    authorized: &[PlannedWrite],
+) -> Result<(), ApplyError> {
+    let legacy_roots = [LEGACY_GRAPH_DIR, LEGACY_MISSPELLED_GRAPH_DIR];
+    for write in authorized {
+        for root in legacy_roots {
+            if is_under(root, write.path()) {
+                return Err(ApplyError::refused(
+                    ERR_COEXISTENCE,
+                    "legacy-destination",
+                    Some(write.path().to_string()),
+                    format!(
+                        "{} is a legacy output path; the V2 destination must be under {}",
+                        write.path(),
+                        AXIOM_GRAPH_DIR
+                    ),
+                ));
+            }
+        }
+        if write.source() == Some(write.path()) {
+            return Err(ApplyError::refused(
+                ERR_COEXISTENCE,
+                "in-place-legacy-source",
+                Some(write.path().to_string()),
+                format!(
+                    "{} would be rewritten in place, leaving the legacy and the V2 layout both live",
+                    write.path()
+                ),
+            ));
+        }
+        for repo in plan.repositories() {
+            for artifact in repo.sources() {
+                if artifact.path() == write.path() {
+                    return Err(ApplyError::refused(
+                        ERR_COEXISTENCE,
+                        "destination-is-a-source",
+                        Some(write.path().to_string()),
+                        format!(
+                            "{} is both an inventoried source and a destination, so a cutover would dual-write it",
+                            write.path()
+                        ),
+                    ));
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+/// How one rollback ended.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum RollbackStatus {
+    /// The cutover was undone.
+    RolledBack,
+    /// The journal already recorded a completed rollback.
+    AlreadyRolledBack,
+}
+
+impl RollbackStatus {
+    /// Stable spelling used in evidence.
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::RolledBack => "rolled-back",
+            Self::AlreadyRolledBack => "already-rolled-back",
+        }
+    }
+}
+
+/// What one rollback did.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RollbackOutcome {
+    status: RollbackStatus,
+    restored: usize,
+    removed: usize,
+    staged_removed: usize,
+}
+
+impl RollbackOutcome {
+    /// How the rollback ended.
+    #[must_use]
+    pub const fn status(&self) -> RollbackStatus {
+        self.status
+    }
+
+    /// How many destinations were restored from their verified backup.
+    #[must_use]
+    pub const fn restored(&self) -> usize {
+        self.restored
+    }
+
+    /// How many created destinations were removed again.
+    #[must_use]
+    pub const fn removed(&self) -> usize {
+        self.removed
+    }
+
+    /// How many staged copies were discarded.
+    #[must_use]
+    pub const fn staged_removed(&self) -> usize {
+        self.staged_removed
+    }
+}
+
+/// Undo a cutover from its journal, preserving every byte the run did not write.
+///
+/// The journal must belong to this plan's solution, digest and namespace, but the
+/// current sources are deliberately not re-observed: a rollback restores the
+/// bytes a cutover replaced, and it must still work after the legacy sources were
+/// moved aside. Both a completed cutover and an interrupted one are undone: a
+/// destination the run cut over is restored from its verified backup (or removed
+/// again when the cutover created it), a destination the run never reached is left
+/// alone, and every staged copy is discarded. A destination whose bytes are no
+/// longer the bytes this cutover wrote, or a backup whose bytes are no longer the
+/// recorded previous bytes, is never overwritten: the run reports
+/// [ERR_ROLLBACK_BLOCKED] with the blocking paths and leaves those bytes as they
+/// are, so a human edit made after the cutover survives. Files outside the
+/// journal are never touched.
+///
+/// # Errors
+/// [ApplyError::Journal] when a stored journal does not belong to this run;
+/// [ApplyError::Refused] with code [ERR_ROLLBACK] and rule `no-journal` or
+/// `cutover-not-started`, and with code [ERR_ROLLBACK_BLOCKED] and rule
+/// `rollback-blocked`; and [ApplyError::Io] when the injected boundary fails.
+pub fn rollback_journaled(
+    request: &ApplyRequest<'_>,
+    io: &dyn ApplyIo,
+    journals: &dyn JournalStore,
+) -> Result<RollbackOutcome, ApplyError> {
+    let Some(mut journal) = journals.load()? else {
+        return Err(ApplyError::refused(
+            ERR_ROLLBACK,
+            "no-journal",
+            None,
+            format!(
+                "no apply journal records a cutover of {} on {}",
+                request.plan.solution_id(),
+                request.namespace
+            ),
+        ));
+    };
+    journal.check_belongs_to(request)?;
+    if journal.phase() == ApplyPhase::Rollback {
+        return Ok(RollbackOutcome {
+            status: RollbackStatus::AlreadyRolledBack,
+            restored: 0,
+            removed: 0,
+            staged_removed: 0,
+        });
+    }
+    if journal.phase() != ApplyPhase::Complete && journal.phase() != ApplyPhase::Cutover {
+        return Err(ApplyError::refused(
+            ERR_ROLLBACK,
+            "cutover-not-started",
+            None,
+            format!(
+                "the journal is at phase {}; there is no cutover to undo",
+                journal.phase()
+            ),
+        ));
+    }
+
+    let mut restored = 0usize;
+    let mut removed = 0usize;
+    let mut staged_removed = 0usize;
+    let mut blocked: Vec<String> = Vec::new();
+    for index in 0..journal.files.len() {
+        let path = journal.files[index].path.clone();
+        if let Some(staged) = journal.files[index].staged.clone() {
+            if io.exists(&staged) {
+                io.remove(&staged)?;
+                staged_removed += 1;
+            }
+            journal.files[index].staged = None;
+        }
+        let was_cut_over = journal.files[index].state == FileState::Cutover;
+        let expected = journal.files[index].expected_sha256.clone();
+        let holds_our_bytes = match (&expected, io.exists(&path)) {
+            (Some(expected), true) => read_hash(io, &path)? == *expected,
+            _ => false,
+        };
+        // A destination the journal does not call cut over, but which already
+        // holds exactly the bytes this cutover would have written, is a cutover
+        // whose journal write was lost; it is undone as well.
+        if !was_cut_over && !holds_our_bytes {
+            continue;
+        }
+        if was_cut_over {
+            match (&expected, io.exists(&path)) {
+                (Some(expected), true) if read_hash(io, &path)? != *expected => {
+                    blocked.push(path.clone());
+                    continue;
+                }
+                (None, true) => {
+                    blocked.push(path.clone());
+                    continue;
+                }
+                (Some(_), false) if journal.files[index].previous_sha256.is_some() => {
+                    blocked.push(path.clone());
+                    continue;
+                }
+                _ => {}
+            }
+        }
+        match journal.files[index].backup.clone() {
+            Some(backup) => {
+                let bytes = io.read(&backup)?;
+                if let Some(previous) = journal.files[index].previous_sha256.clone() {
+                    if ContentHash::of_bytes(&bytes) != previous {
+                        blocked.push(path.clone());
+                        continue;
+                    }
+                }
+                io.write(&path, &bytes)?;
+                restored += 1;
+            }
+            None => {
+                if io.exists(&path) {
+                    io.remove(&path)?;
+                    removed += 1;
+                }
+            }
+        }
+        journal.files[index].state = FileState::Pending;
+    }
+    if blocked.is_empty() {
+        journal.set_phase(ApplyPhase::Rollback);
+    }
+    save_quietly(journals, &journal);
+    if !blocked.is_empty() {
+        return Err(ApplyError::refused(
+            ERR_ROLLBACK_BLOCKED,
+            "rollback-blocked",
+            blocked.first().cloned(),
+            format!(
+                "{} file(s) were changed after the cutover and are left as they are; the first is {}",
+                blocked.len(),
+                blocked.join(", ")
+            ),
+        ));
+    }
+    Ok(RollbackOutcome {
+        status: RollbackStatus::RolledBack,
+        restored,
+        removed,
+        staged_removed,
+    })
 }
 
 /// Read one file and hash it.
