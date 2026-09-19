@@ -16,6 +16,7 @@ pub mod bootstrap;
 pub mod cli;
 pub mod discovery;
 pub mod install;
+pub mod packages;
 pub mod plan;
 pub mod service;
 pub mod skills;
