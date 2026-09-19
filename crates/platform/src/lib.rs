@@ -1,7 +1,7 @@
 //! Native platform policy for the Axiom core (V2 layout and guards).
 //!
 //! This crate is the policy/adapter layer between `graph-core`'s pure rules and
-//! the processes that touch a real filesystem. It owns three slices:
+//! the processes that touch a real filesystem. It owns four slices:
 //!
 //! - [`state_root`] (V2-006): resolve and bootstrap the per-user `AXIOM_HOME`,
 //!   including the native "this is a real, owner-private directory, not a link"
@@ -12,10 +12,15 @@
 //! - [`guard`] (V2-018): the frozen reader/writer guard ABI - participant plans,
 //!   acquisition/release order, bounded wait, crash release and retention GC.
 //!
+//! - [`filesystem`] (V2-015): the native boundaries of a staged replacement -
+//!   link escapes, cross-filesystem staging, long paths, open handles and
+//!   byte-exact CRLF preservation.
+//!
 //! Nothing here invokes a shell, and every native probe or wait primitive is
 //! injectable so the policy stays testable on any host (CP-02).
 
 pub mod collisions;
+pub mod filesystem;
 pub mod guard;
 pub mod path_key;
 pub mod state_root;
@@ -23,6 +28,12 @@ pub mod unicode;
 pub mod unicode_tables;
 
 pub use collisions::{detect_portable_collisions, Collision, CollisionKind, DetectError};
+pub use filesystem::{
+    check_link_boundary, check_open_handle_replacement, check_path_length, check_replacement,
+    check_same_filesystem_staging, check_staged_bytes, is_within_root, preserves_bytes, EntryFacts,
+    FilesystemProbe, HandleCheck, LineEndings, NativeFilesystemProbe, ReplacementApproval,
+    ReplacementRequest, StorageLocation, SymlinkKind, MAX_NATIVE_PATH_UNITS,
+};
 // The guard ABI is expressed in the shared lock vocabulary, so consumers of
 // [guard] need this type nameable from this crate.
 pub use graph_core::locks::LockMode;
