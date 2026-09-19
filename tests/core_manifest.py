@@ -23,6 +23,15 @@ Verified for real here (no Docker, no network, no third-party module):
   archive and an SBOM whose declared state is internally consistent;
 * compatibility - `spec_version`, `graph_schema_version`, `control_api_version`
   and `queue_schema_version` equal the constants in `crates/axiom/src/version.rs`;
+* per-target provenance - every target declares the daemon and the CLI at the
+  release version and the release revision, so an archive cannot be declared
+  after one of its components moved (V2-021);
+* executable metadata - every target declares exactly how its two executables are
+  marked executable on that platform (`0755` on POSIX, `.exe` on Windows) and
+  that the other platform's marker is absent (V2-021);
+* installation evidence - a target either records a real clean-user installation
+  (command, output and digest) or states `not_run` with the command it would run
+  and the reason it did not, never a bare claim (V2-021);
 * honesty - a published release must be pinned, built, signed and tagged, so the
   checked-in manifest must be *not* publishable and must not claim otherwise.
 
@@ -45,7 +54,10 @@ Negative legs (each must be caught by the same validator):
 * a target triple that `release.rs` does not declare;
 * a compatibility block that drifts from `crates/axiom/src/version.rs`;
 * a tampered source digest;
-* a publication state that claims `published` while nothing was built.
+* a publication state that claims `published` while nothing was built;
+* a target whose provenance records a different revision;
+* executable metadata that does not mark the daemon executable on POSIX;
+* installation evidence claimed `verified` without a digest or output.
 
 Exit codes: 0 every property held and every negative leg was rejected, 2 a
 divergence, 1 a usage or I/O failure.
@@ -86,6 +98,16 @@ EXPECTED_EXECUTABLES = {
     "windows": ("axiom-graphd.exe", "axiom.exe"),
     "linux": ("axiom-graphd", "axiom"),
     "macos": ("axiom-graphd", "axiom"),
+}
+
+# The V2 card this harness also closes; E-048 stays the historical id.
+EXPECTED_V2_TASK = "V2-021"
+
+# os -> (executable_metadata key, the value it must carry on that platform).
+EXPECTED_EXECUTABLE_METADATA = {
+    "windows": ("windows-extension", ".exe"),
+    "linux": ("posix-mode", "0755"),
+    "macos": ("posix-mode", "0755"),
 }
 
 
@@ -169,6 +191,8 @@ def problems_in(manifest, repo_root):
         problems.append("manifest_kind must be axiom-core-release, got %r" % manifest.get("manifest_kind"))
     if manifest.get("owner_repository") != "axiom-graphd":
         problems.append("owner_repository must be axiom-graphd, got %r" % manifest.get("owner_repository"))
+    if manifest.get("v2_task") != EXPECTED_V2_TASK:
+        problems.append("v2_task must be %s, got %r" % (EXPECTED_V2_TASK, manifest.get("v2_task")))
 
     release = manifest.get("release")
     if not isinstance(release, dict):
@@ -295,6 +319,91 @@ def problems_in(manifest, repo_root):
                 "target %s must ship the daemon and the CLI exactly (%s), got %r"
                 % (platform_name, sorted(expected_executables), executables)
             )
+        provenance = target.get("provenance")
+        if not isinstance(provenance, dict):
+            problems.append("target %s provenance must be an object" % platform_name)
+        else:
+            if provenance.get("revision") != revision:
+                problems.append(
+                    "target %s provenance revision %r is not the release revision %r"
+                    % (platform_name, provenance.get("revision"), revision)
+                )
+            expected_provenance = {name: version for name in EXPECTED_COMPONENTS}
+            declared_provenance = provenance.get("components")
+            if not isinstance(declared_provenance, dict) or declared_provenance != expected_provenance:
+                problems.append(
+                    "target %s provenance must carry the daemon and the CLI at the release version "
+                    "(%r), got %r" % (platform_name, expected_provenance, declared_provenance)
+                )
+        metadata = target.get("executable_metadata")
+        if not isinstance(metadata, dict):
+            problems.append("target %s executable_metadata must be an object" % platform_name)
+        else:
+            flavour, expected_value = EXPECTED_EXECUTABLE_METADATA[os_name]
+            absent = "windows-extension" if flavour == "posix-mode" else "posix-mode"
+            if metadata.get(flavour) != expected_value:
+                problems.append(
+                    "target %s executable_metadata.%s must be %r, got %r"
+                    % (platform_name, flavour, expected_value, metadata.get(flavour))
+                )
+            if metadata.get(absent) is not None:
+                problems.append(
+                    "target %s executable_metadata.%s must be null on %s, got %r"
+                    % (platform_name, absent, os_name, metadata.get(absent))
+                )
+            if flavour == "posix-mode":
+                try:
+                    bits = int(metadata.get(flavour), 8)
+                except (TypeError, ValueError):
+                    bits = 0
+                if not bits & 0o111:
+                    problems.append(
+                        "target %s executable_metadata.%s %r marks neither executable as executable"
+                        % (platform_name, flavour, metadata.get(flavour))
+                    )
+            elif isinstance(executables, list):
+                for executable in executables:
+                    if not str(executable).endswith(expected_value):
+                        problems.append(
+                            "target %s executable %r is not a %s image"
+                            % (platform_name, executable, expected_value)
+                        )
+        installation = target.get("installation_evidence")
+        if not isinstance(installation, dict):
+            problems.append("target %s installation_evidence must be an object" % platform_name)
+        else:
+            state = installation.get("state")
+            if state not in ("verified", "not_run"):
+                problems.append(
+                    "target %s installation_evidence.state %r is neither verified nor not_run"
+                    % (platform_name, state)
+                )
+            if not isinstance(installation.get("command"), str) or not installation.get("command"):
+                problems.append(
+                    "target %s installation_evidence must record the command it ran" % platform_name
+                )
+            if state == "verified":
+                if not is_digest(installation.get("sha256")):
+                    problems.append(
+                        "target %s installation_evidence is verified but records no 64-hex digest: %r"
+                        % (platform_name, installation.get("sha256"))
+                    )
+                if not isinstance(installation.get("output"), str) or not installation.get("output"):
+                    problems.append(
+                        "target %s installation_evidence is verified but records no output"
+                        % platform_name
+                    )
+            elif state == "not_run":
+                if not isinstance(installation.get("reason"), str) or not installation.get("reason"):
+                    problems.append(
+                        "target %s installation_evidence is not_run but records no reason"
+                        % platform_name
+                    )
+                if installation.get("sha256") is not None:
+                    problems.append(
+                        "target %s installation_evidence is not_run but records a digest"
+                        % platform_name
+                    )
         for kind in ("archive", "sbom"):
             block = target.get(kind)
             if not isinstance(block, dict):
@@ -530,7 +639,17 @@ def run(repo_root):
     not_run.append("building and hashing the three per-target archives (no release artifact is built in this workstream)")
     not_run.append("producing and hashing the per-target SBOMs")
     not_run.append("signing the release and each archive with the release key")
-    not_run.append("clean-user installation evidence from a signed artifact")
+    not_run.append(
+        "clean-user installation evidence from a signed artifact: every target records "
+        "installation_evidence.state = not_run with the command it would run"
+    )
+    for target in targets:
+        declared = (target.get("installation_evidence") or {}).get("state")
+        if declared == "verified" and (target.get("archive") or {}).get("state") != "built":
+            problems.append(
+                "honesty: target %s claims verified installation evidence while its archive is not built"
+                % target.get("platform")
+            )
     not_run.append("cargo test --locked -p axiom-graphd (the real release code; the Rust gate runs in the Docker lane, not here)")
 
     # --- negative legs: the same validator must catch each mutation -----------
@@ -578,6 +697,18 @@ def run(repo_root):
     def leg_i(candidate):
         candidate["release"]["publication"] = {"state": "published", "tag": "v%s" % version}
 
+    def leg_j(candidate):
+        candidate["release"]["targets"][0]["provenance"]["revision"] = "0" * 40
+
+    def leg_k(candidate):
+        candidate["release"]["targets"][1]["executable_metadata"]["posix-mode"] = "0644"
+
+    def leg_l(candidate):
+        candidate["release"]["targets"][0]["installation_evidence"] = {
+            "state": "verified",
+            "command": "axiom install --archive axiom-%s-windows-x64.zip" % version,
+        }
+
     catches("negative A (components carrying different revisions)", "same revision", leg_a)
     catches("negative B (a reintroduced bootstrap component)", "components must be exactly", leg_b)
     catches("negative C (a component version that disagrees)", "does not agree with the release version", leg_c)
@@ -587,6 +718,17 @@ def run(repo_root):
     catches("negative G (compatibility drifting from version.rs)", "version.rs", leg_g)
     catches("negative H (a tampered source digest)", "hashes to", leg_h)
     catches("negative I (published while nothing is built)", "published", leg_i)
+    catches("negative J (a target declaring a different revision)", "provenance revision", leg_j)
+    catches(
+        "negative K (executable metadata that marks nothing executable)",
+        "neither executable as executable",
+        leg_k,
+    )
+    catches(
+        "negative L (installation evidence claimed verified without a digest)",
+        "no 64-hex digest",
+        leg_l,
+    )
 
     return problems, not_run
 
@@ -608,7 +750,7 @@ def main(argv=None):
         "task": "E-048",
         "harness": "core_manifest",
         "positive_legs": 3,
-        "negative_legs": 9,
+        "negative_legs": 12,
         "manifest": MANIFEST_PATH,
         "host": "%s/%s" % (platform.system().lower(), platform.machine().lower()),
         "not_run": not_run,
@@ -626,8 +768,9 @@ def main(argv=None):
         print("FAIL: %d problem(s)" % len(problems))
         return 2
     print(
-        "ok: E-048 one core release carries axiom-graphd and axiom from the same version and revision; "
-        "3 positive legs hold and 9 negative legs were rejected as required"
+        "ok: E-048/V2-021 one core release carries axiom-graphd and axiom from the same version and "
+        "revision, with per-target provenance, executable metadata and honest installation evidence; "
+        "3 positive legs hold and 12 negative legs were rejected as required"
     )
     return 0
 

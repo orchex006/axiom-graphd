@@ -58,11 +58,12 @@ codes are consistent across the set:
   `graph-watch` / `graph-queue` module contracts. They do not link the Rust
   crates; the equivalent real-code command is recorded in each file and reported
   under `not_run`.
-* **The release manifest check (E-048).** `tests/core_manifest.py` is not a fault
+* **The release manifest check (E-048, V2-021).** `tests/core_manifest.py` is not a fault
 injection harness: it re-reads `release/core-manifest.json`, `Cargo.toml`,`crates/axiom/src/version.rs` and `crates/axiom-graphd/src/release.rs` and refuses a
 manifest that drifts from them, then reports signing, tagging, publishing, archive/SBOM
 hashing and clean-user installation evidence as `not_run` because the release gate stays
-closed.
+closed. It also checks per-target provenance, executable metadata and installation
+evidence (V2-021).
 * **Honest limitations.** The disk-full leg of F-018 is an injected fault because
   a real full filesystem needs a loopback/quota mount or an admin tool. F-022
   reports the host SQLite runtime and marks the WAL-reset baseline `not_run` when
