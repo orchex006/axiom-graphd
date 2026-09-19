@@ -36,6 +36,7 @@
 
 use graph_core::error::{AxiomError, ErrorCode};
 
+pub mod apply;
 pub mod markers;
 pub mod ownership;
 pub mod plan;
