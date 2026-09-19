@@ -26,6 +26,7 @@ did not.
 | F-022 | `tests/sqlite_migration.py` | SQLite upgrade, backup and restore |
 | E-048 | `tests/core_manifest.py` | one core release manifest: composition, provenance and publishability |
 | F-032 | `tests/bootstrap_e2e.py` | non-destructive multi-repository bootstrap update |
+| F-033 | `tests/update_e2e.py` | signed update check, apply and rollback across every component |
 
 ## Running
 
@@ -40,6 +41,7 @@ python tests/git_checkpoint.py
 python tests/sqlite_migration.py
 python tests/core_manifest.py
 python tests/bootstrap_e2e.py
+python tests/update_e2e.py
 ```
 
 Each accepts `--json-out PATH` to also write a machine-readable result. Exit
