@@ -440,7 +440,7 @@ impl ClaudeServer {
                 RULE_UNSUPPORTED_SYNTAX,
                 "the server entry is not a JSON object",
             )
-            .with_detail("component", name.to_owned()));
+            .with_detail("component", name));
         };
         let mut foreign = Vec::new();
         let mut unknown = Vec::new();
@@ -457,7 +457,7 @@ impl ClaudeServer {
                 "the entry uses a transport field that belongs to another host's schema",
             )
             .with_detail("config_key", foreign.join(","))
-            .with_detail("component", name.to_owned()));
+            .with_detail("component", name));
         }
         if !unknown.is_empty() {
             return Err(refuse(
@@ -465,7 +465,7 @@ impl ClaudeServer {
                 "the entry uses a field outside the native Claude MCP schema",
             )
             .with_detail("config_key", unknown.join(","))
-            .with_detail("component", name.to_owned()));
+            .with_detail("component", name));
         }
         let declared = object.get("type").and_then(Value::as_str);
         let url = object.get("url").and_then(Value::as_str);
@@ -475,7 +475,7 @@ impl ClaudeServer {
                 RULE_TRANSPORT_CONFLICT,
                 "the entry declares both a remote and a local transport",
             )
-            .with_detail("component", name.to_owned()));
+            .with_detail("component", name));
         }
         let server = match declared {
             None => {
@@ -483,7 +483,7 @@ impl ClaudeServer {
                     RULE_TRANSPORT_MISSING,
                     "the entry declares no transport type",
                 )
-                .with_detail("component", name.to_owned()));
+                .with_detail("component", name));
             }
             Some(HTTP_TRANSPORT) => {
                 let Some(url) = url else {
@@ -491,7 +491,7 @@ impl ClaudeServer {
                         RULE_TRANSPORT_MISSING,
                         "the entry declares the http transport without a url",
                     )
-                    .with_detail("component", name.to_owned()));
+                    .with_detail("component", name));
                 };
                 Self::http(name, url)
             }
@@ -501,7 +501,7 @@ impl ClaudeServer {
                         RULE_TRANSPORT_MISSING,
                         "the entry declares the stdio transport without a command",
                     )
-                    .with_detail("component", name.to_owned()));
+                    .with_detail("component", name));
                 };
                 let mut args = Vec::new();
                 if let Some(list) = object.get("args") {
@@ -510,7 +510,7 @@ impl ClaudeServer {
                             RULE_UNSUPPORTED_SYNTAX,
                             "args must be an array of strings",
                         )
-                        .with_detail("component", name.to_owned()));
+                        .with_detail("component", name));
                     };
                     for value in list {
                         let Some(text) = value.as_str() else {
@@ -518,7 +518,7 @@ impl ClaudeServer {
                                 RULE_UNSUPPORTED_SYNTAX,
                                 "args must be an array of strings",
                             )
-                            .with_detail("component", name.to_owned()));
+                            .with_detail("component", name));
                         };
                         args.push(text.to_owned());
                     }
@@ -530,8 +530,8 @@ impl ClaudeServer {
                     RULE_TRANSPORT_UNSUPPORTED,
                     "the entry declares a transport type this adapter does not plan for",
                 )
-                .with_detail("actual", other.to_owned())
-                .with_detail("component", name.to_owned()));
+                .with_detail("actual", other)
+                .with_detail("component", name));
             }
         };
         server.validate()?;
@@ -583,7 +583,7 @@ pub fn resolve_scope(value: &str) -> Result<ClaudeScope, AxiomError> {
             RULE_UNSUPPORTED_SCOPE,
             "the requested scope is not one this adapter plans for",
         )
-        .with_detail("actual", value.to_owned())
+        .with_detail("actual", value)
         .with_detail(
             "expected",
             ClaudeScope::ALL

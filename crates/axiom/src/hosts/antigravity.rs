@@ -284,7 +284,7 @@ pub fn resolve_scope(value: &str) -> Result<AgyScope, AxiomError> {
             RULE_UNSUPPORTED_SCOPE,
             "the requested scope is not one this adapter plans for",
         )
-        .with_detail("actual", value.to_owned())
+        .with_detail("actual", value)
         .with_detail(
             "expected",
             AgyScope::ALL
@@ -381,7 +381,7 @@ pub fn certify_skills_dir(
             RULE_DEPRECATED_PATH_REFUSED,
             "the requested skills location is the deprecated AGY layout",
         )
-        .with_detail("actual", candidate.to_owned())
+        .with_detail("actual", candidate)
         .with_detail("expected", active)
         .with_detail("component", MANAGED_SERVER));
     }
@@ -389,7 +389,7 @@ pub fn certify_skills_dir(
         RULE_LOCATION_NOT_CERTIFIED,
         "the requested skills location is not one this adapter certifies",
     )
-    .with_detail("actual", candidate.to_owned())
+    .with_detail("actual", candidate)
     .with_detail("expected", active)
     .with_detail("component", MANAGED_SERVER))
 }
@@ -412,7 +412,7 @@ pub fn certify_rules_dir(
         RULE_LOCATION_NOT_CERTIFIED,
         "the requested rules location is not one this adapter certifies",
     )
-    .with_detail("actual", candidate.to_owned())
+    .with_detail("actual", candidate)
     .with_detail("expected", active)
     .with_detail("component", MANAGED_SERVER))
 }
@@ -578,7 +578,7 @@ impl AgyServer {
                 RULE_UNSUPPORTED_SYNTAX,
                 "the server entry is not a JSON object",
             )
-            .with_detail("component", name.to_owned()));
+            .with_detail("component", name));
         };
         let mut foreign = Vec::new();
         let mut credentials = Vec::new();
@@ -601,7 +601,7 @@ impl AgyServer {
                 "the entry uses a transport field that belongs to another host's schema",
             )
             .with_detail("config_key", foreign.join(","))
-            .with_detail("component", name.to_owned()));
+            .with_detail("component", name));
         }
         if !credentials.is_empty() {
             return Err(refuse(
@@ -609,7 +609,7 @@ impl AgyServer {
                 "the entry carries a literal credential field",
             )
             .with_detail("config_key", credentials.join(","))
-            .with_detail("component", name.to_owned()));
+            .with_detail("component", name));
         }
         if !unknown.is_empty() {
             return Err(refuse(
@@ -617,7 +617,7 @@ impl AgyServer {
                 "the entry uses a field outside the native AGY MCP schema",
             )
             .with_detail("config_key", unknown.join(","))
-            .with_detail("component", name.to_owned()));
+            .with_detail("component", name));
         }
         let server_url = object.get(SERVER_URL_FIELD);
         let command = object.get(COMMAND_FIELD);
@@ -632,12 +632,12 @@ impl AgyServer {
                 RULE_TRANSPORT_CONFLICT,
                 "the entry declares more than one transport",
             )
-            .with_detail("component", name.to_owned()));
+            .with_detail("component", name));
         }
         if present == 0 {
             return Err(
                 refuse(RULE_TRANSPORT_MISSING, "the entry declares no transport")
-                    .with_detail("component", name.to_owned()),
+                    .with_detail("component", name),
             );
         }
         let server = if let Some(value) = server_url {
@@ -654,7 +654,7 @@ impl AgyServer {
             let Some(value) = command else {
                 return Err(
                     refuse(RULE_TRANSPORT_MISSING, "the entry declares no transport")
-                        .with_detail("component", name.to_owned()),
+                        .with_detail("component", name),
                 );
             };
             if let Some(declared) = declared {
@@ -672,7 +672,7 @@ impl AgyServer {
                         RULE_UNSUPPORTED_SYNTAX,
                         "args must be an array of strings",
                     )
-                    .with_detail("component", name.to_owned()));
+                    .with_detail("component", name));
                 };
                 for value in list {
                     let Some(text) = value.as_str() else {
@@ -680,7 +680,7 @@ impl AgyServer {
                             RULE_UNSUPPORTED_SYNTAX,
                             "args must be an array of strings",
                         )
-                        .with_detail("component", name.to_owned()));
+                        .with_detail("component", name));
                     };
                     args.push(text.to_owned());
                 }
@@ -733,9 +733,9 @@ fn mismatch(name: &str, declared: &str, field: &str) -> AxiomError {
         RULE_TRANSPORT_FIELD_MISMATCH,
         "the declared transport type and the transport field disagree",
     )
-    .with_detail("actual", declared.to_owned())
-    .with_detail("config_key", field.to_owned())
-    .with_detail("component", name.to_owned())
+    .with_detail("actual", declared)
+    .with_detail("config_key", field)
+    .with_detail("component", name)
 }
 
 fn unusable(name: &str, field: &str) -> AxiomError {
@@ -743,8 +743,8 @@ fn unusable(name: &str, field: &str) -> AxiomError {
         RULE_UNSUPPORTED_SYNTAX,
         "the transport field must be a string",
     )
-    .with_detail("config_key", field.to_owned())
-    .with_detail("component", name.to_owned())
+    .with_detail("config_key", field)
+    .with_detail("component", name)
 }
 fn parse_document(text: &str) -> Result<Map<String, Value>, AxiomError> {
     if text.len() > MAX_CONFIG_BYTES {

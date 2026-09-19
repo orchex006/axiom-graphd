@@ -158,8 +158,8 @@ impl HostVersion {
     #[must_use]
     pub fn parse(text: &str) -> Option<Self> {
         let bytes = text.as_bytes();
-        for start in 0..bytes.len() {
-            if !bytes[start].is_ascii_digit() {
+        for (start, byte) in bytes.iter().enumerate() {
+            if !byte.is_ascii_digit() {
                 continue;
             }
             if let Some(version) = Self::parse_at(text, start) {

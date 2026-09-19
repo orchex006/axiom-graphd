@@ -314,7 +314,7 @@ pub fn resolve_scope(value: &str) -> Result<GeminiScope, AxiomError> {
             RULE_UNSUPPORTED_SCOPE,
             "the requested scope is not one this adapter plans for",
         )
-        .with_detail("actual", value.to_owned())
+        .with_detail("actual", value)
         .with_detail(
             "expected",
             GeminiScope::ALL
@@ -347,7 +347,7 @@ pub fn verify_policy_path(
         RULE_POLICY_PATH_NOT_CERTIFIED,
         "the policy path is not the documented location for this scope",
     )
-    .with_detail("actual", candidate.to_owned())
+    .with_detail("actual", candidate)
     .with_detail("expected", documented)
     .with_detail("component", MANAGED_SERVER))
 }
@@ -538,7 +538,7 @@ impl GeminiServer {
                 RULE_UNSUPPORTED_SYNTAX,
                 "the server entry is not a JSON object",
             )
-            .with_detail("component", name.to_owned()));
+            .with_detail("component", name));
         };
         let mut foreign = Vec::new();
         let mut unknown = Vec::new();
@@ -555,7 +555,7 @@ impl GeminiServer {
                 "the entry uses a transport field that belongs to another host's schema",
             )
             .with_detail("config_key", foreign.join(","))
-            .with_detail("component", name.to_owned()));
+            .with_detail("component", name));
         }
         if !unknown.is_empty() {
             return Err(refuse(
@@ -563,7 +563,7 @@ impl GeminiServer {
                 "the entry uses a field outside the native Gemini MCP schema",
             )
             .with_detail("config_key", unknown.join(","))
-            .with_detail("component", name.to_owned()));
+            .with_detail("component", name));
         }
         let http_url = object.get(HTTP_URL_FIELD);
         let sse_url = object.get(SSE_URL_FIELD);
@@ -575,12 +575,12 @@ impl GeminiServer {
                 RULE_TRANSPORT_CONFLICT,
                 "the entry declares more than one transport",
             )
-            .with_detail("component", name.to_owned()));
+            .with_detail("component", name));
         }
         if present == 0 {
             return Err(
                 refuse(RULE_TRANSPORT_MISSING, "the entry declares no transport")
-                    .with_detail("component", name.to_owned()),
+                    .with_detail("component", name),
             );
         }
         let server = if let Some(value) = http_url {
@@ -607,7 +607,7 @@ impl GeminiServer {
             let Some(value) = command else {
                 return Err(
                     refuse(RULE_TRANSPORT_MISSING, "the entry declares no transport")
-                        .with_detail("component", name.to_owned()),
+                        .with_detail("component", name),
                 );
             };
             if let Some(declared) = declared {
@@ -625,7 +625,7 @@ impl GeminiServer {
                         RULE_UNSUPPORTED_SYNTAX,
                         "args must be an array of strings",
                     )
-                    .with_detail("component", name.to_owned()));
+                    .with_detail("component", name));
                 };
                 for value in list {
                     let Some(text) = value.as_str() else {
@@ -633,7 +633,7 @@ impl GeminiServer {
                             RULE_UNSUPPORTED_SYNTAX,
                             "args must be an array of strings",
                         )
-                        .with_detail("component", name.to_owned()));
+                        .with_detail("component", name));
                     };
                     args.push(text.to_owned());
                 }
@@ -667,9 +667,9 @@ fn mismatch(name: &str, declared: &str, field: &str) -> AxiomError {
         RULE_TRANSPORT_FIELD_MISMATCH,
         "the declared transport type and the transport field disagree",
     )
-    .with_detail("actual", declared.to_owned())
-    .with_detail("config_key", field.to_owned())
-    .with_detail("component", name.to_owned())
+    .with_detail("actual", declared)
+    .with_detail("config_key", field)
+    .with_detail("component", name)
 }
 
 fn unusable(name: &str, field: &str) -> AxiomError {
@@ -677,8 +677,8 @@ fn unusable(name: &str, field: &str) -> AxiomError {
         RULE_UNSUPPORTED_SYNTAX,
         "the transport field must be a string",
     )
-    .with_detail("config_key", field.to_owned())
-    .with_detail("component", name.to_owned())
+    .with_detail("config_key", field)
+    .with_detail("component", name)
 }
 
 fn parse_document(text: &str) -> Result<Map<String, Value>, AxiomError> {
