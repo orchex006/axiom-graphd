@@ -77,7 +77,8 @@ impl ContentHash {
     }
 
     /// The digest of a byte sequence, as the lowercase hex this type accepts.
-    fn of_bytes(bytes: &[u8]) -> Self {
+    #[must_use]
+    pub fn of_bytes(bytes: &[u8]) -> Self {
         let digest = Sha256::digest(bytes);
         let mut text = String::with_capacity(64);
         for byte in digest {
@@ -976,7 +977,7 @@ impl MigrationPlan {
 ///
 /// The encoding is `len:bytes\n`, so no field value can be confused with a
 /// separator and two different plans cannot encode to the same bytes.
-fn write_field(out: &mut String, value: &str) {
+pub(crate) fn write_field(out: &mut String, value: &str) {
     let _ = writeln!(out, "{}:{}", value.len(), value);
 }
 
@@ -1080,7 +1081,7 @@ fn describe(decision: &DiscoveryDecision) -> String {
 /// characters, and drawn from `[a-z0-9._-]` after a lowercase-or-digit first
 /// character. This is the seam `contracts/cross-platform-v2.md` CP-03 shares
 /// with the platform path key.
-fn is_portable_id(value: &str) -> bool {
+pub(crate) fn is_portable_id(value: &str) -> bool {
     if value.is_empty() || value.len() > 128 {
         return false;
     }
