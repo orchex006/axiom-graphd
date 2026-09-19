@@ -19,6 +19,7 @@ graph-core.workspace = true
 graph-export.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+getrandom.workspace = true
 
 [dev-dependencies]
 # The daemon is the other half of the core release; tests compare both halves
