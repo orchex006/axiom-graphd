@@ -118,6 +118,54 @@ a permission the document does not hold, a literal credential and a credential i
 the URL, a relative or shell-carrying stdio command, a document outside the
 schema, and an insert plan meeting an already-declared server.
 
+## Gemini CLI (E-029)
+
+`crates/axiom/src/hosts/gemini.rs`.
+
+| Item | Value | Source |
+| --- | --- | --- |
+| user config | `~/.gemini/settings.json` | S18 |
+| user instruction | `~/.gemini/GEMINI.md` | S17 |
+| project config | `<project>/.gemini/settings.json` | S18 |
+| project instruction | `<project>/GEMINI.md` | S17 |
+| policy directory | `<root>/.gemini/policies` | S17/S18 |
+| MCP object | `mcpServers` | S18 |
+| Streamable HTTP field | `httpUrl` | S18 |
+| SSE field | `url` | S18 |
+
+**The two remote transports are not interchangeable.** Gemini CLI is the one host
+that names Streamable HTTP and SSE with *different fields* - `httpUrl` and `url`
+(S18). `GeminiTransport` renders each with its own field and never with the
+other, and a declared `type` that disagrees with the field actually present is
+refused (`transport-field-mismatch`) instead of being written and silently
+ignored by the host.
+
+**The policy path is certified, not guessed.** `verify_policy_path` refuses any
+candidate that is not the documented policy directory for the planned scope
+(`policy-path-not-certified`), because a plan that writes where the host never
+reads is a plan that reports success and changes nothing. The recorded policy
+location comes from the reviewed seeds (S17/S18) and is *not* independently
+confirmed against an installed host on this machine - see the unrun section
+below.
+
+**JSON is merged by value**, with the same recorded key-order/indentation
+normalisation as the Claude adapter; every value outside the managed entry
+survives.
+
+### Tests
+
+```bash
+cargo test -p axiom hosts::gemini
+```
+
+Positive: each remote transport renders its own field and parses back to the same
+server; the scopes pair a settings file with an instruction file and a policy
+directory; appending preserves every other server. Negative: the two remote
+transports exchanged, a foreign transport field, an unsupported scope, an
+uncertified policy path, a literal credential and a credential in the URL, a
+relative or shell-carrying stdio command, a document outside the schema, and an
+insert plan meeting an already-declared server.
+
 ## Platform coverage and unrun checks (all adapters)
 
 - Exercised in the pinned Linux container (`axiom-rust-git:1.85`). `cargo test`
