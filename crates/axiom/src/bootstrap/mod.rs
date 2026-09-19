@@ -36,6 +36,7 @@
 
 use graph_core::error::{AxiomError, ErrorCode};
 
+pub mod markers;
 pub mod repos;
 
 /// Schema version of the bootstrap documents this build writes.
