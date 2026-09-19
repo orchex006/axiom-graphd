@@ -1056,7 +1056,10 @@ fn trim_root(root: &str) -> String {
 }
 
 /// Join path segments with the host separator.
-fn under(root: &str, segments: &[&str]) -> String {
+///
+/// Crate-visible so `install::credentials` builds its directory the same way
+/// the planner builds the version and staging trees (one path builder).
+pub(crate) fn under(root: &str, segments: &[&str]) -> String {
     let mut path = PathBuf::from(root);
     for segment in segments {
         path.push(segment);
