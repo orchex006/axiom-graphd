@@ -40,7 +40,7 @@ use serde::{Deserialize, Serialize};
 use crate::discovery::{ServiceKind, INSTALLABLE_COMPONENTS};
 use crate::install::plan::{under, InstallScope};
 use crate::service::{
-    is_under, Consent, InstalledService, RestartPolicy, ServiceExec, ServiceOperation,
+    is_under, xml_escape, Consent, InstalledService, RestartPolicy, ServiceExec, ServiceOperation,
     StartupTrigger, SERVICE_DIRECTORY, SERVICE_LOG_DIRECTORY,
 };
 
@@ -263,22 +263,6 @@ pub fn task_name(component: &str) -> Result<String, AxiomError> {
         )
     })?;
     Ok(format!("{TASK_NAME_PREFIX}{component}"))
-}
-
-/// Escape the five XML metacharacters.
-fn xml_escape(value: &str) -> String {
-    let mut out = String::with_capacity(value.len());
-    for ch in value.chars() {
-        match ch {
-            '&' => out.push_str("&amp;"),
-            '<' => out.push_str("&lt;"),
-            '>' => out.push_str("&gt;"),
-            '"' => out.push_str("&quot;"),
-            '\'' => out.push_str("&apos;"),
-            _ => out.push(ch),
-        }
-    }
-    out
 }
 
 /// Render one command-line argument using the standard Windows rule: quote an

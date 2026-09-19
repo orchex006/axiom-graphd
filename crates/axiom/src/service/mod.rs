@@ -25,6 +25,7 @@ use serde::{Deserialize, Serialize};
 use crate::discovery::ServiceKind;
 
 pub mod linux;
+pub mod macos;
 pub mod windows;
 
 /// Directory, relative to the install root, that holds service definitions and
@@ -303,4 +304,21 @@ pub(crate) fn is_under(parent: &str, child: &str) -> bool {
     child.len() > parent.len()
         && child.starts_with(&parent)
         && child.as_bytes()[parent.len()] == b'/'
+}
+
+/// Escape the five XML metacharacters.
+#[must_use]
+pub(crate) fn xml_escape(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    for ch in value.chars() {
+        match ch {
+            '&' => out.push_str("&amp;"),
+            '<' => out.push_str("&lt;"),
+            '>' => out.push_str("&gt;"),
+            '"' => out.push_str("&quot;"),
+            '\'' => out.push_str("&apos;"),
+            _ => out.push(ch),
+        }
+    }
+    out
 }
