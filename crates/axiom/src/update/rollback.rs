@@ -83,7 +83,12 @@ impl RollbackScope {
     /// Every scope, for contract tests.
     #[must_use]
     pub const fn all() -> &'static [RollbackScope] {
-        &[Self::FullSet, Self::BinaryOnly, Self::SchemaOnly, Self::PolicyOnly]
+        &[
+            Self::FullSet,
+            Self::BinaryOnly,
+            Self::SchemaOnly,
+            Self::PolicyOnly,
+        ]
     }
 }
 
@@ -218,34 +223,52 @@ pub fn plan_rollback(
         return Err(refuse("backup_not_verified", &snapshot.backup_digest));
     }
     if !is_digest(&snapshot.backup_digest) {
-        return Err(refuse("backup_digest_not_a_digest", &snapshot.backup_digest));
+        return Err(refuse(
+            "backup_digest_not_a_digest",
+            &snapshot.backup_digest,
+        ));
     }
     if snapshot.set.db_schema > current.db_schema {
-        return Err(refuse("snapshot_schema_newer_than_install", &snapshot.set.db_schema.to_string()));
+        return Err(refuse(
+            "snapshot_schema_newer_than_install",
+            &snapshot.set.db_schema.to_string(),
+        ));
     }
     if snapshot.set.policy > current.policy {
-        return Err(refuse("snapshot_policy_newer_than_install", &snapshot.set.policy.to_string())
-            .with_detail("expected", current.policy.to_string())
-            .with_detail("actual", snapshot.set.policy.to_string()));
+        return Err(refuse(
+            "snapshot_policy_newer_than_install",
+            &snapshot.set.policy.to_string(),
+        )
+        .with_detail("expected", current.policy.to_string())
+        .with_detail("actual", snapshot.set.policy.to_string()));
     }
     if snapshot.set.policy < compatibility.policy_floor {
-        return Err(refuse("policy_downgrade_not_supported", &snapshot.set.policy.to_string())
-            .with_detail("required_version", compatibility.policy_floor.to_string()));
+        return Err(refuse(
+            "policy_downgrade_not_supported",
+            &snapshot.set.policy.to_string(),
+        )
+        .with_detail("required_version", compatibility.policy_floor.to_string()));
     }
     if !compatibility.speaks(&snapshot.set.binary, snapshot.set.db_schema) {
-        return Err(
-            refuse("snapshot_binary_and_schema_incompatible", &snapshot.set.binary)
-                .with_detail("schema", snapshot.set.db_schema.to_string()),
-        );
+        return Err(refuse(
+            "snapshot_binary_and_schema_incompatible",
+            &snapshot.set.binary,
+        )
+        .with_detail("schema", snapshot.set.db_schema.to_string()));
     }
     if !compatibility.speaks(&current.binary, current.db_schema) {
-        return Err(refuse("installed_binary_and_schema_incompatible", &current.binary)
-            .with_detail("schema", current.db_schema.to_string()));
+        return Err(
+            refuse("installed_binary_and_schema_incompatible", &current.binary)
+                .with_detail("schema", current.db_schema.to_string()),
+        );
     }
     match compatibility.downgrade_path(current.db_schema, snapshot.set.db_schema) {
         DowngradePath::Reversible => {}
         DowngradePath::Irreversible(schema) => {
-            return Err(refuse("schema_downgrade_not_reversible", &schema.to_string()))
+            return Err(refuse(
+                "schema_downgrade_not_reversible",
+                &schema.to_string(),
+            ))
         }
         DowngradePath::Missing(schema) => {
             return Err(refuse("schema_downgrade_path_missing", &schema.to_string()))
@@ -286,7 +309,6 @@ fn refuse(rule: &str, observed: &str) -> AxiomError {
     .with_detail("rule", rule)
     .with_detail("observed", observed)
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -381,7 +403,12 @@ mod tests {
             backup_digest: DIGEST.to_string(),
             backup_verified: true,
         };
-        let plan = plan_rollback(&installed(), &snapshot, RollbackScope::FullSet, &compatibility())
+        // The base fixture has the old binary read schema 1 only. A rollback that
+        // keeps schema 2 is legal only when this release set says the old binary
+        // speaks 2, so the fixture declares that rather than the plan weakening.
+        let mut speaks_two = compatibility();
+        speaks_two.releases[0].schema_max = 2;
+        let plan = plan_rollback(&installed(), &snapshot, RollbackScope::FullSet, &speaks_two)
             .expect("a same-schema rollback is planned");
         assert_eq!(
             plan.steps,
@@ -422,7 +449,10 @@ mod tests {
         )
         .expect_err("an irreversible step must block the downgrade");
         assert_eq!(rule(&error), Some("schema_downgrade_not_reversible"));
-        assert_eq!(error.details().get("observed").map(String::as_str), Some("2"));
+        assert_eq!(
+            error.details().get("observed").map(String::as_str),
+            Some("2")
+        );
 
         let mut missing = compatibility();
         missing.migrations.clear();
@@ -455,7 +485,7 @@ mod tests {
     fn an_old_binary_paired_with_a_schema_it_cannot_read_is_refused() {
         let mut narrow = compatibility();
         narrow.releases[0].schema_max = 1;
-        let snapshot = Snapshot {
+        let previous = Snapshot {
             set: VersionSet {
                 binary: OLD.to_string(),
                 db_schema: 2,
@@ -464,19 +494,22 @@ mod tests {
             backup_digest: DIGEST.to_string(),
             backup_verified: true,
         };
-        let error = plan_rollback(&installed(), &snapshot, RollbackScope::FullSet, &narrow)
+        let error = plan_rollback(&installed(), &previous, RollbackScope::FullSet, &narrow)
             .expect_err("an old binary must not be paired with a schema it cannot read");
-        assert_eq!(rule(&error), Some("snapshot_binary_and_schema_incompatible"));
         assert_eq!(
-            error.details().get("schema").map(String::as_str),
-            Some("2")
+            rule(&error),
+            Some("snapshot_binary_and_schema_incompatible")
         );
+        assert_eq!(error.details().get("schema").map(String::as_str), Some("2"));
 
         let mut broken = compatibility();
         broken.releases[1].schema_min = 3;
         let error = plan_rollback(&installed(), &snapshot(), RollbackScope::FullSet, &broken)
             .expect_err("an installed binary must speak its own schema");
-        assert_eq!(rule(&error), Some("installed_binary_and_schema_incompatible"));
+        assert_eq!(
+            rule(&error),
+            Some("installed_binary_and_schema_incompatible")
+        );
     }
 
     #[test]
@@ -522,16 +555,26 @@ mod tests {
             backup_verified: false,
             ..snapshot()
         };
-        let error = plan_rollback(&installed(), &unverified, RollbackScope::FullSet, &compatibility())
-            .expect_err("an unverified backup must be refused");
+        let error = plan_rollback(
+            &installed(),
+            &unverified,
+            RollbackScope::FullSet,
+            &compatibility(),
+        )
+        .expect_err("an unverified backup must be refused");
         assert_eq!(rule(&error), Some("backup_not_verified"));
 
         let malformed = Snapshot {
             backup_digest: "not-a-digest".to_string(),
             ..snapshot()
         };
-        let error = plan_rollback(&installed(), &malformed, RollbackScope::FullSet, &compatibility())
-            .expect_err("a malformed backup digest must be refused");
+        let error = plan_rollback(
+            &installed(),
+            &malformed,
+            RollbackScope::FullSet,
+            &compatibility(),
+        )
+        .expect_err("a malformed backup digest must be refused");
         assert_eq!(rule(&error), Some("backup_digest_not_a_digest"));
 
         let ahead = Snapshot {
@@ -542,8 +585,13 @@ mod tests {
             },
             ..snapshot()
         };
-        let error = plan_rollback(&installed(), &ahead, RollbackScope::FullSet, &compatibility())
-            .expect_err("a snapshot schema newer than the install is not a rollback");
+        let error = plan_rollback(
+            &installed(),
+            &ahead,
+            RollbackScope::FullSet,
+            &compatibility(),
+        )
+        .expect_err("a snapshot schema newer than the install is not a rollback");
         assert_eq!(rule(&error), Some("snapshot_schema_newer_than_install"));
     }
 
@@ -570,13 +618,12 @@ mod tests {
         assert!(!policy.speaks(OLD, 2));
         assert!(policy.speaks(NEW, 1));
         assert!(policy.speaks(NEW, 2));
-        assert!(!policy.speaks("0.2.0", 1), "an undeclared release speaks nothing");
-        assert_eq!(
-            policy.downgrade_path(2, 1),
-            DowngradePath::Reversible
+        assert!(
+            !policy.speaks("0.2.0", 1),
+            "an undeclared release speaks nothing"
         );
+        assert_eq!(policy.downgrade_path(2, 1), DowngradePath::Reversible);
         assert_eq!(policy.downgrade_path(1, 1), DowngradePath::Reversible);
         assert_eq!(policy.downgrade_path(2, 0), DowngradePath::Missing(1));
     }
 }
-

@@ -250,10 +250,8 @@ impl SupportBundle {
 /// [`MAX_ENTRIES`] entries.
 pub fn build(summary: &BundleSummary, inputs: &[Diagnostic]) -> Result<SupportBundle, AxiomError> {
     if inputs.len() > MAX_ENTRIES {
-        return Err(
-            refuse("too_many_entries", &inputs.len().to_string())
-                .with_detail("limit", MAX_ENTRIES.to_string()),
-        );
+        return Err(refuse("too_many_entries", &inputs.len().to_string())
+            .with_detail("limit", MAX_ENTRIES.to_string()));
     }
 
     let mut seen: BTreeSet<&str> = BTreeSet::new();
@@ -388,7 +386,7 @@ mod tests {
         error.details().get("rule").map(String::as_str)
     }
 
-    fn detail(error: &AxiomError, key: &str) -> Option<&str> {
+    fn detail<'a>(error: &'a AxiomError, key: &'a str) -> Option<&'a str> {
         error.details().get(key).map(String::as_str)
     }
 
@@ -422,11 +420,10 @@ mod tests {
             let failure = self.fail_write.borrow().clone();
             if let Some(needle) = failure {
                 if path.contains(&needle) {
-                    return Err(AxiomError::new(
-                        ErrorCode::Internal,
-                        "the fixture write failed",
-                    )
-                    .with_detail("observed", path));
+                    return Err(
+                        AxiomError::new(ErrorCode::Internal, "the fixture write failed")
+                            .with_detail("observed", path),
+                    );
                 }
             }
             self.files
@@ -480,7 +477,10 @@ mod tests {
 
     #[test]
     fn secrets_in_content_are_scrubbed_flagged_and_never_rendered() {
-        let inputs = [Diagnostic::new("install-log.txt", "token=abc123\ninstalled")];
+        let inputs = [Diagnostic::new(
+            "install-log.txt",
+            "token=abc123\ninstalled",
+        )];
         let bundle = build(&summary(), &inputs).expect("build");
         let entry = &bundle.manifest().entries[0];
 

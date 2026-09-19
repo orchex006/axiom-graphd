@@ -40,8 +40,8 @@
 //! creation, release publication and signing under an authorized maintenance
 //! workflow, so no function in this module can perform them.
 
-pub mod rust_binary;
-pub mod python_env;
-pub mod verify;
-pub mod rollback;
 pub mod policy;
+pub mod python_env;
+pub mod rollback;
+pub mod rust_binary;
+pub mod verify;

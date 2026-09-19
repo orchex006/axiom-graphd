@@ -177,11 +177,7 @@ impl BinaryActivation {
     /// Refuses a component outside [`COMPONENTS`], and an executable or root that
     /// is not a usable path segment, because a pointer that names another
     /// component's binary is a launch-target bug, not a typo to absorb.
-    pub fn new(
-        root: &str,
-        component: &str,
-        executable: &str,
-    ) -> Result<Self, AxiomError> {
+    pub fn new(root: &str, component: &str, executable: &str) -> Result<Self, AxiomError> {
         if !COMPONENTS.contains(&component) {
             return Err(refuse("component_not_in_core_release", component));
         }
@@ -248,7 +244,11 @@ impl BinaryActivation {
     ///
     /// Refuses a version that is not a safe path segment.
     pub fn binary_path(&self, version: &str) -> Result<String, AxiomError> {
-        Ok(format!("{}/{}", self.version_dir(version)?, self.executable))
+        Ok(format!(
+            "{}/{}",
+            self.version_dir(version)?,
+            self.executable
+        ))
     }
 
     /// Every path an activation of `staged` may write, in order.
@@ -262,10 +262,7 @@ impl BinaryActivation {
     /// Refuses a version that is not a safe path segment.
     pub fn plan_writes(&self, staged: &StagedVersion) -> Result<Vec<String>, AxiomError> {
         validate_version(&staged.version)?;
-        Ok(vec![
-            self.pointer_temp_path(),
-            self.pointer_path(),
-        ])
+        Ok(vec![self.pointer_temp_path(), self.pointer_path()])
     }
 
     /// Read the pointer.
@@ -284,22 +281,15 @@ impl BinaryActivation {
         }
         let bytes = fs.read(&path)?;
         if bytes.len() > MAX_POINTER_BYTES {
-            return Err(refuse("pointer_too_large", &path).with_detail(
-                "limit",
-                MAX_POINTER_BYTES.to_string(),
-            ));
+            return Err(refuse("pointer_too_large", &path)
+                .with_detail("limit", MAX_POINTER_BYTES.to_string()));
         }
-        let text = std::str::from_utf8(&bytes)
-            .map_err(|_| refuse("pointer_not_utf8", &path))?;
+        let text = std::str::from_utf8(&bytes).map_err(|_| refuse("pointer_not_utf8", &path))?;
         let record: ActiveInstall = serde_json::from_str(text)
             .map_err(|_| refuse("pointer_not_a_pointer_record", &path))?;
         if record.schema_version != POINTER_SCHEMA_VERSION {
-            return Err(
-                refuse("pointer_schema_not_supported", &path).with_detail(
-                    "required_version",
-                    POINTER_SCHEMA_VERSION.to_string(),
-                ),
-            );
+            return Err(refuse("pointer_schema_not_supported", &path)
+                .with_detail("required_version", POINTER_SCHEMA_VERSION.to_string()));
         }
         if record.component != self.component {
             return Err(refuse("pointer_names_another_component", &path)
@@ -347,10 +337,7 @@ impl BinaryActivation {
     ) -> Result<Activation, AxiomError> {
         validate_version(&staged.version)?;
         if !staged.smoke_checked {
-            return Err(refuse(
-                "payload_not_smoke_checked",
-                &staged.version,
-            ));
+            return Err(refuse("payload_not_smoke_checked", &staged.version));
         }
         if !is_digest(&staged.sha256) {
             return Err(refuse("staged_digest_not_a_digest", &staged.sha256));
@@ -415,8 +402,9 @@ impl BinaryActivation {
 /// Accept a version only when it is one safe path segment.
 fn validate_version(version: &str) -> Result<(), AxiomError> {
     if version.len() > MAX_VERSION_LEN {
-        return Err(refuse("version_too_long", version)
-            .with_detail("limit", MAX_VERSION_LEN.to_string()));
+        return Err(
+            refuse("version_too_long", version).with_detail("limit", MAX_VERSION_LEN.to_string())
+        );
     }
     if !is_safe_segment(version) {
         return Err(refuse("version_not_a_path_segment", version));
@@ -434,9 +422,7 @@ fn is_safe_segment(value: &str) -> bool {
     if !first.is_ascii_alphanumeric() {
         return false;
     }
-    bytes.all(|byte| {
-        byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'+' | b'-' | b'_')
-    })
+    bytes.all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'+' | b'-' | b'_'))
 }
 
 /// The one refusal shape of this module.
@@ -498,7 +484,10 @@ mod tests {
 
         fn write(&self, path: &str, bytes: &[u8]) -> Result<(), AxiomError> {
             if self.fail_write.borrow().as_deref() == Some(path) {
-                return Err(AxiomError::new(ErrorCode::Internal, "the fixture write fails"));
+                return Err(AxiomError::new(
+                    ErrorCode::Internal,
+                    "the fixture write fails",
+                ));
             }
             self.writes.borrow_mut().push(path.to_string());
             self.files
@@ -509,7 +498,10 @@ mod tests {
 
         fn rename(&self, from: &str, to: &str) -> Result<(), AxiomError> {
             if self.fail_rename_to.borrow().as_deref() == Some(to) {
-                return Err(AxiomError::new(ErrorCode::Internal, "the fixture rename fails"));
+                return Err(AxiomError::new(
+                    ErrorCode::Internal,
+                    "the fixture rename fails",
+                ));
             }
             let bytes = self.get(from).ok_or_else(|| {
                 AxiomError::new(ErrorCode::NotFound, "the fixture source is missing")
@@ -556,7 +548,9 @@ mod tests {
         assert_eq!(a.launch_target(&fs).expect("readable"), None);
 
         let staging = stage(&fs, &a, V1, V1_BYTES);
-        let first = a.activate(&fs, &staging).expect("the first activation succeeds");
+        let first = a
+            .activate(&fs, &staging)
+            .expect("the first activation succeeds");
         assert_eq!(first.previous, None);
         assert!(first.changed_target());
         assert_eq!(
@@ -572,11 +566,16 @@ mod tests {
         assert_eq!(second.active.version, V2);
 
         let target = a.launch_target(&fs).expect("readable").expect("active");
-        assert_eq!(target, format!("install/{VERSIONS_DIR}/axiom-graphd/{V2}/axiom-graphd{EXE_SUFFIX}"));
-        assert!(a
-            .binary_path(V1)
-            .expect("a safe version")
-            .starts_with("install/"), "the previous payload stays on disk");
+        assert_eq!(
+            target,
+            format!("install/{VERSIONS_DIR}/axiom-graphd/{V2}/axiom-graphd{EXE_SUFFIX}")
+        );
+        assert!(
+            a.binary_path(V1)
+                .expect("a safe version")
+                .starts_with("install/"),
+            "the previous payload stays on disk"
+        );
     }
 
     #[test]
@@ -584,7 +583,8 @@ mod tests {
         let fs = MemoryFs::default();
         let a = activation();
         let staging = stage(&fs, &a, V1, V1_BYTES);
-        a.activate(&fs, &staging).expect("the first activation succeeds");
+        a.activate(&fs, &staging)
+            .expect("the first activation succeeds");
         let before = fs.get(&a.pointer_path()).expect("the pointer exists");
         let target_before = a.launch_target(&fs).expect("readable");
 
@@ -612,7 +612,8 @@ mod tests {
         let fs = MemoryFs::default();
         let a = activation();
         let staging = stage(&fs, &a, V1, V1_BYTES);
-        a.activate(&fs, &staging).expect("the first activation succeeds");
+        a.activate(&fs, &staging)
+            .expect("the first activation succeeds");
         let before = fs.get(&a.pointer_path()).expect("the pointer exists");
 
         *fs.fail_write.borrow_mut() = Some(a.pointer_temp_path());
@@ -631,7 +632,8 @@ mod tests {
         let fs = MemoryFs::default();
         let a = activation();
         let staging = stage(&fs, &a, V1, V1_BYTES);
-        a.activate(&fs, &staging).expect("the first activation succeeds");
+        a.activate(&fs, &staging)
+            .expect("the first activation succeeds");
         let active_dir = a.version_dir(V1).expect("a safe version");
 
         let staging = stage(&fs, &a, V2, V2_BYTES);
@@ -642,7 +644,8 @@ mod tests {
                 "an activation must not write inside the running image directory"
             );
         }
-        a.activate(&fs, &staging).expect("the second activation succeeds");
+        a.activate(&fs, &staging)
+            .expect("the second activation succeeds");
         for path in fs.written_paths() {
             assert!(
                 !path.starts_with(&format!("{active_dir}/")),
@@ -671,7 +674,10 @@ mod tests {
             .activate(&fs, &staging)
             .expect_err("a tampered payload must be refused");
         assert_eq!(rule(&error), Some("payload_digest_mismatch"));
-        assert!(!fs.exists(&a.pointer_path()), "the pointer is never written");
+        assert!(
+            !fs.exists(&a.pointer_path()),
+            "the pointer is never written"
+        );
     }
 
     #[test]
@@ -810,7 +816,9 @@ mod tests {
             &a.pointer_path(),
             format!("{}\n", serde_json::to_string(&foreign).expect("encodable")).as_bytes(),
         );
-        let error = a.active(&fs).expect_err("another component's pointer is refused");
+        let error = a
+            .active(&fs)
+            .expect_err("another component's pointer is refused");
         assert_eq!(rule(&error), Some("pointer_names_another_component"));
 
         let fs = MemoryFs::default();
@@ -825,7 +833,9 @@ mod tests {
             &a.pointer_path(),
             format!("{}\n", serde_json::to_string(&future).expect("encodable")).as_bytes(),
         );
-        let error = a.active(&fs).expect_err("a newer pointer schema is refused");
+        let error = a
+            .active(&fs)
+            .expect_err("a newer pointer schema is refused");
         assert_eq!(rule(&error), Some("pointer_schema_not_supported"));
     }
 }

@@ -473,7 +473,10 @@ fn check(
             if protocol != Some(MCP_PROTOCOL) {
                 return Err(fail(
                     "handshake_protocol_mismatch",
-                    format!("expected={MCP_PROTOCOL} actual={}", protocol.unwrap_or("absent")),
+                    format!(
+                        "expected={MCP_PROTOCOL} actual={}",
+                        protocol.unwrap_or("absent")
+                    ),
                 ));
             }
             let version = object
@@ -489,7 +492,9 @@ fn check(
                     ),
                 ));
             }
-            let capabilities = object.get("capabilities").and_then(|value| value.as_array());
+            let capabilities = object
+                .get("capabilities")
+                .and_then(|value| value.as_array());
             match capabilities {
                 Some(list) if !list.is_empty() => {}
                 _ => {
@@ -546,12 +551,13 @@ fn check(
             if ok != Some(true) {
                 return Err(fail(
                     "fixture_query_not_ok",
-                    format!("ok={}", ok.map_or_else(|| "absent".to_string(), |v| v.to_string())),
+                    format!(
+                        "ok={}",
+                        ok.map_or_else(|| "absent".to_string(), |v| v.to_string())
+                    ),
                 ));
             }
-            let records = object
-                .get("records")
-                .and_then(serde_json::Value::as_u64);
+            let records = object.get("records").and_then(serde_json::Value::as_u64);
             match records {
                 Some(count) if count >= expectations.min_fixture_records => {}
                 other => {
@@ -746,7 +752,10 @@ mod tests {
             assert_eq!(failures.len(), 1, "{kind:?} produced {failures:?}");
             assert_eq!(failures[0].kind, kind);
             assert_eq!(failures[0].rule, expected, "for {body}");
-            assert_eq!(report.refusal().expect("a refusal").code(), ErrorCode::NotReady);
+            assert_eq!(
+                report.refusal().expect("a refusal").code(),
+                ErrorCode::NotReady
+            );
         }
     }
 
@@ -767,11 +776,14 @@ mod tests {
         let report = doctor(&fixture, &expectations).expect("checkable");
         let failures = failures(&report);
         assert_eq!(failures[0].rule, "status_not_success");
-        assert_eq!(review_scope(&report), vec![
-            RollbackStep::StopNewProcess,
-            RollbackStep::RepointPrevious,
-            RollbackStep::ClearUnpublishedOutbox,
-        ]);
+        assert_eq!(
+            review_scope(&report),
+            vec![
+                RollbackStep::StopNewProcess,
+                RollbackStep::RepointPrevious,
+                RollbackStep::ClearUnpublishedOutbox,
+            ]
+        );
     }
 
     fn review_scope(report: &DoctorReport) -> Vec<RollbackStep> {
@@ -804,8 +816,10 @@ mod tests {
     #[test]
     fn a_fixture_query_divergence_adds_the_outbox_clear() {
         let expectations = expectations();
-        let fixture = Fixture::healthy(&expectations)
-            .with(ProbeKind::FixtureQuery, ProbeResponse::new(200, "{\"ok\":true,\"records\":0}"));
+        let fixture = Fixture::healthy(&expectations).with(
+            ProbeKind::FixtureQuery,
+            ProbeResponse::new(200, "{\"ok\":true,\"records\":0}"),
+        );
         let report = doctor(&fixture, &expectations).expect("checkable");
         assert_eq!(
             failures(&report)[0].rule,
@@ -819,7 +833,6 @@ mod tests {
 
     #[test]
     fn every_scope_is_bounded_and_no_failure_ever_produces_an_empty_or_wide_one() {
-        let expectations = expectations();
         for kind in ProbeKind::all() {
             let scope = RollbackScope::for_failure(*kind);
             assert!(scope.is_bounded(), "{kind:?} produced an unbounded scope");
@@ -889,19 +902,16 @@ mod tests {
     fn a_body_at_the_bound_is_accepted_and_one_byte_over_is_refused() {
         let expectations = expectations();
         let base = "{\"ok\":true,\"records\":1}";
-        let padded = format!(
-            "{base}{}",
-            " ".repeat(MAX_BODY_BYTES - base.len())
-        );
+        let padded = format!("{base}{}", " ".repeat(MAX_BODY_BYTES - base.len()));
         assert_eq!(padded.len(), MAX_BODY_BYTES);
-        let fixture =
-            Fixture::healthy(&expectations).with(ProbeKind::FixtureQuery, ProbeResponse::new(200, &padded));
+        let fixture = Fixture::healthy(&expectations)
+            .with(ProbeKind::FixtureQuery, ProbeResponse::new(200, &padded));
         let report = doctor(&fixture, &expectations).expect("checkable");
         assert!(report.is_healthy(), "a body at the bound is accepted");
 
         let over = format!("{padded} ");
-        let fixture =
-            Fixture::healthy(&expectations).with(ProbeKind::FixtureQuery, ProbeResponse::new(200, &over));
+        let fixture = Fixture::healthy(&expectations)
+            .with(ProbeKind::FixtureQuery, ProbeResponse::new(200, &over));
         let report = doctor(&fixture, &expectations).expect("checkable");
         assert_eq!(failures(&report)[0].rule, "body_too_large");
     }

@@ -352,7 +352,11 @@ mod tests {
         }
     }
 
-    fn gates(policy: &UpdatePolicy, candidate: &Candidate, readiness: &Readiness) -> Vec<&'static str> {
+    fn gates(
+        policy: &UpdatePolicy,
+        candidate: &Candidate,
+        readiness: &Readiness,
+    ) -> Vec<&'static str> {
         match decide(policy, candidate, readiness) {
             Ok(Decision::RequiresApproval { gates }) => gates,
             other => panic!("expected RequiresApproval, got {other:?}"),
@@ -373,8 +377,12 @@ mod tests {
 
     #[test]
     fn default_policy_never_auto_applies_even_a_ready_patch() {
-        let decision =
-            decide(&UpdatePolicy::default(), &candidate(), &Readiness::complete()).expect("decide");
+        let decision = decide(
+            &UpdatePolicy::default(),
+            &candidate(),
+            &Readiness::complete(),
+        )
+        .expect("decide");
         assert_eq!(
             decision,
             Decision::RequiresApproval {
@@ -675,10 +683,7 @@ mod tests {
         assert_eq!(READINESS_GATES.len(), 5);
 
         assert_eq!(AutoApplyMode::all().len(), 2);
-        assert_eq!(
-            AutoApplyMode::CompatiblePatch.as_str(),
-            "compatible_patch"
-        );
+        assert_eq!(AutoApplyMode::CompatiblePatch.as_str(), "compatible_patch");
 
         assert_eq!(Severity::all().len(), 3);
         assert_eq!(Severity::Patch.as_str(), "patch");

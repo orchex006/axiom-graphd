@@ -311,15 +311,12 @@ impl PythonEnv {
             return Err(refuse("pointer_too_large", &path)
                 .with_detail("limit", MAX_POINTER_BYTES.to_string()));
         }
-        let text =
-            std::str::from_utf8(&bytes).map_err(|_| refuse("pointer_not_utf8", &path))?;
+        let text = std::str::from_utf8(&bytes).map_err(|_| refuse("pointer_not_utf8", &path))?;
         let record: ActiveEnv = serde_json::from_str(text)
             .map_err(|_| refuse("pointer_not_a_pointer_record", &path))?;
         if record.schema_version != POINTER_SCHEMA_VERSION {
-            return Err(refuse("pointer_schema_not_supported", &path).with_detail(
-                "required_version",
-                POINTER_SCHEMA_VERSION.to_string(),
-            ));
+            return Err(refuse("pointer_schema_not_supported", &path)
+                .with_detail("required_version", POINTER_SCHEMA_VERSION.to_string()));
         }
         if record.component != self.component {
             return Err(refuse("pointer_names_another_component", &path)
@@ -351,7 +348,10 @@ impl PythonEnv {
         }
         if let Some(active) = self.active(fs)? {
             if active.version == staged.version {
-                return Err(refuse("environment_version_already_active", &staged.version));
+                return Err(refuse(
+                    "environment_version_already_active",
+                    &staged.version,
+                ));
             }
         }
         let directory = self.env_dir(&staged.version)?;
@@ -382,19 +382,14 @@ impl PythonEnv {
     /// that is not the locked interpreter, a locked distribution that is missing or
     /// installed at another version, and an installed distribution the lock does
     /// not contain.
-    pub fn smoke_test(
-        &self,
-        fs: &dyn EnvFs,
-        staged: &StagedEnv,
-    ) -> Result<EnvVerdict, AxiomError> {
+    pub fn smoke_test(&self, fs: &dyn EnvFs, staged: &StagedEnv) -> Result<EnvVerdict, AxiomError> {
         validate_version(&staged.version)?;
         let lock_path = self.lock_path(&staged.version)?;
         if !fs.exists(&lock_path) {
             return Err(refuse("environment_not_staged", &lock_path));
         }
         let bytes = fs.read(&lock_path)?;
-        let text =
-            std::str::from_utf8(&bytes).map_err(|_| refuse("lock_not_utf8", &lock_path))?;
+        let text = std::str::from_utf8(&bytes).map_err(|_| refuse("lock_not_utf8", &lock_path))?;
         let observed = sha256_hex(text.as_bytes());
         if observed != staged.lock.digest {
             return Err(refuse("lock_file_tampered", &lock_path)
@@ -496,7 +491,10 @@ impl PythonEnv {
             lock_digest: staged.lock.digest.clone(),
         };
         let record = serde_json::to_value(&active).map_err(|_| {
-            AxiomError::new(ErrorCode::Internal, "the environment pointer is not encodable")
+            AxiomError::new(
+                ErrorCode::Internal,
+                "the environment pointer is not encodable",
+            )
         })?;
         let text = graph_export::canonical::canonical_value(&record).map_err(|error| {
             AxiomError::new(
@@ -563,15 +561,15 @@ pub fn parse_lock(text: &str) -> Result<RequirementLock, AxiomError> {
                 return Err(refuse("interpreter_declared_twice", &number));
             }
             if !is_single_version_token(version) {
-                return Err(refuse("interpreter_not_pinned", &number)
-                    .with_detail("observed", version));
+                return Err(
+                    refuse("interpreter_not_pinned", &number).with_detail("observed", version)
+                );
             }
             python = Some(version.to_string());
             continue;
         }
         if !is_single_version_token(version) {
-            return Err(refuse("requirement_not_pinned", &number)
-                .with_detail("observed", version));
+            return Err(refuse("requirement_not_pinned", &number).with_detail("observed", version));
         }
         let digest = hashes.ok_or_else(|| {
             refuse("requirement_has_no_hash", &number).with_detail("observed", name)
@@ -580,8 +578,9 @@ pub fn parse_lock(text: &str) -> Result<RequirementLock, AxiomError> {
             refuse("requirement_hash_is_not_sha256", &number).with_detail("observed", digest)
         })?;
         if !is_digest_text(digest) {
-            return Err(refuse("requirement_hash_not_a_digest", &number)
-                .with_detail("observed", digest));
+            return Err(
+                refuse("requirement_hash_not_a_digest", &number).with_detail("observed", digest)
+            );
         }
         let name = name.to_ascii_lowercase();
         if requirements.iter().any(|existing| existing.name == name) {
@@ -614,8 +613,9 @@ pub fn parse_lock(text: &str) -> Result<RequirementLock, AxiomError> {
 /// Accept a version only when it is one safe path segment.
 fn validate_version(version: &str) -> Result<(), AxiomError> {
     if version.len() > MAX_VERSION_LEN {
-        return Err(refuse("version_too_long", version)
-            .with_detail("limit", MAX_VERSION_LEN.to_string()));
+        return Err(
+            refuse("version_too_long", version).with_detail("limit", MAX_VERSION_LEN.to_string())
+        );
     }
     if !is_safe_segment(version) {
         return Err(refuse("version_not_a_path_segment", version));
@@ -633,9 +633,7 @@ fn is_safe_segment(value: &str) -> bool {
     if !first.is_ascii_alphanumeric() {
         return false;
     }
-    bytes.all(|byte| {
-        byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'+' | b'-' | b'_')
-    })
+    bytes.all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'+' | b'-' | b'_'))
 }
 
 /// True when `value` is a PEP 503 distribution name.
@@ -643,9 +641,7 @@ fn is_distribution_name(value: &str) -> bool {
     !value.is_empty()
         && value.len() <= 128
         && value.bytes().all(|byte| {
-            byte.is_ascii_lowercase()
-                || byte.is_ascii_digit()
-                || matches!(byte, b'-' | b'_' | b'.')
+            byte.is_ascii_lowercase() || byte.is_ascii_digit() || matches!(byte, b'-' | b'_' | b'.')
         })
 }
 
@@ -653,9 +649,9 @@ fn is_distribution_name(value: &str) -> bool {
 fn is_single_version_token(value: &str) -> bool {
     !value.is_empty()
         && value.len() <= MAX_VERSION_LEN
-        && value.bytes().all(|byte| {
-            byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'-' | b'+' | b'!')
-        })
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'-' | b'+' | b'!'))
         && value.bytes().any(|byte| byte.is_ascii_digit())
 }
 
@@ -713,7 +709,9 @@ mod tests {
 
     impl EnvFs for MemoryFs {
         fn exists(&self, path: &str) -> bool {
-            self.files.borrow().contains_key(path)
+            let prefix = format!("{path}/");
+            let files = self.files.borrow();
+            files.contains_key(path) || files.keys().any(|key| key.starts_with(&prefix))
         }
         fn read(&self, path: &str) -> Result<Vec<u8>, AxiomError> {
             self.get(path).ok_or_else(|| {
@@ -771,7 +769,11 @@ mod tests {
         let path = e.installed_path(&staged.version).expect("a safe version");
         fs.put(
             &path,
-            format!("{}\n", serde_json::to_string(&installed).expect("encodable")).as_bytes(),
+            format!(
+                "{}\n",
+                serde_json::to_string(&installed).expect("encodable")
+            )
+            .as_bytes(),
         );
     }
 
@@ -832,12 +834,15 @@ mod tests {
         assert_eq!(verdict.requirements_checked, 1);
         assert_eq!(verdict.interpreter, "3.12.7");
 
-        let first = e.activate(&fs, &one, &verdict).expect("activation succeeds");
+        let first = e
+            .activate(&fs, &one, &verdict)
+            .expect("activation succeeds");
         assert_eq!(first.previous, None);
         assert_eq!(first.active.version, V1);
 
         let two = staged(LOCK_V1, V2);
-        e.prepare(&fs, &two).expect("prepare the second environment");
+        e.prepare(&fs, &two)
+            .expect("prepare the second environment");
         build(&fs, &e, &two, &[("mcp", "1.2.3")]);
         let verdict = e.smoke_test(&fs, &two).expect("the second build is locked");
         let second = e
@@ -860,7 +865,8 @@ mod tests {
         let verdict = e.smoke_test(&fs, &one).expect("locked");
 
         let two = staged(LOCK_V1, V2);
-        e.prepare(&fs, &two).expect("prepare the second environment");
+        e.prepare(&fs, &two)
+            .expect("prepare the second environment");
         let error = e
             .activate(&fs, &two, &verdict)
             .expect_err("a verdict for another version must be refused");
@@ -879,7 +885,10 @@ mod tests {
         let error = e
             .activate(&fs, &one, &short)
             .expect_err("a verdict for another requirement set must be refused");
-        assert_eq!(rule(&error), Some("verdict_checked_another_requirement_set"));
+        assert_eq!(
+            rule(&error),
+            Some("verdict_checked_another_requirement_set")
+        );
     }
 
     #[test]
@@ -890,7 +899,8 @@ mod tests {
         e.prepare(&fs, &one).expect("prepare");
         build(&fs, &e, &one, &[("mcp", "1.2.3")]);
         let verdict = e.smoke_test(&fs, &one).expect("locked");
-        e.activate(&fs, &one, &verdict).expect("activation succeeds");
+        e.activate(&fs, &one, &verdict)
+            .expect("activation succeeds");
 
         let error = e
             .prepare(&fs, &one)
@@ -898,7 +908,8 @@ mod tests {
         assert_eq!(rule(&error), Some("environment_version_already_active"));
 
         let two = staged(LOCK_V1, V2);
-        e.prepare(&fs, &two).expect("prepare the second environment");
+        e.prepare(&fs, &two)
+            .expect("prepare the second environment");
         let error = e
             .prepare(&fs, &two)
             .expect_err("re-preparing an existing directory must be refused");
@@ -911,7 +922,11 @@ mod tests {
             "the active environment's lock was not rewritten"
         );
         assert_eq!(
-            fs.writes.borrow().iter().filter(|p| **p == lock_path).count(),
+            fs.writes
+                .borrow()
+                .iter()
+                .filter(|p| **p == lock_path)
+                .count(),
             1,
             "the active lock was written exactly once, at prepare time"
         );
@@ -951,7 +966,11 @@ mod tests {
         };
         fs.put(
             &e.installed_path(V1).expect("a safe version"),
-            format!("{}\n", serde_json::to_string(&installed).expect("encodable")).as_bytes(),
+            format!(
+                "{}\n",
+                serde_json::to_string(&installed).expect("encodable")
+            )
+            .as_bytes(),
         );
         let error = e
             .smoke_test(&fs, &one)
@@ -1007,11 +1026,13 @@ mod tests {
         e.prepare(&fs, &one).expect("prepare");
         build(&fs, &e, &one, &[("mcp", "1.2.3")]);
         let verdict = e.smoke_test(&fs, &one).expect("locked");
-        e.activate(&fs, &one, &verdict).expect("activation succeeds");
+        e.activate(&fs, &one, &verdict)
+            .expect("activation succeeds");
         let before = fs.get(&e.pointer_path()).expect("the pointer exists");
 
         let two = staged(LOCK_V1, V2);
-        e.prepare(&fs, &two).expect("prepare the second environment");
+        e.prepare(&fs, &two)
+            .expect("prepare the second environment");
         build(&fs, &e, &two, &[("mcp", "1.2.3")]);
         let verdict = e.smoke_test(&fs, &two).expect("locked");
         *fs.fail_rename_to.borrow_mut() = Some(e.pointer_path());
@@ -1032,7 +1053,8 @@ mod tests {
         e.prepare(&fs, &one).expect("prepare");
         build(&fs, &e, &one, &[("mcp", "1.2.3")]);
         let verdict = e.smoke_test(&fs, &one).expect("locked");
-        e.activate(&fs, &one, &verdict).expect("activation succeeds");
+        e.activate(&fs, &one, &verdict)
+            .expect("activation succeeds");
         let bytes = fs.get(&e.pointer_path()).expect("the pointer exists");
         assert!(bytes.len() <= MAX_POINTER_BYTES);
         assert_eq!(bytes.last(), Some(&b'\n'));
@@ -1081,7 +1103,8 @@ mod tests {
             );
         }
         let longest: String = std::iter::repeat_n('7', MAX_VERSION_LEN).collect();
-        e.env_dir(&longest).expect("a version at the bound is accepted");
+        e.env_dir(&longest)
+            .expect("a version at the bound is accepted");
         let overlong: String = std::iter::repeat_n('7', MAX_VERSION_LEN + 1).collect();
         assert_eq!(
             rule(&e.env_dir(&overlong).expect_err("refused")),
