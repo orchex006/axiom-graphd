@@ -13,8 +13,10 @@ merged-source verification (tasks B-088 to B-091), and `graph-watch` holds the
 input classification. Nothing exposes them on argv and no released runtime
 bundles them, and the operator surfaces this guide names are still `todo` in
 their task cards: E-023 (Git-ignore planning for live output), E-024 (optional
-scoped commit proposals), E-025 (managed rollback) and F-021 (staged and merged
-checkpoint accuracy fixtures).
+scoped commit proposals) and E-025 (managed rollback). The F-021 staged and
+merged checkpoint accuracy fixtures now ship as `tests/git_checkpoint.py` - they
+exercise the real `git` program and argv, including the real `merge=union`
+refusal, and they are not a Rust oracle.
 
 The normative policy for this slice is
 `docs/19-GIT-SNAPSHOTS-AND-MERGES.md`. This guide explains how an operator moves
