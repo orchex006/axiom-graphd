@@ -41,6 +41,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "axiom-platform"
+version = "0.0.0-dev"
+dependencies = [
+ "graph-core",
+ "tempfile",
+]
+
+[[package]]
 name = "bitflags"
 version = "2.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -16,6 +16,7 @@ members = [
     "crates/axiom-graphd",
     "crates/axiom",
     "crates/axiom-cli",
+    "crates/platform",
 ]
 
 [workspace.package]

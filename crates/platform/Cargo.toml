@@ -1,0 +1,21 @@
+[package]
+name = "axiom-platform"
+description = "Axiom graph engine: native platform policy (state root, portable path keys, reader/writer guards)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+# The portable-path, storage-class and cross-process lock vocabulary is owned by
+# graph-core; this crate adds the native/policy layers the V2 cards require
+# instead of copying those rules (they would drift).
+graph-core = { version = "0.0.0-dev", path = "../graph-core" }
+
+[dev-dependencies]
+tempfile.workspace = true
