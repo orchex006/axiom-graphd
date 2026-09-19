@@ -131,3 +131,56 @@ Planremoveservices/runtimecomponents และ ownedbootstrapblocks แยกก
 `axiom version --json` prints exactly one frozen `version-report.schema.json` object with `component: "axiom"` and the shared core version. `axiom version --all --json` prints exactly one object, `{"components": [...]}`, containing the frozen report of every component this build can report honestly (the daemon and the CLI). MCP, skills and pinned spec provenance are added by the work packages that implement their registry lookup.
 
 Documented commands that a later work package implements (`install`, `service`, `bootstrap`, `host`, `skills`, `specs`, `update`, `doctor`, `support-bundle`, `migrate`) exit with the frozen `not ready/stale` code `4` and name the command, instead of being misreported as a typo. Unknown commands and invalid flags exit `2`; in `--json` mode the failure is one error envelope on stdout with the diagnostic on stderr.
+
+## K. Update activation, doctor, rollback and release manifest (E-042 - E-048)
+
+This slice is the half of an update that runs *after* a payload exists. It is
+library behaviour in `crates/axiom` with no CLI verb wired yet, so `axiom update`,
+`axiom doctor` and `axiom support-bundle` still exit with the frozen
+`not ready/stale` code `4` and name the command; what follows is what the modules
+already guarantee for the command work package that binds them.
+
+- **Activation (`update/rust_binary.rs`, `update/python_env.rs`)** stages each
+  version into its own directory and activates it by moving a pointer, never by
+  replacing the executable or environment that is currently running. A payload
+  that is missing, whose bytes do not match the staged digest, that was never
+  smoke checked, or whose version is not one safe path segment is refused; the
+  pointer is written as a temporary sibling and renamed, so a refused activation
+  leaves the previous pointer exactly as it was.
+- **Doctor (`update/verify.rs`)** probes health, handshake, graph/queue schema and
+  a fixture query. A non-2xx status, an unexpected document, a protocol or
+  version mismatch, a missing capability, a schema mismatch, a transport error or
+  a body past the bound produces a *bounded* rollback with named rules instead of
+  a superficial success, and the expected protocol/schema set is derived from
+  `crate::version` rather than guessed.
+- **Rollback (`update/rollback.rs`)** rolls the binary, the database schema and
+  the policy back as one compatible set. A downgrade that the release set,
+  migrations or the policy floor make `Irreversible` or `Missing` is blocked with
+  a named reason, a partial scope is refused, and a plan may claim to restore one
+  set only when it also restores the compatible backup that set depends on.
+- **Update policy (`update/policy.rs`)** defaults to explicit approval. Auto-apply
+  is reachable only with an opt-in compatible-patch policy, a strictly newer patch
+  on an allowed channel, no crossed boundary (minor/major version, schema
+  migration, security advisory, trust root change, host config rewrite) and every
+  readiness condition present (idle window, drain, verified signed bundle, backup
+  plus rollback, scope grants). A prerelease never auto-applies, and every gate
+  that forced approval is named.
+- **Support bundle (`support.rs`)** accepts only allowlisted diagnostics, refuses
+  absolute/UNC/traversing names, secret-shaped file names, non-portable
+  destinations and source-body or private-key content, scrubs every body before
+  hashing it, and renders a manifest (name, size, SHA-256, redacted flag) that a
+  user can inspect before anything is written.
+- **Release manifest (`release/core-manifest.json`, `tests/core_manifest.py`)**
+  declares one core release containing both `axiom-graphd` and `axiom` from one
+  workspace version and revision, with no separate bootstrap component, and
+  records the real SHA-256 of `Cargo.toml` and `Cargo.lock` plus the declared
+  targets and compatibility set. The harness re-reads those files and reports
+  signing, tagging, publishing, archive/SBOM hashing and clean-user installation
+  evidence as `not_run`: the release gate is closed for this workstream (the
+  revision is `unpinned`, the state is `not_published`), and nothing here claims a
+  released or signed artifact.
+
+Native Windows activation of a running image is the one leg that cannot be proven
+on this host: a running executable cannot be replaced on Windows, which is why
+activation is a pointer move, and the native `BinaryActivation` evidence is
+recorded as `not_run` rather than invented.
