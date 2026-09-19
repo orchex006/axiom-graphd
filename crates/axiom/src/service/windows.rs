@@ -33,8 +33,6 @@
 //! `cmd.exe`. The production [`SysExec`] is the only implementation that
 //! spawns a process.
 
-use std::process::Command;
-
 use graph_core::error::{AxiomError, ErrorCode};
 use graph_core::paths::{is_absolute_host_path, validate_portable_relative_path};
 use serde::{Deserialize, Serialize};
@@ -42,7 +40,8 @@ use serde::{Deserialize, Serialize};
 use crate::discovery::{ServiceKind, INSTALLABLE_COMPONENTS};
 use crate::install::plan::{under, InstallScope};
 use crate::service::{
-    Consent, RestartPolicy, StartupTrigger, SERVICE_DIRECTORY, SERVICE_LOG_DIRECTORY,
+    is_under, Consent, InstalledService, RestartPolicy, ServiceExec, ServiceOperation,
+    StartupTrigger, SERVICE_DIRECTORY, SERVICE_LOG_DIRECTORY,
 };
 
 /// The mechanism this adapter implements, in the shared service vocabulary.
@@ -50,9 +49,6 @@ pub const MECHANISM: ServiceKind = ServiceKind::PerUserStartup;
 
 /// Host identifier this adapter serves.
 pub const HOST: &str = "windows-x64";
-
-/// Stable wire spelling of [MECHANISM].
-pub const MECHANISM_WIRE: &str = "per_user_startup";
 
 /// The scheduler CLI the adapter drives, by name only.
 pub const SCHEDULER_PROGRAM: &str = "schtasks.exe";
@@ -174,91 +170,6 @@ impl WindowsServiceRequest {
     }
 }
 
-/// One scheduler command: a program and its arguments, never a shell string.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct ServiceOperation {
-    /// Human-readable action name (`register`, `start`, ...).
-    pub description: String,
-    /// Program to run, by name or absolute path.
-    pub program: String,
-    /// Arguments, one per element.
-    pub args: Vec<String>,
-}
-
-impl ServiceOperation {
-    /// Machine-readable rendering of the command.
-    ///
-    /// # Errors
-    /// [ErrorCode::Internal] when the command cannot be serialised.
-    pub fn to_json(&self) -> Result<String, AxiomError> {
-        serde_json::to_string(self).map_err(|error| {
-            AxiomError::new(
-                ErrorCode::Internal,
-                "the service operation is not serialisable",
-            )
-            .with_detail("observed", error.to_string())
-        })
-    }
-
-    /// One-line human rendering of the command.
-    #[must_use]
-    pub fn text(&self) -> String {
-        let mut line = self.program.clone();
-        for arg in &self.args {
-            line.push(' ');
-            line.push_str(arg);
-        }
-        format!("{}: {line}\n", self.description)
-    }
-}
-
-/// Result of one scheduler invocation.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct ServiceOutput {
-    /// Process exit code.
-    pub code: i32,
-    /// Captured standard output.
-    pub stdout: String,
-    /// Captured standard error.
-    pub stderr: String,
-}
-
-/// The whole process surface of the adapter (see the module documentation).
-pub trait ServiceExec {
-    /// Run one operation, returning its captured output.
-    ///
-    /// # Errors
-    /// [ErrorCode::Internal] when the process cannot be spawned;
-    /// [ErrorCode::Forbidden] when the host denies the operation.
-    fn run(&self, operation: &ServiceOperation) -> Result<ServiceOutput, AxiomError>;
-}
-
-/// Production executor: spawns the scheduler with program plus argv.
-#[derive(Debug, Clone, Copy, Default)]
-pub struct SysExec;
-
-impl ServiceExec for SysExec {
-    fn run(&self, operation: &ServiceOperation) -> Result<ServiceOutput, AxiomError> {
-        let output = Command::new(&operation.program)
-            .args(&operation.args)
-            .output()
-            .map_err(|error| {
-                AxiomError::new(
-                    ErrorCode::Internal,
-                    format!("the scheduler could not be launched: {}", error),
-                )
-                .with_detail("program", &operation.program)
-            })?;
-        Ok(ServiceOutput {
-            code: output.status.code().unwrap_or(-1),
-            stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
-            stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
-        })
-    }
-}
-
 /// A fully rendered, reviewable per-user task definition.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -322,76 +233,11 @@ impl WindowsTaskDefinition {
     }
 }
 
-/// The service after a successful registration.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct InstalledService {
-    /// Component the task starts.
-    pub component: String,
-    /// Registered task name.
-    pub task_name: String,
-    /// The mechanism, always [`MECHANISM`].
-    pub mechanism: ServiceKind,
-    /// The scope, always per-user.
-    pub scope: InstallScope,
-    /// Absolute host path of the definition written beside the install root.
-    pub definition_path: String,
-    /// Absolute host log file.
-    pub log_file: String,
-    /// Restart policy.
-    pub restart: RestartPolicy,
-}
-
-impl InstalledService {
-    /// Machine-readable rendering of the installed service.
-    ///
-    /// # Errors
-    /// [ErrorCode::Internal] when the service cannot be serialised.
-    pub fn to_json(&self) -> Result<String, AxiomError> {
-        serde_json::to_string_pretty(self).map_err(|error| {
-            AxiomError::new(
-                ErrorCode::Internal,
-                "the installed service is not serialisable",
-            )
-            .with_detail("observed", error.to_string())
-        })
-    }
-
-    /// One-line human rendering of the installed service.
-    #[must_use]
-    pub fn text(&self) -> String {
-        format!(
-            "{}: task {} ({}) scope={} log={}\n",
-            self.component,
-            self.task_name,
-            MECHANISM_WIRE,
-            self.scope.as_str(),
-            self.log_file,
-        )
-    }
-}
-
 /// A refusal that changes nothing on the host.
 fn refuse(code: ErrorCode, rule: &str, observed: &str, message: &str) -> AxiomError {
     AxiomError::new(code, message)
         .with_detail("rule", rule)
         .with_detail("observed", observed)
-}
-
-/// True when `child` is inside `parent`, comparing separators module-insensitively.
-fn is_under(parent: &str, child: &str) -> bool {
-    fn normalise(path: &str) -> String {
-        let mut out = path.replace('\\', "/");
-        while out.ends_with('/') {
-            out.pop();
-        }
-        out.to_ascii_lowercase()
-    }
-    let parent = normalise(parent);
-    let child = normalise(child);
-    child.len() > parent.len()
-        && child.starts_with(&parent)
-        && child.as_bytes()[parent.len()] == b'/'
 }
 
 /// The task name owned by one component.
@@ -747,7 +593,7 @@ pub fn uninstall_operation(task_name: &str) -> Result<ServiceOperation, AxiomErr
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::{MAX_RESTART_ATTEMPTS, MAX_RESTART_DELAY_SECONDS};
+    use crate::service::{ServiceOutput, MAX_RESTART_ATTEMPTS, MAX_RESTART_DELAY_SECONDS};
     use std::cell::RefCell;
 
     const ROOT: &str = r"C:\Axiom";

@@ -22,6 +22,9 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::discovery::ServiceKind;
+
+pub mod linux;
 pub mod windows;
 
 /// Directory, relative to the install root, that holds service definitions and
@@ -127,4 +130,177 @@ impl RestartPolicy {
             && self.delay_seconds >= 1
             && self.delay_seconds <= MAX_RESTART_DELAY_SECONDS
     }
+}
+
+/// One scheduler command: a program and its arguments, never a shell string.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ServiceOperation {
+    /// Human-readable action name (`register`, `start`, ...).
+    pub description: String,
+    /// Program to run, by name or absolute path.
+    pub program: String,
+    /// Arguments, one per element.
+    pub args: Vec<String>,
+}
+
+impl ServiceOperation {
+    /// Machine-readable rendering of the command.
+    ///
+    /// # Errors
+    /// [graph_core::error::ErrorCode::Internal] when the command cannot be
+    /// serialised.
+    pub fn to_json(&self) -> Result<String, graph_core::error::AxiomError> {
+        serde_json::to_string(self).map_err(|error| {
+            graph_core::error::AxiomError::new(
+                graph_core::error::ErrorCode::Internal,
+                "the service operation is not serialisable",
+            )
+            .with_detail("observed", error.to_string())
+        })
+    }
+
+    /// One-line human rendering of the command.
+    #[must_use]
+    pub fn text(&self) -> String {
+        let mut line = self.program.clone();
+        for arg in &self.args {
+            line.push(' ');
+            line.push_str(arg);
+        }
+        format!("{}: {line}\n", self.description)
+    }
+}
+
+/// Result of one scheduler invocation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ServiceOutput {
+    /// Process exit code.
+    pub code: i32,
+    /// Captured standard output.
+    pub stdout: String,
+    /// Captured standard error.
+    pub stderr: String,
+}
+
+/// The whole process surface of a service adapter.
+///
+/// The adapters render their host commands and hand them to an implementation
+/// of this trait, so no test spawns a scheduler, a `systemctl` or a `launchctl`
+/// and no argument is ever re-interpreted by a shell.
+pub trait ServiceExec {
+    /// Run one operation, returning its captured output.
+    ///
+    /// # Errors
+    /// [graph_core::error::ErrorCode::Internal] when the process cannot be
+    /// spawned; [graph_core::error::ErrorCode::Forbidden] when the host denies
+    /// the operation.
+    fn run(
+        &self,
+        operation: &ServiceOperation,
+    ) -> Result<ServiceOutput, graph_core::error::AxiomError>;
+}
+
+/// Production executor: spawns the host program with program plus argv.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct SysExec;
+
+impl ServiceExec for SysExec {
+    fn run(
+        &self,
+        operation: &ServiceOperation,
+    ) -> Result<ServiceOutput, graph_core::error::AxiomError> {
+        let output = std::process::Command::new(&operation.program)
+            .args(&operation.args)
+            .output()
+            .map_err(|error| {
+                graph_core::error::AxiomError::new(
+                    graph_core::error::ErrorCode::Internal,
+                    format!("the host program could not be launched: {}", error),
+                )
+                .with_detail("program", &operation.program)
+            })?;
+        Ok(ServiceOutput {
+            code: output.status.code().unwrap_or(-1),
+            stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
+            stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
+        })
+    }
+}
+/// Stable wire spelling of a [`ServiceKind`], shared by every adapter.
+#[must_use]
+pub const fn mechanism_wire(kind: ServiceKind) -> &'static str {
+    match kind {
+        ServiceKind::PerUserStartup => "per_user_startup",
+        ServiceKind::SystemdUserUnit => "systemd_user_unit",
+        ServiceKind::LaunchAgent => "launch_agent",
+        ServiceKind::SystemService => "system_service",
+    }
+}
+
+/// The service after a successful registration on any host.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct InstalledService {
+    /// Component the service starts.
+    pub component: String,
+    /// Registered task or unit name.
+    pub task_name: String,
+    /// The mechanism, one of [`ServiceKind`].
+    pub mechanism: ServiceKind,
+    /// The scope, always per-user for the managed adapters.
+    pub scope: crate::install::plan::InstallScope,
+    /// Absolute host path of the definition written beside the install root.
+    pub definition_path: String,
+    /// Absolute host log file.
+    pub log_file: String,
+    /// Restart policy.
+    pub restart: RestartPolicy,
+}
+
+impl InstalledService {
+    /// Machine-readable rendering of the installed service.
+    ///
+    /// # Errors
+    /// [graph_core::error::ErrorCode::Internal] when the service cannot be
+    /// serialised.
+    pub fn to_json(&self) -> Result<String, graph_core::error::AxiomError> {
+        serde_json::to_string_pretty(self).map_err(|error| {
+            graph_core::error::AxiomError::new(
+                graph_core::error::ErrorCode::Internal,
+                "the installed service is not serialisable",
+            )
+            .with_detail("observed", error.to_string())
+        })
+    }
+
+    /// One-line human rendering of the installed service.
+    #[must_use]
+    pub fn text(&self) -> String {
+        format!(
+            "{}: {} ({}) scope={} log={}\n",
+            self.component,
+            self.task_name,
+            mechanism_wire(self.mechanism),
+            self.scope.as_str(),
+            self.log_file,
+        )
+    }
+}
+/// True when `child` is inside `parent`, comparing separators module-insensitively.
+#[must_use]
+pub(crate) fn is_under(parent: &str, child: &str) -> bool {
+    fn normalise(path: &str) -> String {
+        let mut out = path.replace('\\', "/");
+        while out.ends_with('/') {
+            out.pop();
+        }
+        out.to_ascii_lowercase()
+    }
+    let parent = normalise(parent);
+    let child = normalise(child);
+    child.len() > parent.len()
+        && child.starts_with(&parent)
+        && child.as_bytes()[parent.len()] == b'/'
 }
