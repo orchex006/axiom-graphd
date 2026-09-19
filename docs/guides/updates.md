@@ -13,13 +13,13 @@ E-035 to E-041:
 
 | Module | Task | What it decides |
 |---|---|---|
-| `source.rs` | E-035 | the configured owner/repo/channel an update may come from; no source is invented from a component name |
-| `trust.rs` | E-036 | signed-metadata freshness, trust roots, and rollback/freeze protection |
-| `check.rs` | E-037 | the TTL- and offline-aware check decision; a check never downloads or runs an installer |
-| `resolve.rs` | E-038 | the compatibility set, so "latest" is never assumed compatible |
-| `plan.rs` | E-039 | the plan document (backups, drain, rollback feasibility) and the approval rule for a major change |
-| `drain.rs` | E-040 | the bounded drain, where a forced kill is never the default path |
-| `backup.rs` | E-041 | hash-verified DB and managed-state backups, without which an irreversible migration is refused |
+| `crates/axiom/src/update/source.rs` | E-035 | the configured owner/repo/channel an update may come from; no source is invented from a component name |
+| `crates/axiom/src/update/trust.rs` | E-036 | signed-metadata freshness, trust roots, and rollback/freeze protection |
+| `crates/axiom/src/update/check.rs` | E-037 | the TTL- and offline-aware check decision; a check never downloads or runs an installer |
+| `crates/axiom/src/update/resolve.rs` | E-038 | the compatibility set, so "latest" is never assumed compatible |
+| `crates/axiom/src/update/plan.rs` | E-039 | the plan document (backups, drain, rollback feasibility) and the approval rule for a major change |
+| `crates/axiom/src/update/drain.rs` | E-040 | the bounded drain, where a forced kill is never the default path |
+| `crates/axiom/src/update/backup.rs` | E-041 | hash-verified DB and managed-state backups, without which an irreversible migration is refused |
 
 Still absent at this revision: the `update apply` transaction, the platform
 activation steps, the post-update doctor and the state-aware rollback (tasks
