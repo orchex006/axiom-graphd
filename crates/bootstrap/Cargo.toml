@@ -1,0 +1,16 @@
+[package]
+name = "axiom-bootstrap"
+description = "Axiom graph engine: the bootstrap application release boundary, owned by the one core revision"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+# No dependencies: this package is the release-boundary witness for the current
+# bootstrap slice, so it must not acquire behaviour that could conflict with the
+# engine in `crates/axiom/src/bootstrap/**`.

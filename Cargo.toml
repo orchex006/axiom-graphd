@@ -19,6 +19,7 @@ members = [
     "crates/platform",
     "crates/config",
     "crates/migration",
+    "crates/bootstrap",
 ]
 
 [workspace.package]

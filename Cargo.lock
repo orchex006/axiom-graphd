@@ -16,6 +16,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "axiom-bootstrap"
+version = "0.0.0-dev"
+
+[[package]]
 name = "axiom-cli"
 version = "0.0.0-dev"
 dependencies = [
@@ -49,18 +53,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "axiom-platform"
+name = "axiom-migration"
 version = "0.0.0-dev"
 dependencies = [
+ "axiom-platform",
  "graph-core",
  "tempfile",
 ]
 
 [[package]]
-name = "axiom-migration"
+name = "axiom-platform"
 version = "0.0.0-dev"
 dependencies = [
- "axiom-platform",
  "graph-core",
  "tempfile",
 ]
