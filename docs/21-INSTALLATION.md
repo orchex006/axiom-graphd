@@ -178,7 +178,7 @@ already guarantee for the command work package that binds them.
   signing, tagging, publishing, archive/SBOM hashing and clean-user installation
   evidence as `not_run`: the release gate is closed for this workstream (the
   revision is `unpinned`, the state is `not_published`), and nothing here claims a
-  released or signed artifact.
+  released or signed artifact. Each target additionally declares its provenance (the release revision and both components at the release version, so an archive cannot be declared after one of them moved), its executable metadata (`.exe` on Windows, `0755` on POSIX) and its installation evidence, which is either a real command, output and digest or an honest `not_run` with the command it would run and the reason and no digest (V2-021).
 
 Native Windows activation of a running image is the one leg that cannot be proven
 on this host: a running executable cannot be replaced on Windows, which is why

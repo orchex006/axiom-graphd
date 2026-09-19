@@ -32,9 +32,9 @@
     "bootstrap_note": "Bootstrap and installer behaviour live inside this same workspace and ship in this same core release; there is no second component, no second version and no second publication for them.",
     "source": {
       "workspace_toml": "Cargo.toml",
-      "workspace_toml_sha256": "a89024bba69fed1af642cbcbc49e278c2a402fb17eea8091613231373cb2652c",
+      "workspace_toml_sha256": "a305a60ece0becf17756dd505c8596276d0135908a0ed742d427c19197a38e23",
       "lockfile": "Cargo.lock",
-      "lockfile_sha256": "b75a1dfde4174fb5e9fe1830818cd19d61a5b4c5785fde26c270ea9dcca007c4",
+      "lockfile_sha256": "178068d5fe6d39d956ad6ea9354e034b52103822f706ae95e99cb88f335f030d",
       "lockfile_state": "checked_in"
     },
     "targets": [
@@ -43,30 +43,132 @@
         "os": "windows",
         "arch": "x86_64",
         "rust_target": "x86_64-pc-windows-msvc",
-        "archive": { "name": "axiom-0.0.0-dev-windows-x64.zip", "state": "not_built", "sha256": null },
-        "sbom": { "name": "axiom-0.0.0-dev-windows-x64.sbom.json", "state": "not_built", "sha256": null },
-        "executables": ["axiom-graphd.exe", "axiom.exe"],
-        "signature": { "state": "required", "scheme": "minisign-ed25519", "key_id": null }
+        "archive": {
+          "name": "axiom-0.0.0-dev-windows-x64.zip",
+          "state": "not_built",
+          "sha256": null
+        },
+        "sbom": {
+          "name": "axiom-0.0.0-dev-windows-x64.sbom.json",
+          "state": "not_built",
+          "sha256": null
+        },
+        "executables": [
+          "axiom-graphd.exe",
+          "axiom.exe"
+        ],
+        "signature": {
+          "state": "required",
+          "scheme": "minisign-ed25519",
+          "key_id": null
+        },
+        "provenance": {
+          "revision": "unpinned",
+          "components": {
+            "axiom-graphd": "0.0.0-dev",
+            "axiom": "0.0.0-dev"
+          },
+          "note": "An archive may only be declared once both components stand at the release revision; the revision stays `unpinned` because the release gate is closed and no commit is pinned for this workstream."
+        },
+        "executable_metadata": {
+          "windows-extension": ".exe",
+          "posix-mode": null,
+          "note": "Windows marks an image executable by the .exe extension, not by a POSIX mode bit."
+        },
+        "installation_evidence": {
+          "state": "not_run",
+          "command": "axiom install --archive axiom-0.0.0-dev-windows-x64.zip",
+          "reason": "The clean-user installation cannot be run in this workstream: the archive axiom-0.0.0-dev-windows-x64.zip is not built (release.archive.state = not_built), the release gate is closed so nothing is signed or published, and the `axiom install` verb is a recognised-but-unimplemented verb at this revision (crates/axiom/src/cli.rs PENDING_VERBS). No output or digest is claimed.",
+          "sha256": null
+        }
       },
       {
         "platform": "linux-x64",
         "os": "linux",
         "arch": "x86_64",
         "rust_target": "x86_64-unknown-linux-gnu",
-        "archive": { "name": "axiom-0.0.0-dev-linux-x64.tar.gz", "state": "not_built", "sha256": null },
-        "sbom": { "name": "axiom-0.0.0-dev-linux-x64.sbom.json", "state": "not_built", "sha256": null },
-        "executables": ["axiom-graphd", "axiom"],
-        "signature": { "state": "required", "scheme": "minisign-ed25519", "key_id": null }
+        "archive": {
+          "name": "axiom-0.0.0-dev-linux-x64.tar.gz",
+          "state": "not_built",
+          "sha256": null
+        },
+        "sbom": {
+          "name": "axiom-0.0.0-dev-linux-x64.sbom.json",
+          "state": "not_built",
+          "sha256": null
+        },
+        "executables": [
+          "axiom-graphd",
+          "axiom"
+        ],
+        "signature": {
+          "state": "required",
+          "scheme": "minisign-ed25519",
+          "key_id": null
+        },
+        "provenance": {
+          "revision": "unpinned",
+          "components": {
+            "axiom-graphd": "0.0.0-dev",
+            "axiom": "0.0.0-dev"
+          },
+          "note": "An archive may only be declared once both components stand at the release revision; the revision stays `unpinned` because the release gate is closed and no commit is pinned for this workstream."
+        },
+        "executable_metadata": {
+          "posix-mode": "0755",
+          "windows-extension": null,
+          "note": "POSIX marks both shipped executables 0755 on extraction; no .exe extension is used."
+        },
+        "installation_evidence": {
+          "state": "not_run",
+          "command": "axiom install --archive axiom-0.0.0-dev-linux-x64.tar.gz",
+          "reason": "The clean-user installation cannot be run in this workstream: the archive axiom-0.0.0-dev-linux-x64.tar.gz is not built (release.archive.state = not_built), the release gate is closed so nothing is signed or published, and the `axiom install` verb is a recognised-but-unimplemented verb at this revision (crates/axiom/src/cli.rs PENDING_VERBS). No output or digest is claimed.",
+          "sha256": null
+        }
       },
       {
         "platform": "macos-arm64",
         "os": "macos",
         "arch": "aarch64",
         "rust_target": "aarch64-apple-darwin",
-        "archive": { "name": "axiom-0.0.0-dev-macos-arm64.tar.gz", "state": "not_built", "sha256": null },
-        "sbom": { "name": "axiom-0.0.0-dev-macos-arm64.sbom.json", "state": "not_built", "sha256": null },
-        "executables": ["axiom-graphd", "axiom"],
-        "signature": { "state": "required", "scheme": "minisign-ed25519", "key_id": null }
+        "archive": {
+          "name": "axiom-0.0.0-dev-macos-arm64.tar.gz",
+          "state": "not_built",
+          "sha256": null
+        },
+        "sbom": {
+          "name": "axiom-0.0.0-dev-macos-arm64.sbom.json",
+          "state": "not_built",
+          "sha256": null
+        },
+        "executables": [
+          "axiom-graphd",
+          "axiom"
+        ],
+        "signature": {
+          "state": "required",
+          "scheme": "minisign-ed25519",
+          "key_id": null
+        },
+        "provenance": {
+          "revision": "unpinned",
+          "components": {
+            "axiom-graphd": "0.0.0-dev",
+            "axiom": "0.0.0-dev"
+          },
+          "note": "An archive may only be declared once both components stand at the release revision; the revision stays `unpinned` because the release gate is closed and no commit is pinned for this workstream."
+        },
+        "executable_metadata": {
+          "posix-mode": "0755",
+          "windows-extension": null,
+          "note": "POSIX marks both shipped executables 0755 on extraction; no .exe extension is used."
+        },
+        "installation_evidence": {
+          "state": "not_run",
+          "command": "axiom install --archive axiom-0.0.0-dev-macos-arm64.tar.gz",
+          "reason": "The clean-user installation cannot be run in this workstream: the archive axiom-0.0.0-dev-macos-arm64.tar.gz is not built (release.archive.state = not_built), the release gate is closed so nothing is signed or published, and the `axiom install` verb is a recognised-but-unimplemented verb at this revision (crates/axiom/src/cli.rs PENDING_VERBS). No output or digest is claimed.",
+          "sha256": null
+        }
       }
     ],
     "compatibility": {
@@ -87,5 +189,6 @@
       "tag": null,
       "reason": "This workstream keeps the release gate closed: no tag, no release, no publish. Publication is a separate authorized maintenance action."
     }
-  }
+  },
+  "v2_task": "V2-021"
 }
