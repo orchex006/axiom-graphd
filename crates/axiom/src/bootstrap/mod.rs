@@ -1,4 +1,4 @@
-//! Managed multi-repository bootstrap engine (tasks E-013 .. E-021).
+//! Managed multi-repository bootstrap engine (tasks E-013 .. E-025).
 //!
 //! `docs/18-BOOTSTRAP-AND-MANAGED-INSTRUCTIONS.md` and the operations guide
 //! `docs/guides/bootstrap.md` fix what bootstrap owns inside a repository and
@@ -20,6 +20,10 @@
 //! * [`preconditions`] - E-019: before-hash re-verification and the apply lock.
 //! * [`apply`] - E-020: journaled, backup-protected application.
 //! * [`verify`] - E-021: idempotence and drift reporting.
+//! * [`update`] - E-022: the version-gated managed policy update.
+//! * [`gitignore`] - E-023: the marker-delimited gitignore lane.
+//! * [`commit_plan`] - E-024: the path-scoped, grant-gated commit proposal.
+//! * [`rollback`] - E-025: the hash-checked reverse of an apply.
 //!
 //! The engine is deliberately host-free in its policy half: planning, marker
 //! parsing, encoding and ownership are pure functions over bytes, so the same
@@ -37,13 +41,17 @@
 use graph_core::error::{AxiomError, ErrorCode};
 
 pub mod apply;
+pub mod commit_plan;
+pub mod gitignore;
 pub mod markers;
 pub mod ownership;
 pub mod plan;
 pub mod policy;
 pub mod preconditions;
 pub mod repos;
+pub mod rollback;
 pub mod text;
+pub mod update;
 pub mod verify;
 
 /// Schema version of the bootstrap documents this build writes.
