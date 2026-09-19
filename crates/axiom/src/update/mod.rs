@@ -42,3 +42,4 @@
 
 pub mod rust_binary;
 pub mod python_env;
+pub mod verify;
