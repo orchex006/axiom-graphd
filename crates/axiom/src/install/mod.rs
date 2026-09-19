@@ -11,9 +11,12 @@
 //!   (task E-004).
 //! * [`verify`] -- the fail-closed trust gate: trusted metadata and the actual
 //!   bytes must agree before anything is executed (task E-005).
+//! * [`apply`] -- the approved activation: a verified staged version replaces
+//!   the current one atomically, with rollback metadata (task E-006).
 //!
-//! Activation lands as its own work package and records its own task id, the
-//! same way every module in this crate does.
+//! Verification and activation land as their own work packages and record their
+//! own task ids, the same way every module in this crate does.
 
+pub mod apply;
 pub mod plan;
 pub mod verify;
