@@ -18,4 +18,5 @@ pub mod discovery;
 pub mod install;
 pub mod plan;
 pub mod service;
+pub mod update;
 pub mod version;
