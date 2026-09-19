@@ -21,6 +21,9 @@
 //! * B-029 ([`recovery`]) - full rescan after overflow or reconnect.
 //! * B-030 ([`config_invalidation`]) - config/dependency fingerprints and scope.
 //! * B-031 ([`git_observer`]) - safe Git worktree observation.
+//! * V2-014 ([`reconcile`]) - bounded reconciliation that turns one observed
+//!   batch into apply/bounded-rescan/full-scan, and degrades to polling when a
+//!   target has no native backend.
 //! * F-009 ([`checkpoint_inputs`]) - distinguish the Git input classes a
 //!   checkpoint must keep apart.
 //!
@@ -39,6 +42,7 @@ pub mod inventory;
 pub mod native;
 pub mod normalize;
 pub mod poll;
+pub mod reconcile;
 pub mod recovery;
 
 use graph_core::error::{AxiomError, ErrorCode};
