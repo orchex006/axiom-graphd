@@ -28,6 +28,7 @@ use crate::discovery::ServiceKind;
 pub mod control;
 pub mod linux;
 pub mod macos;
+pub mod startup;
 pub mod windows;
 
 /// Directory, relative to the install root, that holds service definitions and

@@ -1,15 +1,27 @@
-//! Migration support for the Axiom core (V2-009, V2-010).
+//! Migration support for the Axiom core (V2-009, V2-010, V2-011, V2-012).
 //!
 //! [`discover`] detects the legacy `graph` and `grahp` layouts independently and
 //! returns `MIGRATION_CONFLICT` instead of a plan when the sources cannot be
 //! resolved. [`plan`] turns one discovery decision into a deterministic,
 //! ownership-aware plan whose digest binds the bytes a human approved, and
-//! refuses to apply a plan whose inputs moved underneath it. Both modules
-//! perform no filesystem access and no destination writes.
+//! refuses to apply a plan whose inputs moved underneath it. [`apply`] then
+//! performs those writes through the fence, backup, stage, verify and cutover
+//! sequence a reviewable V1 to V2 migration requires, journalling each phase so
+//! an interrupted run resumes instead of pretending. None of the three modules
+//! perform filesystem access of its own: the bytes, the writer fence and the
+//! journal are injected by the caller.
 
+pub mod apply;
 pub mod discover;
 pub mod plan;
 
+pub use apply::{
+    apply_journaled, check_coexistence, rollback_journaled, ApplyError, ApplyIo, ApplyJournal,
+    ApplyOutcome, ApplyPhase, ApplyRequest, ApplyStatus, FenceOutcome, FileState, JournalFile,
+    JournalStore, RollbackOutcome, RollbackStatus, WriterFence, APPLY_SCHEMA_VERSION,
+    ERR_APPLY_CONFLICT, ERR_APPLY_HASH, ERR_APPLY_INCOMPLETE, ERR_COEXISTENCE, ERR_FENCE_REFUSED,
+    ERR_JOURNAL_INVALID, ERR_ROLLBACK, ERR_ROLLBACK_BLOCKED, JOURNAL_MAGIC,
+};
 pub use discover::{
     discover_from_paths, plan_discovery, ContentRelation, DiscoverError, DiscoveryDecision,
     DiscoveryInventory, LayoutId, SnapshotFacts, AXIOM_GRAPH_DIR, AXIOM_GRAPH_DIR as V2_GRAPH_DIR,
