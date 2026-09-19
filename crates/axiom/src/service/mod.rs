@@ -17,13 +17,15 @@
 //! * [`StartupTrigger`] - when the managed process starts (logon, for now).
 //!
 //! The per-host adapters live beside it: [`windows`] implements the Windows
-//! per-user Scheduled Task. Linux (`systemd --user`) and macOS (launchd agent)
-//! land as their own work packages and record their own task ids.
+//! per-user Scheduled Task, [`linux`] the systemd user unit and [`macos`] the
+//! launchd agent. [`control`] is the host-neutral start/stop/status surface over
+//! all three (task E-011), so a front end never chooses a host command itself.
 
 use serde::{Deserialize, Serialize};
 
 use crate::discovery::ServiceKind;
 
+pub mod control;
 pub mod linux;
 pub mod macos;
 pub mod windows;
