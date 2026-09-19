@@ -1,0 +1,189 @@
+{
+  "corpus": "ops-guides",
+  "task": "D-012, D-013, D-014",
+  "spec_revision": "1bf754298ba1bb266a77f13cded4bfe69484906f",
+  "description": "Structural, cross-reference and honesty regression checks for the axiom-graphd operations guides. Each guide embeds one fenced JSON worked example between sentinel markers. The driver asserts the example parses, that its declared invariant fields still hold, that every fixture identifier the guide claims exists in the referenced component fixture corpus under fixtures/, that every backticked repository path still resolves, and that an artifact the guide documents as not implemented really is absent. Negative fixtures are mutated copies of the same shape that this same checker must reject.",
+  "target_artifacts": [
+    ".axiom/agent/POLICY.md",
+    ".axiom/agent/bootstrap.lock.json",
+    "POLICY.local.md",
+    "bootstrap.lock.json",
+    "SKILL.md"
+  ],
+  "cross_repo_paths": [
+    "docs/20-VERSION-CHECK-UPDATE-RELEASE.md",
+    "axiom-specs/reference/bootstrap_reference.py"
+  ],
+  "absent_paths": [
+    {
+      "path": "crates/axiom-graphd/tests/ops_guides.rs",
+      "reason": "The Rust oracle for these three guides is not implemented at this revision, so the guides document it as absent rather than claiming a build check that does not exist. A later task that adds the oracle must update the three guides and this file in the same change."
+    }
+  ],
+  "guides": [
+    {
+      "id": "D-012",
+      "path": "docs/guides/git-checkpoints.md",
+      "begin": "<!-- BEGIN GIT CHECKPOINT EXAMPLE -->",
+      "end": "<!-- END GIT CHECKPOINT EXAMPLE -->",
+      "must_mention": [
+        "live ignored data",
+        "staged export",
+        "merged-source regeneration"
+      ],
+      "expect_fields": {
+        "union_merge_generated_graphs": false,
+        "hand_pick_graph_sides_after_merge": false,
+        "checkpoint_export_requires_explicit_command": true,
+        "default_source": "staged",
+        "graphd_unbuilt_verb_exit_code": 4
+      },
+      "require_true_fields": [
+        "worktree_requires_stability_certificate"
+      ],
+      "fixture_refs": [
+        {
+          "path": "fixtures/git/manifest.json",
+          "list": "scenarios",
+          "id_field": "id",
+          "claim_fields": [
+            "input_classes",
+            "boundary_input_classes"
+          ]
+        }
+      ],
+      "expect_list_contains": {
+        "graphd_cli_verbs_available": [
+          "help",
+          "version"
+        ]
+      }
+    },
+    {
+      "id": "D-013",
+      "path": "docs/guides/bootstrap.md",
+      "begin": "<!-- BEGIN BOOTSTRAP EXAMPLE -->",
+      "end": "<!-- END BOOTSTRAP EXAMPLE -->",
+      "must_mention": [
+        "append",
+        "replace",
+        "conflict",
+        "unchanged"
+      ],
+      "expect_fields": {
+        "plan_is_read_only": true,
+        "apply_requires_approval_digest": true,
+        "overwrite_unowned_content": false,
+        "recursively_delete_axiom": false,
+        "multi_repo_partial_exit_code": 20,
+        "version_command_available": true,
+        "pending_verb_exit_code": 4
+      },
+      "require_true_fields": [],
+      "fixture_refs": [
+        {
+          "path": "fixtures/bootstrap/vectors.json",
+          "list": "vectors",
+          "id_field": "id",
+          "claim_map_fields": [
+            {
+              "field": "cases",
+              "key": "case",
+              "value": "outcome",
+              "fixture_value_field": "outcome"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D-014",
+      "path": "docs/guides/updates.md",
+      "begin": "<!-- BEGIN UPDATE EXAMPLE -->",
+      "end": "<!-- END UPDATE EXAMPLE -->",
+      "must_mention": [
+        "check route",
+        "update route",
+        "trust requirement"
+      ],
+      "expect_fields": {
+        "auto_apply_default": false,
+        "offline_flag_performs_network": false,
+        "git_pull_then_execute": false,
+        "unsigned_auto_install": false,
+        "approval_digest_required": true,
+        "checksum_alone_proves_publisher": false,
+        "supporting_schema_major": 1,
+        "version_command_available": true,
+        "pending_verb_exit_code": 4
+      },
+      "require_true_fields": [
+        "auto_check_default",
+        "check_uses_jitter"
+      ],
+      "expect_list_contains": {
+        "components": [
+          "axiom-graphd",
+          "axiom-mcp",
+          "axiom",
+          "skills"
+        ],
+        "plan_digest_excludes": [
+          "plan_digest",
+          "approval"
+        ]
+      },
+      "fixture_refs": [
+        {
+          "path": "fixtures/update/manifest.json",
+          "list": "scenarios",
+          "id_field": "id",
+          "claim_fields": [
+            "scenarios"
+          ],
+          "require_set_equal": [
+            "refusal_reasons"
+          ]
+        }
+      ]
+    }
+  ],
+  "negative": [
+    {
+      "id": "union-merge-recommended",
+      "guide": "D-012",
+      "path": "fixtures/guides/negative/d-012-union-merge.md",
+      "reason": "the worked example recommends union-merging generated graphs",
+      "expect_problem_contains": [
+        "union_merge_generated_graphs is True, expected False"
+      ]
+    },
+    {
+      "id": "missing-end-marker",
+      "guide": "D-012",
+      "path": "fixtures/guides/negative/d-012-missing-sentinel.md",
+      "reason": "the worked example is missing its end sentinel",
+      "expect_problem_contains": [
+        "missing sentinel markers or an unparseable json example"
+      ]
+    },
+    {
+      "id": "overwrite-unowned-content",
+      "guide": "D-013",
+      "path": "fixtures/guides/negative/d-013-overwrite-unowned.md",
+      "reason": "the worked example claims unowned content may be overwritten",
+      "expect_problem_contains": [
+        "overwrite_unowned_content is True, expected False"
+      ]
+    },
+    {
+      "id": "blind-git-pull",
+      "guide": "D-014",
+      "path": "fixtures/guides/negative/d-014-blind-pull.md",
+      "reason": "the worked example accepts git pull then execute as an update route",
+      "expect_problem_contains": [
+        "git_pull_then_execute is True, expected False"
+      ]
+    }
+  ]
+}
