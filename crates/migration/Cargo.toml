@@ -1,0 +1,19 @@
+[package]
+name = "axiom-migration"
+description = "Axiom graph engine: read-only legacy layout discovery for the V1 to V2 migration"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+graph-core = { version = "0.0.0-dev", path = "../graph-core" }
+axiom-platform = { version = "0.0.0-dev", path = "../platform" }
+
+[dev-dependencies]
+tempfile.workspace = true
