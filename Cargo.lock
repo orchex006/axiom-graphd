@@ -26,6 +26,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "axiom-config"
+version = "0.0.0-dev"
+dependencies = [
+ "graph-core",
+ "tempfile",
+]
+
+[[package]]
 name = "axiom-graphd"
 version = "0.0.0-dev"
 dependencies = [
