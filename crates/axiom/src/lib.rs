@@ -14,5 +14,6 @@
 
 pub mod cli;
 pub mod discovery;
+pub mod install;
 pub mod plan;
 pub mod version;
