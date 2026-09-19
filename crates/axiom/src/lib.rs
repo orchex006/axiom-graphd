@@ -18,4 +18,6 @@ pub mod discovery;
 pub mod install;
 pub mod plan;
 pub mod service;
+pub mod support;
+pub mod update;
 pub mod version;

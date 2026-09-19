@@ -5,13 +5,32 @@ intended V2 behavior of the updater. It is documentation, not evidence that a
 compiled updater exists; **no `update` command is invoked here, because the
 command is not implemented yet.**
 
-**Status: the updater is not implemented at this revision.** This page is the
-contract, not an observation. The signed-metadata freshness check, the cached
-auto-check, the compatibility set, the update and migration plan, the
-service drain, the backup, the platform activation steps, the post-update
-doctor and the state-aware rollback are owned by tasks E-035 to E-045; every one
-of those task cards is still `todo`. What does exist is the admission guard and
-digest binding in the library, the portable refusal corpus under
+**Status: the check/plan policy exists in the library; the transaction does
+not.** This page is the contract, not an observation, and **no `update` command
+is invoked here**, because the `update` CLI command is still not implemented.
+What exists in `crates/axiom/src/update/` are the seven policy modules of tasks
+E-035 to E-041:
+
+| Module | Task | What it decides |
+|---|---|---|
+| `crates/axiom/src/update/source.rs` | E-035 | the configured owner/repo/channel an update may come from; no source is invented from a component name |
+| `crates/axiom/src/update/trust.rs` | E-036 | signed-metadata freshness, trust roots, and rollback/freeze protection |
+| `crates/axiom/src/update/check.rs` | E-037 | the TTL- and offline-aware check decision; a check never downloads or runs an installer |
+| `crates/axiom/src/update/resolve.rs` | E-038 | the compatibility set, so "latest" is never assumed compatible |
+| `crates/axiom/src/update/plan.rs` | E-039 | the plan document (backups, drain, rollback feasibility) and the approval rule for a major change |
+| `crates/axiom/src/update/drain.rs` | E-040 | the bounded drain, where a forced kill is never the default path |
+| `crates/axiom/src/update/backup.rs` | E-041 | hash-verified DB and managed-state backups, without which an irreversible migration is refused |
+
+Also present at this revision: the platform activation and the post-update
+doctor, the state-aware rollback and the update policy (tasks E-042 to E-046),
+the redacted support bundle (E-047) and the core release manifest with its
+regression check (E-048). Every one of those is policy over injected inputs or
+mutation through a small trait: none of them opens a socket, spawns a shell,
+drains a real service, creates a tag or publishes anything on this host. What is
+still absent is the `update` command line itself, which stays a recognised and
+refused verb (`NOT_READY`), so the transaction exists as reviewable library
+modules rather than as a runnable command. What else exists is the admission
+guard and digest binding in the library, the portable refusal corpus under
 `fixtures/update/`, and the checker described in section 9.
 
 The normative policy for this slice is
@@ -244,7 +263,9 @@ a scenario the corpus does not contain. `checksum_alone_proves_publisher` is
 
 ## 11. Status and limits
 
-The updater is **not implemented as a command yet**. What exists is the trust
+The updater is **not implemented as a command yet**. What exists is the policy
+and activation transaction of tasks E-035 to E-048 in
+`crates/axiom/src/update/` and `crates/axiom/src/support.rs`, the trust
 and schema admission surface and the delegated argv handling in the library
 (`crates/axiom-graphd/src/update_guard.rs`,
 `crates/axiom-graphd/src/commands/update.rs`) plus the portable refusal corpus

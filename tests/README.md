@@ -24,6 +24,7 @@ did not.
 | F-018 | `tests/storage_failure.py` | disk-full and permission errors |
 | F-021 | `tests/git_checkpoint.py` | staged and merged checkpoint accuracy |
 | F-022 | `tests/sqlite_migration.py` | SQLite upgrade, backup and restore |
+| E-048 | `tests/core_manifest.py` | one core release manifest: composition, provenance and publishability |
 
 ## Running
 
@@ -36,6 +37,7 @@ python tests/publish_crash.py
 python tests/storage_failure.py
 python tests/git_checkpoint.py
 python tests/sqlite_migration.py
+python tests/core_manifest.py
 ```
 
 Each accepts `--json-out PATH` to also write a machine-readable result. Exit
@@ -56,6 +58,11 @@ codes are consistent across the set:
   `graph-watch` / `graph-queue` module contracts. They do not link the Rust
   crates; the equivalent real-code command is recorded in each file and reported
   under `not_run`.
+* **The release manifest check (E-048).** `tests/core_manifest.py` is not a fault
+injection harness: it re-reads `release/core-manifest.json`, `Cargo.toml`,`crates/axiom/src/version.rs` and `crates/axiom-graphd/src/release.rs` and refuses a
+manifest that drifts from them, then reports signing, tagging, publishing, archive/SBOM
+hashing and clean-user installation evidence as `not_run` because the release gate stays
+closed.
 * **Honest limitations.** The disk-full leg of F-018 is an injected fault because
   a real full filesystem needs a loopback/quota mount or an admin tool. F-022
   reports the host SQLite runtime and marks the WAL-reset baseline `not_run` when
