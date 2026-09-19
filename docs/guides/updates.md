@@ -5,14 +5,29 @@ intended V2 behavior of the updater. It is documentation, not evidence that a
 compiled updater exists; **no `update` command is invoked here, because the
 command is not implemented yet.**
 
-**Status: the updater is not implemented at this revision.** This page is the
-contract, not an observation. The signed-metadata freshness check, the cached
-auto-check, the compatibility set, the update and migration plan, the
-service drain, the backup, the platform activation steps, the post-update
-doctor and the state-aware rollback are owned by tasks E-035 to E-045; every one
-of those task cards is still `todo`. What does exist is the admission guard and
-digest binding in the library, the portable refusal corpus under
-`fixtures/update/`, and the checker described in section 9.
+**Status: the check/plan policy exists in the library; the transaction does
+not.** This page is the contract, not an observation, and **no `update` command
+is invoked here**, because the `update` CLI command is still not implemented.
+What exists in `crates/axiom/src/update/` are the seven policy modules of tasks
+E-035 to E-041:
+
+| Module | Task | What it decides |
+|---|---|---|
+| `source.rs` | E-035 | the configured owner/repo/channel an update may come from; no source is invented from a component name |
+| `trust.rs` | E-036 | signed-metadata freshness, trust roots, and rollback/freeze protection |
+| `check.rs` | E-037 | the TTL- and offline-aware check decision; a check never downloads or runs an installer |
+| `resolve.rs` | E-038 | the compatibility set, so "latest" is never assumed compatible |
+| `plan.rs` | E-039 | the plan document (backups, drain, rollback feasibility) and the approval rule for a major change |
+| `drain.rs` | E-040 | the bounded drain, where a forced kill is never the default path |
+| `backup.rs` | E-041 | hash-verified DB and managed-state backups, without which an irreversible migration is refused |
+
+Still absent at this revision: the `update apply` transaction, the platform
+activation steps, the post-update doctor and the state-aware rollback (tasks
+E-042 to E-045), and the `update` command line itself. Those modules are policy
+over injected inputs - none of them opens a socket or drains a real service on
+this host. What also exists is the admission guard and digest binding in the
+library, the portable refusal corpus under `fixtures/update/`, and the checker
+described in section 9.
 
 The normative policy for this slice is
 `docs/20-VERSION-CHECK-UPDATE-RELEASE.md` in `axiom-specs`. Two rules decide
