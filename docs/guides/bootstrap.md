@@ -6,16 +6,14 @@ that a compiled `axiom` CLI or a working `bootstrap` command exists; **no
 `axiom bootstrap ...` command is invoked in this guide, because that command is
 not implemented yet.**
 
-**Status: the bootstrap engine is not implemented at this revision.** This page
-is the contract, not an observation. `crates/axiom/src/bootstrap/` does not
-exist on this branch; the discovery, marker parsing, separate policy file,
-ownership hashes, reviewable plan, before-hash verification, apply journal and
-idempotent drift report described here are owned by tasks E-013 to E-025, and
-the host adapters and skill bundles by E-026 to E-034; every one of those task
-cards is still `todo`. What does exist is the `axiom`
-argv layer that recognises the verb and refuses rather than pretending, the
-static bootstrap corpus under `fixtures/bootstrap/`, and the checker described
-in section 6.
+**Status: the bootstrap engine's policy half is implemented and unit-tested; the
+operator command is not.** This page is the contract, not an observation. The
+modules for tasks E-013 to E-025 exist under `crates/axiom/src/bootstrap/`; the
+argv wiring, host adapters and skill bundles for E-026 to E-047 are still
+`todo`. Beyond the engine, what exists is the `axiom` argv layer that recognises
+the verb and refuses rather than pretending, the static bootstrap corpus under
+`fixtures/bootstrap/`, and the checker described in section 6. Section 8 records
+exactly what was executed and what was not.
 
 The normative policy for this slice is
 `docs/18-BOOTSTRAP-AND-MANAGED-INSTRUCTIONS.md`. Bootstrap writes two owned
@@ -207,10 +205,26 @@ authentication, and never force-pushes a repository to make a plan pass.
 
 ## 8. Status and limits
 
-The bootstrap engine is **not implemented yet**. In this repository the
-bootstrap modules named by tasks E-013 to E-047
-(`crates/axiom/src/bootstrap/...`) do not exist on the integrated branch.
-Two things do exist, and both matter to an operator:
+The bootstrap engine's **policy half is implemented and unit-tested**; the
+operator surface is not. The modules for tasks E-013 to E-025 exist under
+`crates/axiom/src/bootstrap/`:
+
+- E-013 to E-021 — the approved repository set, fence-aware marker parsing,
+  byte/BOM/newline-preserving text handling, the separate managed policy file,
+  the ownership manifest, the reviewable read-only plan, before-hash
+  re-verification with the apply lock, the journaled apply and the idempotent
+  drift report;
+- E-022 to E-025 — `crates/axiom/src/bootstrap/update.rs` (the version-gated
+  managed update), `crates/axiom/src/bootstrap/gitignore.rs` (the
+  marker-delimited ignore lane), `crates/axiom/src/bootstrap/commit_plan.rs`
+  (the path-scoped, grant-gated commit proposal) and
+  `crates/axiom/src/bootstrap/rollback.rs` (the hash-checked reverse of an
+  apply).
+
+Those modules are pure policy over bytes plus explicitly named host adapters;
+they were exercised by the crate's unit tests inside the pinned Linux
+verification container, not by a release build of the CLI. Two further things
+exist, and both matter to an operator:
 
 - the `axiom` argv layer (`crates/axiom-cli` over `crates/axiom`, task E-001)
   lists `bootstrap` among its documented-but-pending verbs and maps it to
@@ -231,10 +245,18 @@ Two things do exist, and both matter to an operator:
 
 So today:
 
+- **implemented and unit-tested, not reachable from a CLI verb** — the whole
+  engine above, including the managed update (E-022), the ignore lane (E-023),
+  the commit proposal (E-024) and the rollback (E-025). The `bootstrap` verb is
+  still recognised-and-refused, so it cannot drive any of them yet.
 - **not available / unverified** — `axiom bootstrap plan`,
   `axiom bootstrap apply`, the plan digest and the apply journal described in
   sections 1 and 3. The `bootstrap` verb is recognised and refuses with
   `NOT_READY` (exit 4); it does not plan, diff, approve or apply anything.
+- **not implemented** — a live `git` executor behind the commit proposal. Task
+  E-024 records the `git` calls a granted run would make through an executor
+  trait instead of running `git` from the engine, so no real staging, commit or
+  push is performed by this slice.
 - **available and unverified in this document** — `axiom version` and
   `axiom version --all` (task E-001). The workspace builds them, but this
   documentation-only task did not compile or run the `axiom` binary.
@@ -257,9 +279,10 @@ So today:
   offline behavior reference for experimenting with managed `AGENTS.md` across
   repositories. It is not the production host configuration or updater, and it
   does not replace the Spec-E implementation.
-- **unverified on non-Windows hosts** — nothing here was executed on Linux or
-  macOS; encoding and privilege behavior on those hosts is described from the
-  policy, not measured.
+- **not measured on non-Linux hosts** — the engine unit tests ran in a pinned
+  Linux container, but no live daemon, no live repository and no native
+  Windows/macOS runtime was exercised; encoding and privilege behavior on those
+  hosts is described from the policy, not measured.
 
 See `docs/22-OPERATIONS-AND-TROUBLESHOOTING.md` for the operator-state table,
 `docs/21-INSTALLATION.md` for where bootstrap sits in a first install, and
