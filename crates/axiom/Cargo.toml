@@ -19,6 +19,7 @@ graph-core.workspace = true
 graph-export.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+axiom-platform = { version = "0.0.0-dev", path = "../platform" }
 getrandom.workspace = true
 
 [dev-dependencies]

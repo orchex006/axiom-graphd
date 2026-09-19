@@ -66,6 +66,7 @@
 pub mod backup;
 pub mod check;
 pub mod drain;
+pub mod native_apply;
 pub mod plan;
 pub mod policy;
 pub mod python_env;
