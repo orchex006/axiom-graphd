@@ -10,6 +10,7 @@ These guides are owned and released with `axiom-graphd`. They describe intended 
 - [22-OPERATIONS-AND-TROUBLESHOOTING](22-OPERATIONS-AND-TROUBLESHOOTING.md)
 - [WATCHER-QUEUE-AND-ANALYSIS](WATCHER-QUEUE-AND-ANALYSIS.md)
 - [CLI-EXIT-CODES](CLI-EXIT-CODES.md)
+- [native-operations](native-operations.md)
 
 Platform install runbooks and the command reference:
 
