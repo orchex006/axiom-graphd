@@ -11,6 +11,7 @@
 //! writes stay in the bootstrap/install path that owns them, which is why the
 //! per-host plans here can be reviewed as pure byte transformations.
 
+pub mod antigravity;
 pub mod claude;
 pub mod codex;
 pub mod detect;

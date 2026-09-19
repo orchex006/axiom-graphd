@@ -166,6 +166,57 @@ uncertified policy path, a literal credential and a credential in the URL, a
 relative or shell-carrying stdio command, a document outside the schema, and an
 insert plan meeting an already-declared server.
 
+## Antigravity (E-030)
+
+`crates/axiom/src/hosts/antigravity.rs`.
+
+| Item | Value | Source |
+| --- | --- | --- |
+| skills (active) | `<root>/.agents/skills` | S13 |
+| skills (legacy, deprecated) | `<root>/.agent` | S13 |
+| rules (workspace/global) | `<root>/.agents/rules` | S14 |
+| MCP object | `mcpServers` | S15 |
+| remote field | `serverUrl` | S15 |
+
+`<root>` is the workspace root for `workspace` scope and the user home for
+`global` scope.
+
+**`serverUrl` is not Gemini's `httpUrl`.** S15 records that AGY uses `serverUrl`
+and that the Gemini field is not a substitute. `AgyServer` therefore renders
+`serverUrl` and refuses `httpUrl`, a bare `url`, `sseUrl` and Codex's
+`bearer_token_env_var` as foreign transport fields, so a copy-pasted Gemini or
+Codex block fails validation here instead of producing a server AGY ignores.
+
+**Locations are version-checked, and a deprecated path is never guessed.** AGY
+ships IDE and CLI surfaces whose layout differs by version. `AgyVersionGate::certify`
+requires a detected host version and refuses when the host reports no parseable
+version (`version-unconfirmed`) or a version below the floor the caller declares
+(`version-below-floor`); `certify_skills_dir` returns the active `.agents/skills`
+location and refuses the legacy `.agent` location as `deprecated-path-refused`
+*naming the active path in the refusal* rather than translating the request into
+the deprecated layout. `certify_rules_dir` certifies only the documented
+workspace/global rule location.
+
+**No config-file path is claimed.** The AGY MCP config path is per surface (S15)
+and is not certified by the reviewed seeds, so this adapter carries no
+config-file path at all: `AgyPlan` exposes the certified skills and rules
+locations and deliberately no `target_file`, and `apply` is a pure merge over a
+document the caller already holds.
+
+### Tests
+
+```bash
+cargo test -p axiom hosts::antigravity
+```
+
+Positive: a host at the declared floor is certified; the two scopes pair a skills
+directory with a rules directory; the remote transport renders `serverUrl` and
+parses back to the same server; insert and replace preserve every other server.
+Negative: a host below the floor, an unparsed host version, the deprecated legacy
+skills path, an uncertified skills or rules path, a foreign transport field, an
+unknown field, a transport-less entry, a literal credential and a credential in
+the URL, plaintext non-loopback HTTP, an oversized document and an unsafe root.
+
 ## Platform coverage and unrun checks (all adapters)
 
 - Exercised in the pinned Linux container (`axiom-rust-git:1.85`). `cargo test`
