@@ -9,8 +9,11 @@
 //! * [`plan`] -- the dry-run plan: component versions, destinations, download
 //!   sources, required permissions, service changes and planned network access
 //!   (task E-004).
+//! * [`verify`] -- the fail-closed trust gate: trusted metadata and the actual
+//!   bytes must agree before anything is executed (task E-005).
 //!
-//! Verification and activation land as their own work packages and record their
-//! own task ids, the same way every module in this crate does.
+//! Activation lands as its own work package and records its own task id, the
+//! same way every module in this crate does.
 
 pub mod plan;
+pub mod verify;
