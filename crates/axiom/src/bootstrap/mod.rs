@@ -44,6 +44,7 @@ pub mod policy;
 pub mod preconditions;
 pub mod repos;
 pub mod text;
+pub mod verify;
 
 /// Schema version of the bootstrap documents this build writes.
 ///
