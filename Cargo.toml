@@ -16,6 +16,10 @@ members = [
     "crates/axiom-graphd",
     "crates/axiom",
     "crates/axiom-cli",
+    "crates/platform",
+    "crates/config",
+    "crates/migration",
+    "crates/bootstrap",
 ]
 
 [workspace.package]

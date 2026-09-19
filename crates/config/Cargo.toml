@@ -1,0 +1,20 @@
+[package]
+name = "axiom-config"
+description = "Axiom graph engine: logical repository bindings whose absolute roots stay private"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+# Portable-id, absolute-host-path and storage-class policy is shared so the
+# binding rules cannot drift from the path rules they depend on.
+graph-core = { version = "0.0.0-dev", path = "../graph-core" }
+
+[dev-dependencies]
+tempfile.workspace = true
