@@ -40,6 +40,7 @@ pub mod markers;
 pub mod ownership;
 pub mod plan;
 pub mod policy;
+pub mod preconditions;
 pub mod repos;
 pub mod text;
 
