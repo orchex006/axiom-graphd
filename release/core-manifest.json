@@ -1,0 +1,91 @@
+{
+  "manifest_version": 1,
+  "manifest_kind": "axiom-core-release",
+  "owner_repository": "axiom-graphd",
+  "spec_card": "E-048",
+  "contract": "axiom-specs/docs/20-VERSION-CHECK-UPDATE-RELEASE.md",
+  "note": "One core release. The daemon `axiom-graphd` and the installation CLI `axiom` are built from one Rust workspace, one version and one revision, and are published together. There is no separate `axiom-bootstrap` release component. This file declares that release and records honestly what this workstream verified and what it did not: it is a declaration, not a publication record, and it claims no artifact that was not built.",
+  "release": {
+    "name": "axiom-core",
+    "version": "0.0.0-dev",
+    "version_source": "Cargo.toml [workspace.package].version",
+    "revision": "unpinned",
+    "revision_state": "not_pinned",
+    "revision_note": "The release gate is closed for this workstream, so no commit is pinned and no tag is created. An authorized maintenance workflow replaces `unpinned` with the 40-character build revision and re-runs tests/core_manifest.py.",
+    "components": [
+      {
+        "name": "axiom-graphd",
+        "role": "daemon",
+        "version": "0.0.0-dev",
+        "revision": "unpinned",
+        "cargo_package": "crates/axiom-graphd"
+      },
+      {
+        "name": "axiom",
+        "role": "cli",
+        "version": "0.0.0-dev",
+        "revision": "unpinned",
+        "cargo_package": "crates/axiom-cli"
+      }
+    ],
+    "separate_bootstrap_component": null,
+    "bootstrap_note": "Bootstrap and installer behaviour live inside this same workspace and ship in this same core release; there is no second component, no second version and no second publication for them.",
+    "source": {
+      "workspace_toml": "Cargo.toml",
+      "workspace_toml_sha256": "a89024bba69fed1af642cbcbc49e278c2a402fb17eea8091613231373cb2652c",
+      "lockfile": "Cargo.lock",
+      "lockfile_sha256": "b75a1dfde4174fb5e9fe1830818cd19d61a5b4c5785fde26c270ea9dcca007c4",
+      "lockfile_state": "checked_in"
+    },
+    "targets": [
+      {
+        "platform": "windows-x64",
+        "os": "windows",
+        "arch": "x86_64",
+        "rust_target": "x86_64-pc-windows-msvc",
+        "archive": { "name": "axiom-0.0.0-dev-windows-x64.zip", "state": "not_built", "sha256": null },
+        "sbom": { "name": "axiom-0.0.0-dev-windows-x64.sbom.json", "state": "not_built", "sha256": null },
+        "executables": ["axiom-graphd.exe", "axiom.exe"],
+        "signature": { "state": "required", "scheme": "minisign-ed25519", "key_id": null }
+      },
+      {
+        "platform": "linux-x64",
+        "os": "linux",
+        "arch": "x86_64",
+        "rust_target": "x86_64-unknown-linux-gnu",
+        "archive": { "name": "axiom-0.0.0-dev-linux-x64.tar.gz", "state": "not_built", "sha256": null },
+        "sbom": { "name": "axiom-0.0.0-dev-linux-x64.sbom.json", "state": "not_built", "sha256": null },
+        "executables": ["axiom-graphd", "axiom"],
+        "signature": { "state": "required", "scheme": "minisign-ed25519", "key_id": null }
+      },
+      {
+        "platform": "macos-arm64",
+        "os": "macos",
+        "arch": "aarch64",
+        "rust_target": "aarch64-apple-darwin",
+        "archive": { "name": "axiom-0.0.0-dev-macos-arm64.tar.gz", "state": "not_built", "sha256": null },
+        "sbom": { "name": "axiom-0.0.0-dev-macos-arm64.sbom.json", "state": "not_built", "sha256": null },
+        "executables": ["axiom-graphd", "axiom"],
+        "signature": { "state": "required", "scheme": "minisign-ed25519", "key_id": null }
+      }
+    ],
+    "compatibility": {
+      "spec_version": "2.0.0-draft.1",
+      "graph_schema_version": 1,
+      "control_api_version": 1,
+      "queue_schema_version": 1,
+      "notes": "The daemon and the CLI share one core version and one graph/control/queue schema set, so a mixed daemon/CLI pair from the same release is the only supported combination; see crates/axiom/src/version.rs, which this file is checked against by tests/core_manifest.py."
+    },
+    "signature": {
+      "state": "required",
+      "scheme": "minisign-ed25519",
+      "key_id": null,
+      "note": "Signing is an authorized maintenance step and is not performed here. A release is not publishable while any signature state is `required` and no key id is recorded."
+    },
+    "publication": {
+      "state": "not_published",
+      "tag": null,
+      "reason": "This workstream keeps the release gate closed: no tag, no release, no publish. Publication is a separate authorized maintenance action."
+    }
+  }
+}

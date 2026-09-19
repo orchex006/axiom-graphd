@@ -21,13 +21,17 @@ E-035 to E-041:
 | `crates/axiom/src/update/drain.rs` | E-040 | the bounded drain, where a forced kill is never the default path |
 | `crates/axiom/src/update/backup.rs` | E-041 | hash-verified DB and managed-state backups, without which an irreversible migration is refused |
 
-Still absent at this revision: the `update apply` transaction, the platform
-activation steps, the post-update doctor and the state-aware rollback (tasks
-E-042 to E-045), and the `update` command line itself. Those modules are policy
-over injected inputs - none of them opens a socket or drains a real service on
-this host. What also exists is the admission guard and digest binding in the
-library, the portable refusal corpus under `fixtures/update/`, and the checker
-described in section 9.
+Also present at this revision: the platform activation and the post-update
+doctor, the state-aware rollback and the update policy (tasks E-042 to E-046),
+the redacted support bundle (E-047) and the core release manifest with its
+regression check (E-048). Every one of those is policy over injected inputs or
+mutation through a small trait: none of them opens a socket, spawns a shell,
+drains a real service, creates a tag or publishes anything on this host. What is
+still absent is the `update` command line itself, which stays a recognised and
+refused verb (`NOT_READY`), so the transaction exists as reviewable library
+modules rather than as a runnable command. What else exists is the admission
+guard and digest binding in the library, the portable refusal corpus under
+`fixtures/update/`, and the checker described in section 9.
 
 The normative policy for this slice is
 `docs/20-VERSION-CHECK-UPDATE-RELEASE.md` in `axiom-specs`. Two rules decide
@@ -259,7 +263,9 @@ a scenario the corpus does not contain. `checksum_alone_proves_publisher` is
 
 ## 11. Status and limits
 
-The updater is **not implemented as a command yet**. What exists is the trust
+The updater is **not implemented as a command yet**. What exists is the policy
+and activation transaction of tasks E-035 to E-048 in
+`crates/axiom/src/update/` and `crates/axiom/src/support.rs`, the trust
 and schema admission surface and the delegated argv handling in the library
 (`crates/axiom-graphd/src/update_guard.rs`,
 `crates/axiom-graphd/src/commands/update.rs`) plus the portable refusal corpus
