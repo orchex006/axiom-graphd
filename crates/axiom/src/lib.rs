@@ -12,6 +12,7 @@
 //! Each module records the bounded task that added it, so every behaviour maps
 //! back to one reviewable task card.
 
+pub mod bootstrap;
 pub mod cli;
 pub mod discovery;
 pub mod install;
