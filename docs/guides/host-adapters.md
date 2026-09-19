@@ -70,6 +70,54 @@ transport conflict, a transport-less table, a literal credential, a credential i
 the URL, plaintext remote HTTP, a `[[table]]`, an inline table, a float, a
 multi-line string, a duplicate key, an oversized value and an oversized document.
 
+## Claude Code (E-028)
+
+`crates/axiom/src/hosts/claude.rs`.
+
+| Item | Value | Source |
+| --- | --- | --- |
+| user config | `~/.claude.json` | S20 |
+| user instruction | `~/.claude/CLAUDE.md` | S12 |
+| project config | `<project>/.mcp.json` | S20 |
+| project instruction | `<project>/CLAUDE.md` | S12 |
+| MCP object | `mcpServers` | S20 |
+| HTTP fields | `type` + `url` (native schema) | S20 |
+| policy object | `permissions` (never written) | S20 |
+
+**Config scope and instruction discovery travel together.** `scope_files`
+returns one scope's config file and instruction file as a single value, so a plan
+cannot render a project-scoped server while claiming a user-scoped instruction
+file. An unrecognised scope is refused (`unsupported-scope`) rather than mapped to
+a default.
+
+**Existing permissions are never widened.** Claude Code enforces tool permissions
+from `permissions.allow`/`permissions.deny`. The merge touches only `mcpServers`,
+so an existing `permissions` object, an existing `hooks` object and every unknown
+top-level key survive by value, and `assert_permissions_not_widened` refuses a
+request whose `permissions.allow` would add an entry the document does not already
+hold - it walks the parsed object rather than matching the literal `allow` key, so
+a nested or reordered object cannot slip a widening through.
+
+**JSON is merged by value.** JSON has no comments, so a rewrite can lose only
+whitespace and key order. The document is parsed with `serde_json` and
+re-serialised, which normalises key order to sorted and indentation to two spaces.
+That normalisation is a recorded limitation, not a preservation guarantee; every
+*value* outside the managed entry survives.
+
+### Tests
+
+```bash
+cargo test -p axiom hosts::claude
+```
+
+Positive: the two scopes pair a config file with an instruction file; appending
+preserves every other server, the `permissions` object and unknown top-level keys;
+replacing the managed entry changes only that entry; the fragment carries the
+managed block markers. Negative: a foreign transport field, an unsupported scope,
+a permission the document does not hold, a literal credential and a credential in
+the URL, a relative or shell-carrying stdio command, a document outside the
+schema, and an insert plan meeting an already-declared server.
+
 ## Platform coverage and unrun checks (all adapters)
 
 - Exercised in the pinned Linux container (`axiom-rust-git:1.85`). `cargo test`
