@@ -16,6 +16,10 @@
 //!   the current one atomically, with rollback metadata (task E-006).
 //! * [`credentials`] -- the scoped MCP and local service credentials the
 //!   daemon control surface accepts (task E-007).
+//! * [`uninstall`] -- the planned removal of the runtime components this
+//!   install owns, which preserves project source, annotations, checkpoint JSON
+//!   and user instructions unless a separate approval purges user data
+//!   (task E-012).
 //!
 //! Verification and activation land as their own work packages and record their
 //! own task ids, the same way every module in this crate does.
@@ -23,4 +27,5 @@
 pub mod apply;
 pub mod credentials;
 pub mod plan;
+pub mod uninstall;
 pub mod verify;
