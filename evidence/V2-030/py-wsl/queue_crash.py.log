@@ -1,0 +1,2 @@
+not_run: cargo test --locked -p graph-queue claim ack recover (real queue state machine; no Rust build taken in this lane)
+ok: F-013 lease fencing holds; 4 positive legs, 3 negative legs rejected as required

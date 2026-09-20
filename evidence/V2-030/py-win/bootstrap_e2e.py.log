@@ -1,0 +1,4 @@
+not_run: the production Rust bootstrap engine (crates/axiom/src/bootstrap/{plan,apply,update,commit_plan,ownership,markers,preflight}.rs): this harness cannot link the crate; run 'cargo test --locked -p axiom-graphd --test bootstrap_fixtures'
+not_run: a real host installation and a real axiom CLI invocation (no installed host on this machine)
+not_run: native Windows and macOS runtime evidence (the Rust gate runs inside the Docker lane, not on this host)
+ok: F-032 replayed 16 corpus vectors and proved a real multi-repository update reports every repository exactly once, leaves the conflicted repository byte-identical, writes nothing outside the owned set, and commits or pushes nothing without an explicit grant

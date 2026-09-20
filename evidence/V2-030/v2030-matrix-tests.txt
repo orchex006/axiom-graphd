@@ -1,0 +1,62 @@
+# V2-030 matrix enforcement and repository gate record
+# host      : Microsoft Windows 11 Pro 10.0.26200 x64 (PowerShell 7.6.6, Python 3.13.14)
+# revision  : 682269338706c8ffc7d81efc0b266b5ac5a66765
+# captured  : 2026-09-20T14:27:55.0809872+07:00
+
+## 1. Rust integration test that embeds the matrix
+command : cargo test --locked -p axiom-graphd --test native_matrix
+exit    : 0
+raw log : evidence/V2-030/matrix-tests.run.log
+result  : ok. 7 passed; 0 failed; 0 ignored; 1 test binary
+tests   :
+  native_matrix_covers_exactly_the_mandatory_targets
+  native_matrix_verified_rows_are_backed_by_committed_evidence
+  native_matrix_not_run_rows_state_a_reason_and_claim_nothing_else
+  native_matrix_row_validator_rejects_broken_rows
+  native_matrix_parser_rejects_malformed_documents
+  native_matrix_python_checker_agrees_with_the_document
+  native_matrix_python_checker_negative_controls_are_caught
+
+The test compiles tests/native/README.md in with include_str! and reads the committed
+evidence files the rows name, so a row cannot drift away from its evidence unnoticed.
+
+## 2. What the Rust row validator rejects (proved by native_matrix_row_validator_rejects_broken_rows)
+  a verified row with artifact_sha256 = '-'                       -> rejected
+  a verified row whose hash does not appear in its evidence file  -> rejected
+  a verified row with exit = '-'                                  -> rejected
+  a verified row with toolchain = '-'                             -> rejected
+  a verified row claiming scope 'none'                            -> rejected
+  a not_run row with note = '-' (no reason)                       -> rejected
+  a not_run row carrying a 64-hex digest in its note              -> rejected
+  a not_run row carrying an exit status                           -> rejected
+  a macOS row whose reason is not the real one                    -> rejected
+  the unmodified verified and not_run rows                        -> still accepted (control)
+
+## 3. What the Rust parser rejects (proved by native_matrix_parser_rejects_malformed_documents)
+  the sentinels removed            -> rejected
+  the header renamed               -> rejected
+  the table with no data rows       -> rejected
+  a row with an extra cell          -> rejected
+  a row missing a cell              -> rejected
+
+## 4. Python matrix checker (stdlib only, carries its own negative controls)
+command : python tests/native/check_matrix.py            exit 0  -> PASS native matrix: all four mandatory targets are legitimate and every evidence file backs its row
+command : python tests/native/check_matrix.py --self-test exit 0 -> PASS self-test: every negative control rejected, clean copy accepted
+raw log : evidence/V2-030/matrix-checker.run.log
+
+## 5. Repository gates (.cargo/config.toml aliases; rustflags -D warnings)
+command : cargo fmt-check        exit 0    evidence/V2-030/gate-fmt-check.log
+command : cargo lint             exit 0    evidence/V2-030/gate-lint.log   (clippy --locked --all-targets -- -D warnings)
+command : cargo test --locked -p axiom-graphd --all-targets   exit 0   evidence/V2-030/gate-test-graphd.log
+          113 library tests plus the integration suites, including this task's 7 native_matrix tests
+command : python tools/check-doc-status.py --root .   exit 0   evidence/V2-030/gate-doc-status.log
+command : cargo verify           exit 101  evidence/V2-030/gate-verify.log
+          `verify` is `test --locked --all-targets` across the whole workspace. It stops at the
+          first failing test binary: crates/axiom unittests src/lib.rs, 463 passed and 44 failed.
+          All 44 failures are pre-existing at the base revision (this worktree's HEAD is that
+          revision and this task changes no file under crates/axiom) and they are the known
+          Windows host-path assertions in crates/axiom/src/hosts/*, src/service/{linux,macos}.rs
+          and src/install/uninstall.rs (for example hosts/claude.rs expects the reason
+          'stdio-command-not-absolute'). They are outside this card's scope and outside this
+          repository's owner boundary, and they are recorded here rather than hidden. The
+          axiom-graphd package, which this task owns, passes its own all-targets run above.

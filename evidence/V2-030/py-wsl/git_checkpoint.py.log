@@ -1,0 +1,2 @@
+not_run: cargo test --locked -p axiom-graphd checkpoint (real checkpoint source selection; no Rust build taken in this lane)
+ok: F-021 checkpoint accuracy holds; 3 positive legs, 3 negative legs rejected as required

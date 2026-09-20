@@ -1,0 +1,134 @@
+# V2-030 WSL2 Linux execution record (Ubuntu 26.04.1 LTS under WSL2 on the same Windows 11 host)
+#
+# This is a REAL Linux execution, but it is WSL2, not a bare-metal Ubuntu 24.04 host, and the
+# distribution matrix declares wsl2-linux-x64 as its own delivery platform. It is Linux
+# evidence and it is NOT Windows evidence.
+#
+# host kernel : 6.18.33.2-microsoft-standard-WSL2 x86_64
+# distribution: Ubuntu 26.04.1 LTS, glibc 2.43
+# interpreter : Python 3.14.4 (host Python; the harnesses are stdlib-only)
+# sqlite3 mod : 3.46.1 (the Linux host SQLite, NOT the bundled 3.50.2 of the Windows build)
+# cargo       : NOT-PRESENT in WSL, so no x86_64-unknown-linux-gnu artifact was built here
+# captured    : 2026-09-20T14:11:22.9939123+07:00
+# revision    : 682269338706c8ffc7d81efc0b266b5ac5a66765  (recorded from the Windows side: the worktree .git pointer is a Windows absolute path and does not resolve under /mnt)
+#
+# reproducible command (from the worktree root; the committed runner writes the per-harness logs and the manifest):
+wsl -d Ubuntu -u thanatmet-t -- bash evidence/V2-030/run-wsl-linux.sh
+# same command with the absolute path that was actually used:
+# wsl -d Ubuntu -u thanatmet-t -- bash /mnt/d/SP-Billy/axiom-worktrees/axiom-graphd-w10-v2030/evidence/V2-030/run-wsl-linux.sh
+
+## artifact produced by this leg
+artifact_sha256 : f3241af25085428499fd08221bc813ea567b920b0a8ee40337a5cdcf12736876
+artifact        : evidence/V2-030/wsl-linux-manifest.json
+meaning         : the run manifest of this Linux execution - kernel, distribution, interpreter, SQLite,
+                  the exit code and log/harness digest of every harness. No Linux Rust binary exists
+                  (cargo is not installed in WSL), so this is the only artifact this leg can hash.
+
+## ## exit status of the recorded invocation
+# captured on the Windows host side as the WSL process exit code (PowerShell 7 LASTEXITCODE)
+# the invocation recorded above was: wsl -d Ubuntu -u thanatmet-t -- bash evidence/V2-030/run-wsl-linux.sh
+exit    : 0
+# the runner exits 0 while non_zero_exits=1: the core_manifest.py divergence is reported as data,
+# it is not converted into a runner failure and it is not hidden
+# the leg was executed twice at this revision and produced the same manifest sha256 both times
+# (the per-harness s= timings differ between runs; every harness exit code was identical)
+platform identity and harness exit codes (verbatim stdout of the WSL run)
+  | tree=/mnt/d/SP-Billy/axiom-worktrees/axiom-graphd-w10-v2030
+  | pwd=/mnt/d/SP-Billy/axiom-worktrees/axiom-graphd-w10-v2030
+  | uname_srm=Linux 6.18.33.2-microsoft-standard-WSL2 x86_64
+  | os_release=PRETTY_NAME="Ubuntu 26.04.1 LTS"
+  | libc=ldd (Ubuntu GLIBC 2.43-2ubuntu2.3) 2.43
+  | python=Python 3.14.4
+  | sqlite3_module=3.46.1
+  | cargo=NOT-PRESENT
+  | git=git version 2.53.0
+  | 
+  | watch_save_burst.py          exit=0   s=0.4
+  | watch_overflow.py            exit=0   s=0.3
+  | queue_crash.py               exit=0   s=0.2
+  | queue_concurrent_edit.py     exit=0   s=0.2
+  | publish_crash.py             exit=0   s=0.2
+  | storage_failure.py           exit=0   s=0.2
+  | git_checkpoint.py            exit=0   s=0.4
+  | sqlite_migration.py          exit=0   s=0.2
+  | core_manifest.py             exit=2   s=0.7
+  | bootstrap_e2e.py             exit=0   s=1.3
+  | update_e2e.py                exit=0   s=0.5
+  | 
+  | non_zero_exits=1
+  | manifest=evidence/V2-030/wsl-linux-manifest.json
+
+## sha256 of the byte-identical harnesses executed on this target
+  816d1fccb64897846384cb84b0d5fe87c625a736f9c3cb821664809af5137bcc  tests/bootstrap_e2e.py
+  2e7ff7dcbbcafd345fd7832ceac04f885ea68ca95a7098aa490c4d0c96e2a0af  tests/core_manifest.py
+  acd9cd7e903a07093c0f7670557571504848bd21d916485a20930f56abdc6345  tests/git_checkpoint.py
+  7c1a5a8d3debefd34ca0e251d0d6eba9bda65965694db82e52830aaae5329cf1  tests/publish_crash.py
+  2284f52e93c9ed51c680fb930ba8d3de4ef335e38827502e7e8a13010834e39e  tests/queue_concurrent_edit.py
+  4121060562ef9325f83617acdb8eec532ef30e1a6d0179d95a515b0634092670  tests/queue_crash.py
+  260682af3854d5e90cdcf83406aea3e7e1f6a4a35969def0319fd07c9ab4c847  tests/sqlite_migration.py
+  653f8937433446cdd5dd1d898020f34aaed2c361a2493b8b7ea56ff2a65b4203  tests/storage_failure.py
+  c9f23bc3c9a4015393256f70bb3e11f7e43d91175730ec8d885b5c173155ba5d  tests/update_e2e.py
+  c1090557678be4d0d3e40e7735d616067ee261a1df0ae55956de6bbf1086f74a  tests/watch_overflow.py
+  8825cdcd6b45d527e0f23a04294a4e742a3d5484317065e194a6bf17dcdd6765  tests/watch_save_burst.py
+
+## sha256 of the tree inputs the harnesses re-read
+  a305a60ece0becf17756dd505c8596276d0135908a0ed742d427c19197a38e23  Cargo.toml
+  aadf2d19378ad7ace80ad7020a86dc1c40961f80e3f82fd48e087916dfe11de3  Cargo.lock
+  0c5536be1ceb9bc50fda6befe9bd06d7a2cce631614c0721538a07dc65d98553  release/core-manifest.json
+  82b2c601ae99d06d28bf67233cc7b355655bf1420be2d3244a4b54e9b496fad7  crates/axiom-graphd/src/version.rs
+  a0973bfd638fb4144ef569d58b8252b44893eb49801371bd02ac71824317f649  crates/axiom/src/version.rs
+
+## per-test logs (raw stdout+stderr captured inside WSL, committed unchanged)
+  evidence/V2-030/py-wsl/<harness>.log
+
+## honest limitations of this leg
+  - No cargo in WSL: no x86_64-unknown-linux-gnu artifact was built, so this leg carries no Linux binary hash.
+  - WSL2 kernel, not a bare-metal Ubuntu 24.04 LTS + glibc host; the systemd managed service, POSIX ACLs
+    and the native filesystem semantics of a real Linux installation were not exercised.
+  - Rust-side unit and integration tests (cargo test) were not run on Linux.
+  - core_manifest.py exits 2 here for the same pre-existing reason as on Windows: release/core-manifest.json
+    records a stale lockfile_sha256 (V2-021 territory, not touched by this task).
+
+## reproduction with the owner-specified WSL invocation
+
+The recorded leg above was executed as
+    wsl -d Ubuntu -u thanatmet-t -- bash evidence/V2-030/run-wsl-linux.sh
+It was then re-executed at the same revision with the owner-specified form of the same
+invocation (single-line command through a login shell):
+
+    wsl -d Ubuntu -u thanatmet-t -- bash -lc 'bash /mnt/d/SP-Billy/axiom-worktrees/axiom-graphd-w10-v2030/evidence/V2-030/run-wsl-linux.sh'
+
+Observed result of that re-execution (verbatim capture; the WSL process exit code observed on
+the Windows host side was 0):
+
+    tree=/mnt/d/SP-Billy/axiom-worktrees/axiom-graphd-w10-v2030
+    pwd=/mnt/d/SP-Billy/axiom-worktrees/axiom-graphd-w10-v2030
+    uname_srm=Linux 6.18.33.2-microsoft-standard-WSL2 x86_64
+    os_release=PRETTY_NAME="Ubuntu 26.04.1 LTS"
+    libc=ldd (Ubuntu GLIBC 2.43-2ubuntu2.3) 2.43
+    python=Python 3.14.4
+    sqlite3_module=3.46.1
+    cargo=NOT-PRESENT
+    git=git version 2.53.0
+    
+    watch_save_burst.py          exit=0   s=0.2
+    watch_overflow.py            exit=0   s=0.2
+    queue_crash.py               exit=0   s=0.2
+    queue_concurrent_edit.py     exit=0   s=0.2
+    publish_crash.py             exit=0   s=0.2
+    storage_failure.py           exit=0   s=0.2
+    git_checkpoint.py            exit=0   s=0.4
+    sqlite_migration.py          exit=0   s=0.2
+    core_manifest.py             exit=2   s=0.6
+    bootstrap_e2e.py             exit=0   s=1.3
+    update_e2e.py                exit=0   s=0.6
+    
+    non_zero_exits=1
+    manifest=evidence/V2-030/wsl-linux-manifest.json
+
+Every byte this re-execution wrote was compared with the earlier run: the eleven per-harness
+logs and the manifest, twelve files in all, were identical (0 differences), so
+wsl-linux-manifest.json still hashes to
+f3241af25085428499fd08221bc813ea567b920b0a8ee40337a5cdcf12736876. The re-execution exit code
+was 0 and the per-harness exit codes were unchanged: ten harnesses exit 0 and core_manifest.py
+exit 2 (the pre-existing stale lockfile digest, see the note above).

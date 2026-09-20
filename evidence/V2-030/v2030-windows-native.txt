@@ -1,0 +1,161 @@
+# V2-030 native Windows 11 x64 execution record
+# host      : Microsoft Windows 11 Pro build 26200 (10.0.26200), 64-bit
+# cpu       : 13th Gen Intel(R) Core(TM) i7-1355U
+# triple    : x86_64-pc-windows-msvc
+# artifact  : target/debug/axiom-graphd.exe  sha256 77f15708dd1112053989d582750541c99a19dfbe529aaeda0a6d912baf363285
+# artifact  : target/debug/axiom.exe          sha256 6309b3e06c1252bede8cd707a43c277eeb855223abe2a8a8db211b090e0e6039
+# captured  : 2026-09-20T14:03:31.4118704+07:00
+# commit    : 682269338706c8ffc7d81efc0b266b5ac5a66765
+
+## [cmd01] version --json (the frozen version report plus the runtime facts)
+command : target\debug\axiom-graphd.exe version --json
+exit    : 0
+stdout  :
+  | {"component":"axiom-graphd","version":"0.0.0-dev","spec_version":"2.0.0-draft.1","graph_schema":1,"control_api":1,"queue_schema":1,"build_revision":"unknown","update_status":"unconfigured","sqlite_version":"3.50.2","sqlite_wal_baseline":"3.51.3","sqlite_wal_supported":false,"analyzers":[]}
+stderr  :
+  | (empty)
+
+## [cmd02] version (no --json; JSON is the only version payload)
+command : target\debug\axiom-graphd.exe version
+exit    : 0
+stdout  :
+  | {"component":"axiom-graphd","version":"0.0.0-dev","spec_version":"2.0.0-draft.1","graph_schema":1,"control_api":1,"queue_schema":1,"build_revision":"unknown","update_status":"unconfigured","sqlite_version":"3.50.2","sqlite_wal_baseline":"3.51.3","sqlite_wal_supported":false,"analyzers":[]}
+stderr  :
+  | (empty)
+
+## [cmd03] --help (usage plus the frozen exit-code table)
+command : target\debug\axiom-graphd.exe --help
+exit    : 0
+stdout  :
+  | axiom-graphd - Axiom graph engine daemon
+  | 
+  | Usage: axiom-graphd <command> [options]
+  | 
+  | Commands:
+  |   serve [--registry <path>] [--json]   run the foreground daemon
+  |   version [--json]                     print component, build and runtime versions
+  |   doctor [--solution <id>] [--json]    print diagnostics (never repairs automatically)
+  |   status --solution <id> [--json]      print queue, freshness and coverage state
+  |   solution register|list|remove ...    administer the solution registry
+  |   changed ...                          accept explicit changed-file hints
+  |   reconcile ...                        request a bounded reconcile
+  |   queue list|retry|cancel ...          inspect and steer the operational queue
+  |   query context|impact ...             bounded context and impact over a pinned snapshot
+  |   update check|apply ...               delegate to the trusted axiom CLI
+  |   help, --help                         print this help
+  | 
+  | Options:
+  |   --json    write exactly one JSON object to stdout; diagnostics go to stderr
+  | 
+  | Operator slices (task H-001):
+  |   changed
+  |       changed --solution <id> --project <project> --path <repo-relative> --reason <manual|git|tool|reconcile> [--json]
+  |       changed --solution <id> --from-json <changes.json> [--json]
+  |   queue
+  |       queue list --solution <id> [--limit <n>] [--json]
+  |       queue retry --job <id> [--json]
+  |       queue cancel --job <id> [--json]
+  |   solution
+  |       solution register --config <solution.yaml> [--bindings <bindings.json>] (--dry-run|--apply) [--json]
+  |       solution list [--solution <id>] [--json]
+  |       solution remove --solution <id> (--dry-run|--apply) [--json]
+  |   doctor
+  |       doctor [--solution <id>] [--json]
+  |   reconcile
+  |       reconcile --solution <id> --scope dirty [--wait] [--timeout <ms|Ns>] [--json]
+  |       reconcile --solution <id> --scope project --project <project> [--json]
+  |       reconcile --solution <id> --scope full [--json]
+  |   query
+  |       query context --solution <id> (--symbol <name>|--node-id <id>) [--max-bytes <n>] [--max-nodes <n>] [--depth <n>] [--json]
+  |       query impact --solution <id> (--symbol <name>|--node-id <id>) [--max-bytes <n>] [--max-nodes <n>] [--depth <n>] [--json]
+  |   update
+  |       update check [--json]
+  |       update apply --plan <plan.json> [--approve-digest <sha256>] [--json]
+  | 
+  | Exit codes:
+  |   0  success
+  |   2  validation
+  |   3  not found
+  |   4  not ready/stale
+  |   5  authorization
+  |   6  conflict
+  |   7  timeout/busy
+  |   8  I/O internal
+  |   9  incompatible
+  |   10  lock unavailable
+  |   20  partial multi-repo operation
+stderr  :
+  | (empty)
+
+## [cmd04] status --solution demo-solution --json (wired H-001 verb: expected NOT_READY)
+command : target\debug\axiom-graphd.exe status --solution demo-solution --json
+exit    : 4
+stdout  :
+  | {"code":"NOT_READY","message":"status has no open store in this build; the status reader is implemented by a later work package","retryable":true,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"NOT_READY: status has no open store in this build; the status reader is implemented by a later work package","target":"axiom-graphd"}
+
+## [cmd05] doctor --json (expected NOT_READY)
+command : target\debug\axiom-graphd.exe doctor --json
+exit    : 4
+stdout  :
+  | {"code":"NOT_READY","message":"doctor has no status sources in this build; the diagnostic inventory is implemented by a later work package","retryable":true,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"NOT_READY: doctor has no status sources in this build; the diagnostic inventory is implemented by a later work package","target":"axiom-graphd"}
+
+## [cmd06] reconcile --solution demo-solution --scope full --json (expected NOT_READY)
+command : target\debug\axiom-graphd.exe reconcile --solution demo-solution --scope full --json
+exit    : 4
+stdout  :
+  | {"code":"NOT_READY","message":"the reconcile plan has no queue writer in this build; the queue writer is implemented by a later work package","retryable":true,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"NOT_READY: the reconcile plan has no queue writer in this build; the queue writer is implemented by a later work package","target":"axiom-graphd"}
+
+## [cmd07] queue list --solution demo-solution --json (expected NOT_READY)
+command : target\debug\axiom-graphd.exe queue list --solution demo-solution --json
+exit    : 4
+stdout  :
+  | {"code":"NOT_READY","message":"the operational queue has no open store in this build; the queue reader is implemented by a later work package","retryable":true,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"NOT_READY: the operational queue has no open store in this build; the queue reader is implemented by a later work package","target":"axiom-graphd"}
+
+## [cmd08] solution list --json (expected NOT_READY)
+command : target\debug\axiom-graphd.exe solution list --json
+exit    : 4
+stdout  :
+  | {"code":"NOT_READY","message":"solution administration needs the user-owned registry write path that a later work package adds; this build writes no registry","retryable":true,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"NOT_READY: solution administration needs the user-owned registry write path that a later work package adds; this build writes no registry","target":"axiom-graphd"}
+
+## [cmd09] changed --solution demo-solution --from-json changes.json --json (expected NOT_READY)
+command : target\debug\axiom-graphd.exe changed --solution demo-solution --from-json changes.json --json
+exit    : 4
+stdout  :
+  | {"code":"NOT_READY","message":"the verified change-hint path has no open store binding in this build; the store binding is implemented by a later work package","retryable":true,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"NOT_READY: the verified change-hint path has no open store binding in this build; the store binding is implemented by a later work package","target":"axiom-graphd"}
+
+## [cmd10] query context --solution demo-solution --symbol Foo --json (expected NOT_READY)
+command : target\debug\axiom-graphd.exe query context --solution demo-solution --symbol Foo --json
+exit    : 4
+stdout  :
+  | {"code":"NOT_READY","message":"bounded context and impact have no pinned snapshot source in this build; the snapshot binding is implemented by a later work package","retryable":true,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"NOT_READY: bounded context and impact have no pinned snapshot source in this build; the snapshot binding is implemented by a later work package","target":"axiom-graphd"}
+
+## [cmd11] update check --json (expected NOT_READY)
+command : target\debug\axiom-graphd.exe update check --json
+exit    : 4
+stdout  :
+  | {"code":"NOT_READY","message":"delegated update apply has no trusted axiom CLI path in this build; the delegated launch is implemented by a later work package","retryable":true,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"NOT_READY: delegated update apply has no trusted axiom CLI path in this build; the delegated launch is implemented by a later work package","target":"axiom-graphd"}
+
+## [cmd12] axiom version --all --json (the installation CLI shares this release)
+command : target\debug\axiom.exe version --all --json
+exit    : 0
+stdout  :
+  | {"components":[{"component":"axiom","version":"0.0.0-dev","spec_version":"2.0.0-draft.1","graph_schema":1,"control_api":1,"queue_schema":1,"build_revision":"unknown","update_status":"unconfigured"},{"component":"axiom-graphd","version":"0.0.0-dev","spec_version":"2.0.0-draft.1","graph_schema":1,"control_api":1,"queue_schema":1,"build_revision":"unknown","update_status":"unconfigured"}]}
+stderr  :
+  | (empty)
+

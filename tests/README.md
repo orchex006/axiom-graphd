@@ -74,6 +74,19 @@ evidence (V2-021).
   the host is below the documented minimum. The case-only rename leg of F-012 and
   the case-only workspace behaviour depend on the host filesystem.
 
+## Native platform matrix
+
+`tests/native/README.md` is the native-execution record for contract CP-01: one
+row per mandatory release target (`windows-x64`, `linux-x64`, `macos-x64`,
+`macos-arm64`) with the executed command, the observed result, the artifact
+hash, the toolchain identity and the evidence status. A row is `verified` only
+for a real execution on that target; an unperformed target is `not_run` with a
+stated reason and no digest. `tests/native/check_matrix.py` and the Rust test
+`crates/axiom-graphd/tests/native_matrix.rs` fail the repository when a row
+breaks either rule, and `python tests/native/check_matrix.py --self-test` proves
+those checks are not vacuous. These harnesses are the Python side of that
+matrix; the platform legs themselves are recorded in the same document.
+
 ## Scope
 
 These harnesses do not modify the repository, do not take a Docker container and

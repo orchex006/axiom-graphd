@@ -1,0 +1,6 @@
+not_run: the Rust guard itself: cargo test --locked -p axiom-graphd --test update_fixtures and cargo test --locked -p axiom-graphd update_guard (this harness cannot link the crate)
+not_run: the full backup integrity check: the real guard reuses graph_store::backup::verify_backup, which opens the candidate as a database; this harness verifies real byte presence and the SQLite file header only
+not_run: the real axiom-mcp and skills versions and revisions: they are inputs owned by their own repositories, which are not checked out in this worktree, so the versions above are declared inputs rather than verified owner evidence
+not_run: a live update source: no signed metadata is fetched, no network call is made and no install is attempted (the release gate is closed for this workstream)
+not_run: native Windows and macOS runtime evidence (the Rust gate runs inside the Docker lane, not here)
+ok: F-033 reports a version for every one of the seven frozen component names including the specification and fixture data packages, and refused all eight corpus vectors in the guard's order - four hazards, three boundaries and one admitted control that proves the guard does not refuse everything - with eleven further mutations of that control also refused and every refusal leaving the target tree byte-identical

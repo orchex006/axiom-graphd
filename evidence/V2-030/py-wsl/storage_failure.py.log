@@ -1,0 +1,3 @@
+not_run: real ENOSPC injection: needs a loopback/quota mount or an admin tool; not available on this unprivileged Windows host (the disk-full leg above is an injected fault)
+not_run: cargo test --locked -p graph-store storage_error; cargo test --locked -p graph-export staging (real storage classification; no Rust build taken in this lane)
+ok: F-018 storage failures stay visible and reversible; 3 positive legs, 2 negative legs rejected as required

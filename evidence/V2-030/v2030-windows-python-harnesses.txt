@@ -1,0 +1,14 @@
+watch_save_burst.py          exit=0   log_bytes=186
+watch_overflow.py            exit=0   log_bytes=212
+queue_crash.py               exit=0   log_bytes=208
+queue_concurrent_edit.py     exit=0   log_bytes=239
+publish_crash.py             exit=0   log_bytes=206
+storage_failure.py           exit=0   log_bytes=451
+git_checkpoint.py            exit=0   log_bytes=216
+sqlite_migration.py          exit=0   log_bytes=405
+core_manifest.py             exit=2   log_bytes=1235
+bootstrap_e2e.py             exit=0   log_bytes=719
+update_e2e.py                exit=0   log_bytes=1313
+
+non_zero_exits=1
+manifest=evidence/V2-030/py-win-manifest.json

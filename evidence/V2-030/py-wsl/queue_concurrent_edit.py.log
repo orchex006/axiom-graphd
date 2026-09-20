@@ -1,0 +1,2 @@
+not_run: cargo test --locked -p graph-watch dirty; cargo test --locked -p graph-queue ack (real generations and ack; no Rust build taken in this lane)
+ok: F-014 dirty generations hold; 3 positive legs, 4 negative legs rejected as required

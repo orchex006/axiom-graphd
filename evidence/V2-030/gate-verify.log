@@ -1,0 +1,821 @@
+   Compiling axiom-bootstrap v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\bootstrap)
+   Compiling graph-core v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\graph-core)
+   Compiling graph-watch v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\graph-watch)
+   Compiling graph-queue v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\graph-queue)
+   Compiling graph-analyze v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\graph-analyze)
+   Compiling axiom-config v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\config)
+   Compiling axiom-migration v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\migration)
+   Compiling axiom-platform v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\platform)
+   Compiling axiom v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\axiom)
+   Compiling axiom-cli v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\axiom-cli)
+   Compiling graph-store v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\graph-store)
+   Compiling graph-export v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\graph-export)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 33.76s
+     Running unittests src\lib.rs (target\debug\deps\axiom-907f9e30396c62dc.exe)
+
+running 507 tests
+test bootstrap::apply::tests::a_rollback_refuses_to_discard_a_newer_edit ... ok
+test bootstrap::apply::tests::the_outside_content_check_bounds_what_a_write_may_touch ... ok
+test bootstrap::apply::tests::a_conflict_plan_is_refused_without_writing ... ok
+test bootstrap::commit_plan::tests::an_incomplete_or_foreign_grant_performs_nothing ... ok
+test bootstrap::commit_plan::tests::a_commit_grant_commits_and_a_push_grant_names_one_remote ... ok
+test bootstrap::commit_plan::tests::a_proposal_lists_only_the_owned_paths ... ok
+test bootstrap::commit_plan::tests::a_tampered_proposal_is_refused ... ok
+test bootstrap::commit_plan::tests::the_relative_path_predicate_is_strict ... ok
+test bootstrap::commit_plan::tests::missing_or_secret_content_is_refused_before_any_git_call ... ok
+test bootstrap::commit_plan::tests::staging_needs_no_grant_but_commit_and_push_do ... ok
+test bootstrap::gitignore::tests::ambiguous_or_unowned_markers_are_refused ... ok
+test bootstrap::gitignore::tests::only_the_managed_span_changes_and_a_reapply_is_a_no_op ... ok
+test bootstrap::gitignore::tests::newline_and_bom_are_preserved ... ok
+test bootstrap::apply::tests::an_apply_writes_every_owned_file_and_completes_the_journal ... ok
+test bootstrap::apply::tests::a_failed_write_restores_the_files_it_already_wrote ... ok
+test bootstrap::markers::tests::markers_inside_a_code_fence_are_examples_not_blocks ... ok
+test bootstrap::markers::tests::one_complete_block_is_accepted ... ok
+test bootstrap::markers::tests::unbalanced_and_duplicate_markers_are_refused_without_touching_the_text ... ok
+test bootstrap::gitignore::tests::existing_rules_survive_and_live_lanes_are_ignored ... ok
+test bootstrap::ownership::tests::a_human_edit_inside_owned_content_is_detected_before_the_update ... ok
+test bootstrap::ownership::tests::an_untrusted_manifest_is_refused ... ok
+test bootstrap::ownership::tests::the_manifest_records_only_owned_content_and_its_template_version ... ok
+test bootstrap::gitignore::tests::optional_tracked_content_is_not_hidden ... ok
+test bootstrap::policy::tests::an_unowned_policy_is_never_adopted_or_overwritten ... ok
+test bootstrap::apply::tests::a_partial_multi_repo_run_reports_each_outcome_and_exit_20 ... ok
+test bootstrap::plan::tests::a_plan_shows_before_and_after_hashes_and_a_diff ... ok
+test bootstrap::markers::tests::the_bootstrap_corpus_marker_vectors_match_this_parser ... ok
+test bootstrap::plan::tests::a_refused_repository_is_reported_inside_the_plan ... ok
+test bootstrap::policy::tests::an_edited_or_removed_managed_policy_is_refused ... ok
+test bootstrap::policy::tests::the_managed_block_instructs_reading_the_policy ... ok
+test bootstrap::preconditions::tests::a_lock_is_removed_only_while_it_is_ours ... ok
+test bootstrap::preconditions::tests::a_changed_target_is_refused_as_stale_before_any_write ... ok
+test bootstrap::preconditions::tests::a_current_plan_verifies_and_takes_its_lock ... ok
+test bootstrap::plan::tests::planning_a_real_repository_creates_no_directories ... ok
+test bootstrap::ownership::tests::the_bootstrap_corpus_manifests_match_this_record ... ok
+test bootstrap::preconditions::tests::a_missing_root_and_a_conflict_plan_are_refused ... ok
+test bootstrap::preconditions::tests::an_unsafe_repository_id_is_refused ... ok
+test bootstrap::repos::tests::a_solution_without_repositories_is_refused ... ok
+test bootstrap::repos::tests::only_the_origin_remote_is_read_from_a_git_config ... ok
+test bootstrap::repos::tests::an_inaccessible_root_is_refused_with_its_own_rule ... ok
+test bootstrap::preconditions::tests::a_second_apply_cannot_interleave_with_the_first ... ok
+test bootstrap::repos::tests::unsafe_and_duplicate_bindings_are_refused_without_substitution ... ok
+test bootstrap::rollback::tests::a_journal_this_build_cannot_judge_is_refused ... ok
+test bootstrap::rollback::tests::a_later_human_edit_is_refused_and_preserved ... ok
+test bootstrap::rollback::tests::an_edit_between_planning_and_writing_is_still_refused ... ok
+test bootstrap::rollback::tests::a_rollback_restores_the_after_state_and_marks_the_journal ... ok
+test bootstrap::policy::tests::the_bootstrap_corpus_policy_vectors_match_this_planner ... ok
+test bootstrap::plan::tests::the_bootstrap_corpus_vectors_plan_to_their_documented_outcome ... ok
+test bootstrap::text::tests::unsupported_encoding_is_refused_without_touching_the_bytes ... ok
+test bootstrap::update::tests::a_plan_outside_the_owned_paths_is_refused ... ok
+test bootstrap::update::tests::an_unacceptable_template_is_refused_before_any_repository_is_read ... ok
+test bootstrap::update::tests::a_newer_template_updates_owned_spans_and_skips_conflicts ... ok
+test bootstrap::update::tests::only_the_owned_span_may_change ... ok
+test bootstrap::update::tests::template_versions_parse_strictly ... ok
+test bootstrap::update::tests::the_same_version_updates_nothing ... ok
+test bootstrap::verify::tests::a_broken_marker_shape_is_undecidable_and_fails ... ok
+test bootstrap::rollback::tests::an_unapproved_digest_and_a_broken_backup_are_refused ... ok
+test bootstrap::plan::tests::the_plan_digest_binds_the_approved_inputs ... ok
+test bootstrap::text::tests::bom_and_line_endings_survive_a_replace_and_an_append ... ok
+test bootstrap::text::tests::replacing_a_span_touches_only_that_span ... ok
+test bootstrap::verify::tests::a_write_that_touches_unowned_bytes_is_refused ... ok
+test bootstrap::verify::tests::a_second_apply_is_a_no_op ... ok
+test bootstrap::verify::tests::a_partially_drifted_run_reports_each_repository_and_exit_20 ... ok
+test bootstrap::text::tests::the_bootstrap_corpus_round_trips_and_preserves_unowned_bytes ... ok
+test bootstrap::preconditions::tests::the_local_host_holds_a_real_lock ... ok
+test bootstrap::verify::tests::an_unbootstrapped_repository_is_reported_without_failing ... ok
+test bootstrap::verify::tests::an_edited_policy_file_is_managed_drift ... ok
+test bootstrap::verify::tests::managed_drift_and_unrelated_human_edits_are_distinguished ... ok
+test hosts::antigravity::tests::a_host_at_the_floor_is_certified ... ok
+test hosts::antigravity::tests::a_foreign_transport_field_is_refused ... ok
+test hosts::antigravity::tests::a_host_below_the_declared_floor_is_refused ... ok
+test hosts::antigravity::tests::a_literal_credential_or_an_in_url_credential_is_refused ... ok
+test discovery::tests::the_per_user_definition_follows_the_platform_convention ... ok
+test hosts::antigravity::tests::an_entry_without_a_transport_is_refused ... ok
+test discovery::tests::a_missing_privilege_is_reported_as_an_actionable_finding ... ok
+test hosts::antigravity::tests::an_insecure_non_loopback_url_is_refused ... ok
+test hosts::antigravity::tests::an_uncertified_skills_or_rules_path_is_refused ... FAILED
+test hosts::antigravity::tests::a_plan_inserts_then_replaces_without_touching_other_servers ... FAILED
+test hosts::antigravity::tests::an_insert_refuses_a_document_that_already_declares_the_server ... FAILED
+test discovery::tests::the_installable_set_is_a_subset_of_the_frozen_components ... ok
+test bootstrap::repos::tests::explicit_bindings_with_matching_identity_are_approved ... ok
+test hosts::antigravity::tests::an_oversized_document_is_refused ... FAILED
+test hosts::antigravity::tests::an_unsafe_root_is_refused ... ok
+test hosts::antigravity::tests::an_unparsed_host_version_cannot_certify_a_location ... ok
+test discovery::tests::an_absent_home_is_reported_and_nothing_is_created ... ok
+test hosts::antigravity::tests::an_unknown_field_is_refused ... ok
+test hosts::antigravity::tests::an_unsupported_scope_is_refused ... ok
+test bootstrap::repos::tests::similarly_named_inaccessible_and_foreign_repositories_are_refused ... ok
+test hosts::antigravity::tests::every_rendered_entry_parses_back_to_the_same_server ... FAILED
+test hosts::antigravity::tests::the_deprecated_legacy_skills_path_is_refused_not_translated ... FAILED
+test hosts::antigravity::tests::the_instruction_fragment_uses_the_managed_block_markers ... FAILED
+test discovery::tests::a_system_scoped_service_is_flagged_rather_than_adopted ... ok
+test hosts::antigravity::tests::the_remote_transport_renders_server_url_and_never_http_url ... ok
+test hosts::antigravity::tests::the_scopes_pair_a_skills_dir_with_a_rules_dir ... FAILED
+test hosts::claude::tests::a_document_outside_the_schema_is_refused_rather_than_guessed ... FAILED
+test hosts::claude::tests::a_literal_credential_or_a_credential_url_is_refused ... ok
+test hosts::claude::tests::a_foreign_transport_field_fails_validation ... ok
+test hosts::claude::tests::a_stdio_entry_requires_an_absolute_shell_free_command ... FAILED
+test hosts::claude::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server ... FAILED
+test discovery::tests::a_malformed_install_record_is_reported_with_its_rule ... ok
+test hosts::claude::tests::a_permission_the_document_does_not_hold_is_refused ... ok
+test hosts::claude::tests::an_unsupported_scope_is_refused ... ok
+test hosts::claude::tests::appending_preserves_every_other_server_and_the_permissions_object ... FAILED
+test hosts::claude::tests::replacing_the_managed_entry_changes_only_that_entry ... FAILED
+test hosts::claude::tests::the_instruction_fragment_uses_the_managed_block_markers ... FAILED
+test hosts::claude::tests::the_two_scopes_pair_a_config_file_with_an_instruction_file ... FAILED
+test hosts::codex::tests::a_foreign_transport_field_fails_validation ... ok
+test hosts::codex::tests::an_append_plan_refuses_a_document_that_already_has_the_table ... FAILED
+test hosts::codex::tests::a_stdio_transport_requires_an_absolute_shell_free_command ... FAILED
+test hosts::codex::tests::appending_preserves_every_other_server_and_the_whole_document ... FAILED
+test hosts::codex::tests::a_plan_refuses_an_existing_table_it_does_not_understand ... FAILED
+test hosts::codex::tests::replacing_the_managed_table_moves_nothing_else ... FAILED
+test hosts::codex::tests::a_literal_credential_or_a_credential_url_is_refused ... ok
+test hosts::codex::tests::the_instruction_fragment_uses_the_managed_block_markers ... FAILED
+test hosts::codex::tests::a_rendered_block_parses_back_to_the_same_server ... FAILED
+test hosts::codex::tests::a_plan_refuses_roots_that_are_not_absolute_and_safe ... ok
+test hosts::codex::tests::toml_values_are_read_by_shape ... ok
+test hosts::detect::tests::a_missing_host_is_missing_and_never_configured ... ok
+test hosts::detect::tests::a_denied_launch_reports_the_rule_instead_of_a_version ... FAILED
+test hosts::detect::tests::a_nonzero_exit_is_a_failed_launch_with_the_raw_line_kept ... FAILED
+test hosts::detect::tests::a_reported_version_is_parsed_and_eligible_for_config ... FAILED
+test hosts::detect::tests::an_unknown_version_stays_unconfigured_pending_review ... FAILED
+test hosts::codex::tests::unsupported_toml_is_refused_rather_than_guessed ... ok
+test hosts::detect::tests::oversized_and_empty_output_stay_unverified ... FAILED
+test hosts::detect::tests::an_unusable_program_path_is_refused_with_a_warning ... ok
+test hosts::detect::tests::version_ordering_follows_semver_prerelease_rules ... ok
+test hosts::gemini::tests::a_document_outside_the_schema_is_refused_rather_than_guessed ... FAILED
+test hosts::detect::tests::the_uncertified_stem_is_reported_for_agy ... FAILED
+test hosts::detect::tests::the_wire_vocabulary_round_trips ... ok
+test hosts::gemini::tests::a_literal_credential_or_a_credential_url_is_refused ... ok
+test hosts::gemini::tests::a_foreign_transport_field_fails_validation ... ok
+test hosts::gemini::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server ... FAILED
+test hosts::gemini::tests::a_stdio_transport_requires_an_absolute_shell_free_command ... FAILED
+test hosts::gemini::tests::an_uncertified_policy_path_is_refused ... FAILED
+test hosts::gemini::tests::an_unsupported_scope_is_refused ... ok
+test hosts::gemini::tests::appending_preserves_every_other_server ... FAILED
+test hosts::gemini::tests::streamable_http_and_sse_are_rendered_with_their_own_field ... ok
+test hosts::gemini::tests::replacing_the_managed_entry_changes_only_that_entry ... FAILED
+test hosts::gemini::tests::every_rendered_entry_parses_back_to_the_same_server ... FAILED
+test hosts::gemini::tests::the_instruction_fragment_uses_the_managed_block_markers ... FAILED
+test hosts::gemini::tests::the_scopes_pair_a_settings_file_with_an_instruction_and_policy_path ... FAILED
+test hosts::gemini::tests::the_two_remote_transports_are_not_interchanged ... ok
+test hosts::verify::tests::a_different_server_name_is_refused ... ok
+test hosts::verify::tests::a_content_block_carrying_rows_counts_as_an_answer ... ok
+test hosts::verify::tests::a_tool_surface_without_the_expected_tool_is_refused ... ok
+test hosts::verify::tests::a_process_that_starts_without_a_tool_surface_is_not_integrated ... ok
+test hosts::verify::tests::a_transport_failure_is_a_failure ... ok
+test hosts::verify::tests::a_real_tools_list_and_bounded_query_are_required_to_integrate ... ok
+test hosts::verify::tests::a_two_hundred_with_a_refused_body_is_not_a_handshake ... ok
+test hosts::verify::tests::an_expectation_that_cannot_be_checked_is_refused ... ok
+test hosts::verify::tests::a_test_query_that_indexes_nothing_is_refused ... ok
+test hosts::verify::tests::the_report_renders_the_checked_steps_as_json ... ok
+test hosts::verify::tests::an_oversized_body_is_refused ... ok
+test install::credentials::tests::a_draw_shorter_than_the_minimum_is_refused ... ok
+test install::apply::tests::an_approval_for_another_plan_never_activates_this_one ... ok
+test install::apply::tests::a_destination_holding_different_bytes_refuses_the_whole_transaction ... ok
+test install::apply::tests::a_staged_payload_that_disagrees_with_its_digest_is_refused_without_mutation ... ok
+test install::apply::tests::a_destination_already_holding_the_same_bytes_is_reported_not_rewritten ... ok
+test install::apply::tests::a_complete_staging_tree_activates_atomically_with_rollback_metadata ... ok
+test install::credentials::tests::a_plan_without_a_credential_bearing_component_mints_nothing ... ok
+test install::apply::tests::a_partial_staging_tree_never_replaces_the_current_install ... ok
+test install::credentials::tests::a_plan_that_installs_only_the_gateway_mints_only_its_credential ... ok
+test install::credentials::tests::a_support_bundle_rendering_of_a_credential_is_redacted ... ok
+test install::credentials::tests::a_set_generated_for_another_install_root_is_refused_by_the_store ... ok
+test install::credentials::tests::an_entropy_source_that_is_stuck_or_unavailable_is_refused ... ok
+test install::apply::tests::a_second_activation_records_the_pointer_it_replaced ... ok
+test install::credentials::tests::an_invalid_context_is_refused ... ok
+test install::credentials::tests::debug_output_never_prints_a_secret_or_a_plain_text_digest ... ok
+test install::credentials::tests::the_role_component_names_are_installable_components ... ok
+test install::credentials::tests::generated_credentials_agree_with_the_frozen_control_contract ... ok
+test install::credentials::tests::an_index_edited_to_grant_admin_or_a_second_role_is_refused ... ok
+test bootstrap::apply::tests::the_local_host_writes_owned_files_and_a_journal ... ok
+test install::credentials::tests::the_two_credentials_have_separate_restrictive_audiences ... ok
+test install::credentials::tests::neither_credential_can_be_promoted_or_swapped_for_the_other_surface ... ok
+test install::credentials::tests::the_production_entropy_source_returns_fresh_secrets ... ok
+test install::credentials::tests::the_index_records_a_digest_and_never_the_secret ... ok
+test install::plan::tests::a_system_service_mechanism_is_refused_in_a_per_user_plan ... ok
+test install::plan::tests::a_version_that_is_not_a_path_segment_is_refused ... ok
+test install::plan::tests::a_document_that_is_not_a_dry_run_is_refused ... ok
+test install::plan::tests::a_per_user_plan_refuses_an_elevated_permission ... ok
+test install::plan::tests::a_system_scope_plan_requires_explicit_opt_in ... ok
+test install::plan::tests::a_dry_run_plan_reports_versions_destinations_sources_and_permissions ... ok
+test install::plan::tests::a_missing_bundle_manifest_is_not_found ... ok
+test install::plan::tests::an_approval_of_one_plan_never_activates_another ... ok
+test install::plan::tests::an_artifact_built_for_another_host_is_refused ... ok
+test install::plan::tests::an_artifact_path_that_escapes_the_bundle_is_refused ... ok
+test install::plan::tests::an_empty_bundle_is_refused ... ok
+test install::plan::tests::every_wire_spelling_matches_the_plan_vocabulary ... ok
+test install::plan::tests::two_components_may_not_plan_the_same_destination ... ok
+test install::plan::tests::an_observed_version_decides_between_noop_and_upgrade ... ok
+test install::uninstall::tests::a_bootstrap_block_this_cli_did_not_write_is_refused ... ok
+test install::uninstall::tests::a_default_plan_removes_no_cache_and_no_user_data ... ok
+test install::uninstall::tests::a_default_plan_separates_the_removal_classes_and_preserves_user_content ... FAILED
+test install::uninstall::tests::a_non_user_scope_service_is_refused ... ok
+test install::uninstall::tests::a_non_zero_controller_exit_is_refused ... ok
+test install::uninstall::tests::a_preserved_path_must_be_absolute ... ok
+test install::uninstall::tests::a_removal_of_a_preserved_path_is_refused ... ok
+test install::uninstall::tests::a_request_that_names_nothing_is_refused ... ok
+test install::uninstall::tests::a_removal_outside_the_install_root_is_refused ... ok
+test install::uninstall::tests::a_service_that_is_not_this_installs_is_refused ... ok
+test install::uninstall::tests::an_empty_class_is_not_reported_as_removed ... FAILED
+test install::uninstall::tests::cache_state_is_purged_only_under_the_explicit_option ... ok
+test install::uninstall::tests::an_uninstall_unregisters_only_the_owned_service_and_renders_the_report ... FAILED
+test install::uninstall::tests::the_uninstall_report_is_kept_and_cannot_be_removed ... FAILED
+test install::uninstall::tests::the_unregister_command_matches_each_mechanism ... ok
+test install::uninstall::tests::purging_user_data_without_separate_approval_is_refused ... ok
+test install::verify::tests::a_key_that_is_not_a_trust_root_is_refused ... ok
+test install::credentials::tests::credential_material_is_refused_inside_a_git_worktree ... ok
+test install::verify::tests::a_matching_artifact_is_verified_against_metadata_and_key ... ok
+test install::verify::tests::a_missing_member_refuses_the_bundle ... ok
+test install::verify::tests::a_missing_metadata_document_is_not_found_and_names_the_file ... ok
+test install::verify::tests::an_algorithm_outside_the_allowlist_is_refused ... ok
+test install::verify::tests::an_artifact_for_another_host_is_refused ... ok
+test install::verify::tests::an_expired_release_is_refused_at_the_boundary ... ok
+test install::verify::tests::an_unsigned_artifact_is_refused_even_when_the_bytes_match ... ok
+test install::verify::tests::bytes_that_disagree_with_the_trusted_digest_are_refused ... ok
+test install::verify::tests::one_bad_artifact_refuses_the_whole_bundle ... ok
+test install::verify::tests::the_default_verifier_rejects_everything ... ok
+test packages::tests::a_core_release_that_splits_its_version_is_refused ... ok
+test install::verify::tests::the_signing_message_binds_every_trusted_property ... ok
+test install::verify::tests::the_vocabulary_and_timestamp_form_are_the_frozen_ones ... ok
+test packages::tests::a_core_version_other_than_this_build_is_refused ... ok
+test packages::tests::a_documentation_component_carrying_its_own_version_is_refused ... ok
+test packages::tests::an_independent_component_may_not_be_absent ... ok
+test packages::tests::a_report_names_one_core_release_and_independent_components ... ok
+test packages::tests::an_unknown_independent_component_is_refused ... ok
+test discovery::tests::discovers_versions_paths_and_service_owner_without_touching_the_tree ... ok
+test packages::tests::documentation_is_not_a_standalone_update_package ... ok
+test packages::tests::an_unpinned_fixture_or_spec_revision_is_refused ... ok
+test packages::tests::documentation_with_an_unknown_owner_is_refused ... ok
+test plan::tests::a_document_without_a_plan_object_is_rejected ... ok
+test plan::tests::a_non_object_plan_cannot_be_digested_or_approved ... ok
+test packages::tests::the_reported_component_constants_stay_inside_the_frozen_vocabulary ... ok
+test plan::tests::canonical_bytes_match_the_frozen_oracle_form ... ok
+test plan::tests::a_plan_that_still_holds_a_placeholder_is_reported_at_its_path ... ok
+test plan::tests::an_unapproved_plan_may_not_carry_approval_metadata ... ok
+test plan::tests::approval_metadata_never_perturbs_the_digest ... ok
+test plan::tests::a_changed_payload_cannot_reuse_an_old_approval ... ok
+test plan::tests::the_frozen_vocabularies_match_the_schema ... ok
+test service::control::tests::a_control_command_targets_only_the_owned_task ... ok
+test service::control::tests::a_control_verb_is_parsed_and_an_unknown_one_is_refused ... ok
+test plan::tests::the_frozen_example_digest_is_reproduced ... ok
+test service::control::tests::a_definition_outside_the_owned_directory_is_refused ... ok
+test plan::tests::sealing_and_approving_are_idempotent_and_consistent ... ok
+test service::control::tests::a_non_user_scope_or_an_unmanaged_mechanism_is_refused ... ok
+test service::control::tests::a_name_that_does_not_match_its_component_is_refused ... ok
+test service::control::tests::a_recycled_pid_cannot_be_bound_to_the_owned_instance ... ok
+test service::control::tests::a_start_or_stop_that_the_host_refuses_is_an_error ... ok
+test service::control::tests::a_status_exit_code_is_reported_rather_than_raised ... ok
+test service::control::tests::a_stop_bound_to_the_owned_process_never_renders_the_pid ... ok
+test service::control::tests::every_managed_mechanism_dispatches_to_its_own_adapter ... ok
+test service::control::tests::the_ownership_record_and_the_plan_are_serialisable ... ok
+test service::control::tests::a_token_from_another_install_cannot_stop_this_instance ... ok
+test service::linux::tests::a_host_without_a_runtime_dir_or_systemctl_is_unavailable ... ok
+test service::control::tests::a_successful_control_reports_the_controller_output ... ok
+test service::linux::tests::a_foreign_unit_is_refused_by_control_operations ... ok
+test service::linux::tests::a_host_without_a_user_session_bus_is_unavailable ... ok
+test service::linux::tests::a_log_file_outside_the_install_root_is_refused ... ok
+test service::linux::tests::a_non_zero_controller_exit_is_refused ... ok
+test service::linux::tests::a_user_systemd_session_is_detected ... ok
+test service::linux::tests::a_system_scoped_request_is_refused ... ok
+test service::linux::tests::a_per_user_unit_is_rendered_under_the_user_systemd_directory ... FAILED
+test service::linux::tests::an_argument_with_a_nul_byte_is_refused ... ok
+test service::linux::tests::an_argument_with_a_space_is_quoted ... ok
+test install::apply::tests::the_real_filesystem_adapter_activates_under_a_temporary_root ... ok
+test service::linux::tests::an_elevation_request_is_refused ... ok
+test install::plan::tests::planning_reads_the_bundle_without_writing_or_downloading_anything ... ok
+test service::linux::tests::an_install_refuses_when_user_systemd_is_absent_and_names_the_fallback ... ok
+test service::linux::tests::an_install_registers_the_unit_and_reports_it ... ok
+test service::linux::tests::an_on_failure_policy_is_rendered_as_a_bounded_restart ... ok
+test service::linux::tests::an_unknown_component_or_unsafe_path_is_refused ... ok
+test service::linux::tests::an_out_of_range_restart_policy_is_refused ... ok
+test service::macos::tests::a_foreign_agent_is_refused_by_control_operations ... ok
+test service::macos::tests::a_log_file_outside_the_install_root_is_refused ... ok
+test service::macos::tests::a_non_zero_controller_exit_is_refused ... ok
+test service::macos::tests::a_per_user_agent_is_rendered_under_the_user_agent_directory ... FAILED
+test service::macos::tests::a_removal_targets_only_the_owned_plist ... ok
+test service::macos::tests::a_system_scoped_request_is_refused ... ok
+test service::macos::tests::a_removal_refuses_a_foreign_label_and_a_plist_outside_the_agent_directory ... ok
+test service::macos::tests::an_argument_with_a_nul_byte_is_refused ... ok
+test service::macos::tests::an_elevation_request_is_refused ... ok
+test service::macos::tests::an_install_loads_the_agent_and_reports_it ... FAILED
+test service::macos::tests::an_on_failure_policy_is_rendered_as_a_bounded_keep_alive ... ok
+test service::macos::tests::an_unknown_component_or_unsafe_path_is_refused ... ok
+test service::startup::tests::a_definition_outside_the_owned_directory_is_refused ... ok
+test service::macos::tests::an_out_of_range_restart_policy_is_refused ... ok
+test service::startup::tests::a_refused_backend_keeps_the_definition_for_the_next_attempt ... ok
+test service::startup::tests::a_machine_wide_mechanism_is_refused ... ok
+test service::macos::tests::the_agent_is_serialisable_and_carries_its_label ... ok
+test service::startup::tests::a_refused_removal_keeps_the_definition ... ok
+test service::startup::tests::a_relative_definition_path_is_refused ... ok
+test service::startup::tests::a_superseded_definition_is_rewritten_rather_than_trusted ... ok
+test service::startup::tests::a_system_scoped_registration_is_refused ... ok
+test service::startup::tests::a_second_run_over_an_unchanged_definition_is_idempotent ... ok
+test service::startup::tests::an_absent_definition_is_repaired_even_when_the_host_already_reports_the_record ... ok
+test service::startup::tests::an_empty_rendered_definition_is_refused ... ok
+test service::startup::tests::an_uninstallable_component_is_refused ... ok
+test service::startup::tests::classify_definition_distinguishes_absent_current_and_superseded ... ok
+test service::startup::tests::an_unsupported_backend_names_the_foreground_and_touches_nothing ... ok
+test service::startup::tests::opt_in_registration_writes_the_definition_and_runs_the_commands_in_order ... ok
+test service::startup::tests::removal_unloads_the_record_deletes_the_definition_and_is_idempotent ... ok
+test service::startup::tests::the_definition_is_visible_before_the_registration_commands_run ... ok
+test service::startup::tests::the_lifecycle_is_host_neutral_across_the_three_planned_definitions ... ok
+test service::windows::tests::a_denied_registration_surfaces_forbidden_without_success ... ok
+test service::windows::tests::a_foreign_task_name_is_refused_by_control_operations ... ok
+test service::windows::tests::a_log_file_outside_the_install_root_is_refused ... ok
+test service::windows::tests::a_non_zero_scheduler_exit_is_refused ... ok
+test service::windows::tests::a_relative_path_is_refused ... ok
+test service::windows::tests::a_restart_policy_at_the_boundary_is_accepted ... ok
+test service::windows::tests::a_system_scoped_request_is_refused ... ok
+test service::windows::tests::a_per_user_task_is_rendered_with_a_logon_trigger_and_least_privilege ... ok
+test service::windows::tests::an_argument_with_a_nul_byte_is_refused ... ok
+test service::windows::tests::an_install_registers_the_task_and_reports_it ... ok
+test service::windows::tests::an_elevation_request_is_refused ... ok
+test service::windows::tests::an_argument_with_a_space_is_quoted_and_a_quote_doubled ... ok
+test service::windows::tests::an_on_failure_policy_is_rendered_as_a_bounded_restart ... ok
+test service::windows::tests::an_unknown_component_is_refused ... ok
+test service::windows::tests::control_operations_target_only_the_owned_task ... ok
+test service::windows::tests::an_out_of_range_restart_policy_is_refused ... ok
+test service::windows::tests::the_definition_is_registered_beside_the_install_root ... ok
+test service::windows::tests::the_install_operation_uses_program_and_argv_never_a_shell ... ok
+test skills::install::tests::a_capability_outside_the_allowlist_is_refused ... ok
+test skills::install::tests::a_declared_file_the_payload_does_not_contain_is_refused ... ok
+test plan::tests::editing_any_planned_payload_invalidates_the_approval ... ok
+test skills::install::tests::a_declared_bundle_plans_and_installs_in_declaration_order ... ok
+test skills::install::tests::a_non_portable_or_misshaped_declared_path_is_refused ... ok
+test skills::install::tests::a_declared_script_without_a_capability_review_is_refused ... ok
+test skills::install::tests::a_version_directory_is_never_rebuilt ... ok
+test skills::install::tests::an_executable_suffix_may_not_be_declared_as_a_non_script ... ok
+test skills::install::tests::an_undeclared_executable_requires_a_capability_review ... ok
+test skills::install::tests::an_undeclared_instruction_is_refused_with_its_own_rule ... ok
+test skills::install::tests::declared_bytes_that_changed_are_named_before_anything_is_written ... ok
+test skills::install::tests::staged_bytes_that_moved_after_planning_are_refused_before_any_write ... ok
+test skills::install::tests::an_unpinned_revision_duplicate_path_or_unknown_kind_is_refused ... ok
+test skills::update::tests::a_markdown_bundle_is_not_claimed_to_self_update ... ok
+test skills::update::tests::a_selected_version_without_a_pinned_declaration_is_refused ... ok
+test skills::update::tests::a_check_is_read_only_and_names_the_compatible_update ... ok
+test skills::update::tests::a_check_for_another_component_is_refused ... ok
+test skills::update::tests::a_bundle_that_is_not_the_plans_target_is_refused ... ok
+test skills::update::tests::an_apply_requires_the_approved_plan_digest ... ok
+test skills::update::tests::an_installed_target_is_current_not_available ... ok
+test skills::update::tests::an_offline_check_never_consults_the_candidates ... ok
+test skills::update::tests::an_approved_skills_plan_installs_the_bundle_it_names ... ok
+test support::tests::a_duplicate_entry_name_is_refused ... ok
+test support::tests::a_filesystem_failure_surfaces_and_no_entry_past_it_is_written ... ok
+test support::tests::a_host_path_in_content_becomes_a_path_marker ... ok
+test skills::update::tests::an_unapproved_plan_is_refused_even_with_a_matching_digest ... ok
+test skills::update::tests::planning_requires_exactly_one_skills_row ... ok
+test support::tests::a_traversing_entry_name_is_refused ... ok
+test support::tests::an_absolute_entry_name_is_refused_and_the_path_is_not_echoed ... ok
+test support::tests::a_name_outside_the_allowlist_is_refused ... ok
+test support::tests::allowed_diagnostics_are_bundled_hashed_and_described ... ok
+test support::tests::every_allowed_name_is_accepted_and_the_cap_is_the_allowlist ... ok
+test support::tests::more_entries_than_the_cap_is_refused ... ok
+test support::tests::private_key_material_is_refused ... ok
+test support::tests::write_creates_the_manifest_first_then_every_validated_entry ... ok
+test support::tests::secrets_in_content_are_scrubbed_flagged_and_never_rendered ... ok
+test support::tests::the_manifest_is_inspectable_before_anything_is_written ... ok
+test support::tests::the_summary_is_this_build_and_there_is_no_separate_bootstrap_component ... ok
+test support::tests::source_bodies_are_refused ... ok
+test support::tests::write_refuses_a_destination_that_is_not_a_portable_directory ... ok
+test update::check::tests::a_check_never_downloads_an_installer_implicitly ... ok
+test install::verify::tests::a_malformed_metadata_document_fails_closed ... ok
+test update::backup::tests::a_missing_or_empty_backup_blocks_an_irreversible_migration ... ok
+test update::check::tests::a_disabled_auto_check_contacts_nothing ... ok
+test update::check::tests::a_failed_network_check_reports_stale_offline_not_current ... ok
+test update::check::tests::a_fresh_cache_is_served_without_touching_the_network ... ok
+test update::backup::tests::an_unreadable_source_and_a_non_directory_destination_are_named ... ok
+test update::check::tests::offline_never_contacts_the_network_and_never_claims_current ... ok
+test update::check::tests::the_default_policy_matches_the_contract_bounds ... ok
+test update::check::tests::the_ttl_boundary_decides_when_a_check_is_due ... ok
+test update::backup::tests::a_name_that_could_escape_the_destination_is_refused ... ok
+test update::drain::tests::a_blank_service_name_is_refused_before_any_phase ... ok
+test update::drain::tests::a_drain_that_runs_out_of_budget_times_out_without_killing ... ok
+test update::check::tests::a_policy_outside_its_bounds_is_refused ... ok
+test update::drain::tests::a_zero_budget_stops_after_one_poll_even_with_a_frozen_clock ... ok
+test update::drain::tests::drain_pauses_waits_and_resumes_inside_the_budget ... ok
+test update::drain::tests::drain_phases_and_outcomes_have_stable_spellings ... ok
+test update::drain::tests::forced_kill_is_refused_by_the_default_policy ... ok
+test update::drain::tests::forced_kill_runs_only_under_an_explicit_policy ... ok
+test update::native_apply::tests::every_phase_and_rule_has_a_distinct_stable_spelling ... ok
+test update::drain::tests::the_policy_bound_is_inclusive_and_out_of_range_is_named ... ok
+test skills::install::tests::a_real_payload_directory_installs_through_the_production_host ... ok
+test update::native_apply::tests::records_unobservable_handles_instead_of_claiming_a_clear_destination ... ok
+test update::native_apply::tests::refuses_a_backup_that_is_gone_or_does_not_match_the_journal ... ok
+test update::native_apply::tests::refuses_a_component_that_is_not_part_of_the_core_release ... ok
+test update::native_apply::tests::refuses_a_destination_outside_the_install_root ... ok
+test update::native_apply::tests::refuses_a_destination_that_escapes_its_install_root_through_a_link ... ok
+test update::native_apply::tests::refuses_a_destination_that_is_still_held_open ... ok
+test update::native_apply::tests::refuses_a_journal_that_belongs_to_another_component ... ok
+test update::native_apply::tests::refuses_a_journal_that_is_missing_unreadable_or_of_another_schema ... ok
+test update::native_apply::tests::refuses_a_journal_that_recorded_no_backup ... ok
+test update::native_apply::tests::refuses_a_non_absolute_destination ... ok
+test update::native_apply::tests::refuses_a_portable_spelling_that_is_not_portable ... ok
+test update::native_apply::tests::refuses_a_proof_that_is_not_the_payload_the_release_declares ... ok
+test update::native_apply::tests::refuses_a_proof_verified_for_another_host ... ok
+test update::native_apply::tests::refuses_a_release_that_is_no_newer_than_the_installed_one ... ok
+test update::native_apply::tests::refuses_a_release_that_is_older_than_the_installed_one ... ok
+test update::native_apply::tests::refuses_a_proof_and_a_release_that_describe_different_components ... ok
+test update::native_apply::tests::refuses_a_release_without_a_revision ... ok
+test update::native_apply::tests::refuses_a_replacement_when_no_executable_is_installed ... ok
+test update::native_apply::tests::refuses_a_staging_source_that_is_the_destination_itself ... ok
+test update::native_apply::tests::refuses_an_incompatible_release_through_the_compatibility_contract ... ok
+test update::native_apply::tests::refuses_a_replacement_whose_path_exceeds_the_native_limit ... ok
+test update::native_apply::tests::refuses_an_oversized_journal ... ok
+test update::native_apply::tests::refuses_an_unusable_digest_and_an_unusable_version ... ok
+test update::native_apply::tests::replaces_an_installed_executable_and_journals_the_previous_bytes ... ok
+test update::native_apply::tests::rolls_back_to_the_bytes_the_journal_recorded ... ok
+test update::native_apply::tests::the_journal_is_persisted_before_the_first_byte_of_the_destination_moves ... ok
+test update::native_apply::tests::the_native_in_use_probe_reports_a_held_destination_as_busy ... ok
+test update::native_apply::tests::refuses_replacement_bytes_that_are_not_the_verified_artifact ... ok
+test update::backup::tests::a_backup_records_and_re_verifies_the_hash_of_every_copy ... ok
+test service::startup::tests::the_host_ledger_reads_writes_and_removes_one_real_file ... ok
+test update::plan::tests::a_built_plan_passes_the_frozen_contract_and_is_unapproved ... ok
+test update::plan::tests::a_plan_with_no_major_change_needs_no_approval ... ok
+test update::plan::tests::a_resolved_update_becomes_the_component_row ... ok
+test update::plan::tests::a_major_change_requires_an_explicit_approval ... ok
+test update::policy::tests::a_patch_behind_a_prerelease_suffix_still_orders_by_its_core ... ok
+test update::policy::tests::a_candidate_that_is_not_newer_is_refused ... ok
+test update::policy::tests::an_unknown_channel_is_refused_not_errored ... ok
+test update::policy::tests::a_patch_with_build_metadata_is_still_a_compatible_patch ... ok
+test update::plan::tests::an_unsigned_or_unrooted_plan_is_refused ... ok
+test update::plan::tests::an_approval_does_not_survive_a_changed_body ... ok
+test update::policy::tests::default_policy_is_explicit_approval ... ok
+test update::policy::tests::default_policy_never_auto_applies_even_a_ready_patch ... ok
+test update::plan::tests::build_refuses_a_plan_that_breaks_the_contract ... ok
+test update::policy::tests::every_approval_boundary_stops_an_opted_in_patch ... ok
+test update::policy::tests::every_crossed_gate_is_named_in_declaration_order ... ok
+test update::policy::tests::every_missing_readiness_condition_stops_an_opted_in_patch ... ok
+test update::policy::tests::opted_in_compatible_patch_applies_when_every_condition_holds ... ok
+test update::policy::tests::versions_that_are_not_semver_are_contract_errors ... ok
+test update::policy::tests::wire_spellings_are_stable_and_closed ... ok
+test update::python_env::tests::a_component_without_a_python_environment_is_refused ... ok
+test update::policy::tests::prerelease_is_refused_when_the_policy_does_not_allow_it ... ok
+test update::policy::tests::prerelease_never_auto_applies_even_when_the_policy_allows_it ... ok
+test update::policy::tests::readiness_missing_reports_every_condition_and_none_when_complete ... ok
+test update::python_env::tests::a_drifted_or_extra_installed_distribution_is_refused ... ok
+test update::python_env::tests::a_failed_pointer_swap_retains_the_previous_environment ... ok
+test update::python_env::tests::a_pinned_lock_parses_and_its_digest_covers_its_text ... ok
+test update::python_env::tests::a_lock_that_is_not_fully_pinned_is_refused ... ok
+test update::python_env::tests::prepare_refuses_a_lock_whose_digest_does_not_cover_its_text ... ok
+test update::python_env::tests::an_existing_or_active_environment_directory_is_never_written_again ... ok
+test update::python_env::tests::activation_is_refused_without_a_verdict_for_this_environment ... ok
+test update::python_env::tests::an_unbuilt_or_tampered_environment_is_refused ... ok
+test update::python_env::tests::a_version_that_is_not_one_path_segment_is_refused ... ok
+test update::python_env::tests::the_lifecycle_prepares_tests_and_then_activates ... ok
+test update::resolve::tests::a_candidate_for_another_component_or_spec_pin_is_rejected ... ok
+test update::python_env::tests::the_pointer_is_bounded_and_a_foreign_pointer_is_refused ... ok
+test update::resolve::tests::a_candidate_that_breaks_a_schema_constraint_is_named_not_selected ... ok
+test update::resolve::tests::a_candidate_with_a_broken_revision_or_hash_is_rejected ... ok
+test update::resolve::tests::a_prerelease_is_not_selected_on_the_stable_channel ... ok
+test update::resolve::tests::semver_parsing_and_ordering_follow_the_contract ... ok
+test update::resolve::tests::the_highest_compatible_release_wins_over_the_newest_publication ... ok
+test update::resolve::tests::an_installed_highest_release_is_a_noop_and_an_empty_set_is_an_error ... ok
+test update::rollback::tests::a_rollback_that_moves_no_database_axis_needs_no_backup_restore ... ok
+test update::rollback::tests::a_plan_that_moved_the_schema_without_a_restore_is_not_a_set_restore ... ok
+test update::rollback::tests::a_partial_rollback_is_refused_for_every_axis ... ok
+test update::rollback::tests::a_reversible_upgrade_rolls_back_to_the_snapshot_set ... ok
+test update::rollback::tests::an_irreversible_or_missing_schema_step_is_refused ... ok
+test update::rollback::tests::an_old_binary_paired_with_a_schema_it_cannot_read_is_refused ... ok
+test update::rollback::tests::an_unsupported_policy_downgrade_is_refused ... ok
+test update::rollback::tests::compatibility_answers_from_the_declared_releases_not_from_a_version_string ... ok
+test update::rollback::tests::an_unverified_or_newer_snapshot_is_refused ... ok
+test update::rust_binary::tests::a_missing_payload_is_refused ... ok
+test update::rust_binary::tests::a_payload_that_does_not_match_its_staged_digest_is_refused ... ok
+test update::rust_binary::tests::a_failed_pointer_write_retains_the_previous_launch_target ... ok
+test update::rust_binary::tests::a_corrupt_or_foreign_pointer_is_refused_rather_than_ignored ... ok
+test update::rust_binary::tests::a_payload_that_was_not_smoke_checked_is_refused ... ok
+test update::rust_binary::tests::a_failed_pointer_swap_retains_the_previous_launch_target ... ok
+test update::rust_binary::tests::a_version_at_the_length_boundary_is_accepted_and_one_over_is_refused ... ok
+test update::rust_binary::tests::activation_moves_the_pointer_and_keeps_the_previous_target ... ok
+test update::rust_binary::tests::activation_never_writes_inside_the_active_version_directory ... ok
+test update::rust_binary::tests::a_version_that_is_not_one_path_segment_is_refused ... ok
+test update::rust_binary::tests::an_unknown_component_is_refused ... ok
+test update::rust_binary::tests::the_pointer_is_a_bounded_canonical_record ... ok
+test update::source::tests::an_explicit_source_builds_only_https_release_urls ... ok
+test update::source::tests::a_channel_outside_the_frozen_set_is_refused ... ok
+test update::source::tests::a_field_that_could_smuggle_a_path_or_option_is_refused ... ok
+test update::source::tests::a_placeholder_or_missing_field_is_refused ... ok
+test update::source::tests::an_asset_name_that_would_escape_the_repository_is_refused ... ok
+test update::source::tests::an_unconfigured_source_is_refused_and_never_borrows_the_component_name ... ok
+test update::trust::tests::a_key_that_is_not_a_configured_root_is_refused ... ok
+test update::trust::tests::a_signature_that_does_not_verify_is_refused ... ok
+test update::trust::tests::an_unsupported_algorithm_or_channel_is_refused ... ok
+test update::trust::tests::https_alone_is_not_enough ... ok
+test update::trust::tests::expiry_and_creation_time_are_enforced ... ok
+test update::trust::tests::signed_fresh_metadata_from_a_configured_root_is_accepted ... ok
+test update::trust::tests::rollback_and_freeze_are_refused ... ok
+test update::verify::tests::a_schema_divergence_adds_the_compatible_backup_restore ... ok
+test update::verify::tests::a_fixture_query_divergence_adds_the_outbox_clear ... ok
+test update::verify::tests::an_observation_is_redacted_before_it_is_recorded ... ok
+test update::verify::tests::an_uncheckable_expectation_is_refused ... ok
+test update::verify::tests::every_probe_matching_its_contract_is_healthy ... ok
+test update::verify::tests::a_success_status_with_a_refused_body_is_not_healthy ... ok
+test update::verify::tests::every_scope_is_bounded_and_no_failure_ever_produces_an_empty_or_wide_one ... ok
+test update::verify::tests::a_transport_failure_or_a_non_success_status_is_a_failure ... ok
+test update::verify::tests::several_failures_produce_the_union_of_their_scopes ... ok
+test update::verify::tests::a_body_at_the_bound_is_accepted_and_one_byte_over_is_refused ... ok
+test version::tests::a_second_version_is_refused ... ok
+test version::tests::an_unknown_component_is_refused ... ok
+test version::tests::every_component_of_this_build_reports_the_single_core_version ... ok
+test version::tests::every_update_status_matches_the_frozen_schema ... ok
+test version::tests::the_frozen_report_has_exactly_the_schema_properties ... ok
+test install::plan::tests::a_malformed_manifest_fails_closed ... ok
+test update::backup::tests::a_tampered_copy_is_named_by_hash_not_restored ... ok
+test support::tests::an_entry_past_the_byte_limit_is_refused_at_the_boundary ... ok
+test support::tests::a_bundle_past_the_total_limit_is_refused ... ok
+
+failures:
+
+---- hosts::antigravity::tests::an_uncertified_skills_or_rules_path_is_refused stdout ----
+
+thread 'hosts::antigravity::tests::an_uncertified_skills_or_rules_path_is_refused' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::antigravity::tests::a_plan_inserts_then_replaces_without_touching_other_servers stdout ----
+
+thread 'hosts::antigravity::tests::a_plan_inserts_then_replaces_without_touching_other_servers' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- hosts::antigravity::tests::an_insert_refuses_a_document_that_already_declares_the_server stdout ----
+
+thread 'hosts::antigravity::tests::an_insert_refuses_a_document_that_already_declares_the_server' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::antigravity::tests::an_oversized_document_is_refused stdout ----
+
+thread 'hosts::antigravity::tests::an_oversized_document_is_refused' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::antigravity::tests::every_rendered_entry_parses_back_to_the_same_server stdout ----
+
+thread 'hosts::antigravity::tests::every_rendered_entry_parses_back_to_the_same_server' panicked at crates\axiom\src\hosts\antigravity.rs:1191:65:
+a round trip: AxiomError { code: ValidationError, message: "the server entry does not satisfy the native AGY MCP schema", retryable: false, details: {"component": "axiom-graphd", "observed": "stdio-command-not-absolute", "rule": "stdio-command-not-absolute"}, dropped_details: 0, request_id: None }
+
+---- hosts::antigravity::tests::the_deprecated_legacy_skills_path_is_refused_not_translated stdout ----
+
+thread 'hosts::antigravity::tests::the_deprecated_legacy_skills_path_is_refused_not_translated' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::antigravity::tests::the_instruction_fragment_uses_the_managed_block_markers stdout ----
+
+thread 'hosts::antigravity::tests::the_instruction_fragment_uses_the_managed_block_markers' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::antigravity::tests::the_scopes_pair_a_skills_dir_with_a_rules_dir stdout ----
+
+thread 'hosts::antigravity::tests::the_scopes_pair_a_skills_dir_with_a_rules_dir' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::claude::tests::a_document_outside_the_schema_is_refused_rather_than_guessed stdout ----
+
+thread 'hosts::claude::tests::a_document_outside_the_schema_is_refused_rather_than_guessed' panicked at crates\axiom\src\hosts\claude.rs:865:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::claude::tests::a_stdio_entry_requires_an_absolute_shell_free_command stdout ----
+
+thread 'hosts::claude::tests::a_stdio_entry_requires_an_absolute_shell_free_command' panicked at crates\axiom\src\hosts\claude.rs:1075:9:
+assertion `left == right` failed
+  left: "stdio-command-not-absolute"
+ right: "stdio-command-has-shell-metacharacters"
+
+---- hosts::claude::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server stdout ----
+
+thread 'hosts::claude::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server' panicked at crates\axiom\src\hosts\claude.rs:865:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::claude::tests::appending_preserves_every_other_server_and_the_permissions_object stdout ----
+
+thread 'hosts::claude::tests::appending_preserves_every_other_server_and_the_permissions_object' panicked at crates\axiom\src\hosts\claude.rs:865:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::claude::tests::replacing_the_managed_entry_changes_only_that_entry stdout ----
+
+thread 'hosts::claude::tests::replacing_the_managed_entry_changes_only_that_entry' panicked at crates\axiom\src\hosts\claude.rs:865:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::claude::tests::the_instruction_fragment_uses_the_managed_block_markers stdout ----
+
+thread 'hosts::claude::tests::the_instruction_fragment_uses_the_managed_block_markers' panicked at crates\axiom\src\hosts\claude.rs:865:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::claude::tests::the_two_scopes_pair_a_config_file_with_an_instruction_file stdout ----
+
+thread 'hosts::claude::tests::the_two_scopes_pair_a_config_file_with_an_instruction_file' panicked at crates\axiom\src\hosts\claude.rs:865:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::codex::tests::an_append_plan_refuses_a_document_that_already_has_the_table stdout ----
+
+thread 'hosts::codex::tests::an_append_plan_refuses_a_document_that_already_has_the_table' panicked at crates\axiom\src\hosts\codex.rs:1088:73:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::codex::tests::a_stdio_transport_requires_an_absolute_shell_free_command stdout ----
+
+thread 'hosts::codex::tests::a_stdio_transport_requires_an_absolute_shell_free_command' panicked at crates\axiom\src\hosts\codex.rs:1260:9:
+assertion `left == right` failed
+  left: "stdio-command-not-absolute"
+ right: "stdio-command-has-shell-metacharacters"
+
+---- hosts::codex::tests::appending_preserves_every_other_server_and_the_whole_document stdout ----
+
+thread 'hosts::codex::tests::appending_preserves_every_other_server_and_the_whole_document' panicked at crates\axiom\src\hosts\codex.rs:1088:73:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::codex::tests::a_plan_refuses_an_existing_table_it_does_not_understand stdout ----
+
+thread 'hosts::codex::tests::a_plan_refuses_an_existing_table_it_does_not_understand' panicked at crates\axiom\src\hosts\codex.rs:1088:73:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::codex::tests::replacing_the_managed_table_moves_nothing_else stdout ----
+
+thread 'hosts::codex::tests::replacing_the_managed_table_moves_nothing_else' panicked at crates\axiom\src\hosts\codex.rs:1088:73:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::codex::tests::the_instruction_fragment_uses_the_managed_block_markers stdout ----
+
+thread 'hosts::codex::tests::the_instruction_fragment_uses_the_managed_block_markers' panicked at crates\axiom\src\hosts\codex.rs:1088:73:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::codex::tests::a_rendered_block_parses_back_to_the_same_server stdout ----
+
+thread 'hosts::codex::tests::a_rendered_block_parses_back_to_the_same_server' panicked at crates\axiom\src\hosts\codex.rs:1317:73:
+a server: AxiomError { code: ValidationError, message: "the server entry does not satisfy the documented Codex MCP schema", retryable: false, details: {"component": "axiom-graphd", "observed": "stdio-command-not-absolute", "rule": "stdio-command-not-absolute"}, dropped_details: 0, request_id: None }
+
+---- hosts::detect::tests::a_denied_launch_reports_the_rule_instead_of_a_version stdout ----
+
+thread 'hosts::detect::tests::a_denied_launch_reports_the_rule_instead_of_a_version' panicked at crates\axiom\src\hosts\detect.rs:828:9:
+assertion `left == right` failed
+  left: Missing
+ right: LaunchFailed
+
+---- hosts::detect::tests::a_nonzero_exit_is_a_failed_launch_with_the_raw_line_kept stdout ----
+
+thread 'hosts::detect::tests::a_nonzero_exit_is_a_failed_launch_with_the_raw_line_kept' panicked at crates\axiom\src\hosts\detect.rs:807:9:
+assertion `left == right` failed
+  left: Missing
+ right: LaunchFailed
+
+---- hosts::detect::tests::a_reported_version_is_parsed_and_eligible_for_config stdout ----
+
+thread 'hosts::detect::tests::a_reported_version_is_parsed_and_eligible_for_config' panicked at crates\axiom\src\hosts\detect.rs:752:9:
+assertion `left == right` failed
+  left: Missing
+ right: Detected
+
+---- hosts::detect::tests::an_unknown_version_stays_unconfigured_pending_review stdout ----
+
+thread 'hosts::detect::tests::an_unknown_version_stays_unconfigured_pending_review' panicked at crates\axiom\src\hosts\detect.rs:776:9:
+assertion `left == right` failed
+  left: Missing
+ right: VersionUnverified
+
+---- hosts::detect::tests::oversized_and_empty_output_stay_unverified stdout ----
+
+thread 'hosts::detect::tests::oversized_and_empty_output_stay_unverified' panicked at crates\axiom\src\hosts\detect.rs:840:9:
+assertion `left == right` failed
+  left: Missing
+ right: VersionUnverified
+
+---- hosts::gemini::tests::a_document_outside_the_schema_is_refused_rather_than_guessed stdout ----
+
+thread 'hosts::gemini::tests::a_document_outside_the_schema_is_refused_rather_than_guessed' panicked at crates\axiom\src\hosts\gemini.rs:916:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::detect::tests::the_uncertified_stem_is_reported_for_agy stdout ----
+
+thread 'hosts::detect::tests::the_uncertified_stem_is_reported_for_agy' panicked at crates\axiom\src\hosts\detect.rs:874:9:
+assertion `left == right` failed
+  left: Missing
+ right: Detected
+
+---- hosts::gemini::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server stdout ----
+
+thread 'hosts::gemini::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server' panicked at crates\axiom\src\hosts\gemini.rs:916:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::gemini::tests::a_stdio_transport_requires_an_absolute_shell_free_command stdout ----
+
+thread 'hosts::gemini::tests::a_stdio_transport_requires_an_absolute_shell_free_command' panicked at crates\axiom\src\hosts\gemini.rs:1230:9:
+assertion `left == right` failed
+  left: "stdio-command-not-absolute"
+ right: "stdio-command-has-shell-metacharacters"
+
+---- hosts::gemini::tests::an_uncertified_policy_path_is_refused stdout ----
+
+thread 'hosts::gemini::tests::an_uncertified_policy_path_is_refused' panicked at crates\axiom\src\hosts\gemini.rs:916:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::gemini::tests::appending_preserves_every_other_server stdout ----
+
+thread 'hosts::gemini::tests::appending_preserves_every_other_server' panicked at crates\axiom\src\hosts\gemini.rs:916:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::gemini::tests::replacing_the_managed_entry_changes_only_that_entry stdout ----
+
+thread 'hosts::gemini::tests::replacing_the_managed_entry_changes_only_that_entry' panicked at crates\axiom\src\hosts\gemini.rs:916:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::gemini::tests::every_rendered_entry_parses_back_to_the_same_server stdout ----
+
+thread 'hosts::gemini::tests::every_rendered_entry_parses_back_to_the_same_server' panicked at crates\axiom\src\hosts\gemini.rs:1264:68:
+a round trip: AxiomError { code: ValidationError, message: "the server entry does not satisfy the native Gemini MCP schema", retryable: false, details: {"component": "axiom-graphd", "observed": "stdio-command-not-absolute", "rule": "stdio-command-not-absolute"}, dropped_details: 0, request_id: None }
+
+---- hosts::gemini::tests::the_instruction_fragment_uses_the_managed_block_markers stdout ----
+
+thread 'hosts::gemini::tests::the_instruction_fragment_uses_the_managed_block_markers' panicked at crates\axiom\src\hosts\gemini.rs:916:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::gemini::tests::the_scopes_pair_a_settings_file_with_an_instruction_and_policy_path stdout ----
+
+thread 'hosts::gemini::tests::the_scopes_pair_a_settings_file_with_an_instruction_and_policy_path' panicked at crates\axiom\src\hosts\gemini.rs:916:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- install::uninstall::tests::a_default_plan_separates_the_removal_classes_and_preserves_user_content stdout ----
+
+thread 'install::uninstall::tests::a_default_plan_separates_the_removal_classes_and_preserves_user_content' panicked at crates\axiom\src\install\uninstall.rs:862:9:
+assertion `left == right` failed
+  left: "/srv/axiom\\uninstall-report.json"
+ right: "/srv/axiom/uninstall-report.json"
+
+---- install::uninstall::tests::an_empty_class_is_not_reported_as_removed stdout ----
+
+thread 'install::uninstall::tests::an_empty_class_is_not_reported_as_removed' panicked at crates\axiom\src\install\uninstall.rs:1120:9:
+assertion failed: text.contains("report /srv/axiom/uninstall-report.json")
+
+---- install::uninstall::tests::an_uninstall_unregisters_only_the_owned_service_and_renders_the_report stdout ----
+
+thread 'install::uninstall::tests::an_uninstall_unregisters_only_the_owned_service_and_renders_the_report' panicked at crates\axiom\src\install\uninstall.rs:1095:9:
+assertion failed: report.contains("\"report_path\": \"/srv/axiom/uninstall-report.json\"")
+
+---- install::uninstall::tests::the_uninstall_report_is_kept_and_cannot_be_removed stdout ----
+
+thread 'install::uninstall::tests::the_uninstall_report_is_kept_and_cannot_be_removed' panicked at crates\axiom\src\install\uninstall.rs:1001:9:
+assertion failed: json.contains("\"report_path\": \"/srv/axiom/uninstall-report.json\"")
+
+---- service::linux::tests::a_per_user_unit_is_rendered_under_the_user_systemd_directory stdout ----
+
+thread 'service::linux::tests::a_per_user_unit_is_rendered_under_the_user_systemd_directory' panicked at crates\axiom\src\service\linux.rs:801:9:
+assertion failed: unit.text.contains("StandardOutput=append:/opt/axiom/logs/axiom-graphd.log")
+
+---- service::macos::tests::a_per_user_agent_is_rendered_under_the_user_agent_directory stdout ----
+
+thread 'service::macos::tests::a_per_user_agent_is_rendered_under_the_user_agent_directory' panicked at crates\axiom\src\service\macos.rs:615:9:
+assertion `left == right` failed
+  left: "/Users/billy\\Library/LaunchAgents\\com.axiom.axiom-graphd.plist"
+ right: "/Users/billy/Library/LaunchAgents/com.axiom.axiom-graphd.plist"
+
+---- service::macos::tests::an_install_loads_the_agent_and_reports_it stdout ----
+
+thread 'service::macos::tests::an_install_loads_the_agent_and_reports_it' panicked at crates\axiom\src\service\macos.rs:659:9:
+assertion `left == right` failed
+  left: ["load", "-w", "/Users/billy\\Library/LaunchAgents\\com.axiom.axiom-graphd.plist"]
+ right: ["load", "-w", "/Users/billy/Library/LaunchAgents/com.axiom.axiom-graphd.plist"]
+
+
+failures:
+    hosts::antigravity::tests::a_plan_inserts_then_replaces_without_touching_other_servers
+    hosts::antigravity::tests::an_insert_refuses_a_document_that_already_declares_the_server
+    hosts::antigravity::tests::an_oversized_document_is_refused
+    hosts::antigravity::tests::an_uncertified_skills_or_rules_path_is_refused
+    hosts::antigravity::tests::every_rendered_entry_parses_back_to_the_same_server
+    hosts::antigravity::tests::the_deprecated_legacy_skills_path_is_refused_not_translated
+    hosts::antigravity::tests::the_instruction_fragment_uses_the_managed_block_markers
+    hosts::antigravity::tests::the_scopes_pair_a_skills_dir_with_a_rules_dir
+    hosts::claude::tests::a_document_outside_the_schema_is_refused_rather_than_guessed
+    hosts::claude::tests::a_stdio_entry_requires_an_absolute_shell_free_command
+    hosts::claude::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server
+    hosts::claude::tests::appending_preserves_every_other_server_and_the_permissions_object
+    hosts::claude::tests::replacing_the_managed_entry_changes_only_that_entry
+    hosts::claude::tests::the_instruction_fragment_uses_the_managed_block_markers
+    hosts::claude::tests::the_two_scopes_pair_a_config_file_with_an_instruction_file
+    hosts::codex::tests::a_plan_refuses_an_existing_table_it_does_not_understand
+    hosts::codex::tests::a_rendered_block_parses_back_to_the_same_server
+    hosts::codex::tests::a_stdio_transport_requires_an_absolute_shell_free_command
+    hosts::codex::tests::an_append_plan_refuses_a_document_that_already_has_the_table
+    hosts::codex::tests::appending_preserves_every_other_server_and_the_whole_document
+    hosts::codex::tests::replacing_the_managed_table_moves_nothing_else
+    hosts::codex::tests::the_instruction_fragment_uses_the_managed_block_markers
+    hosts::detect::tests::a_denied_launch_reports_the_rule_instead_of_a_version
+    hosts::detect::tests::a_nonzero_exit_is_a_failed_launch_with_the_raw_line_kept
+    hosts::detect::tests::a_reported_version_is_parsed_and_eligible_for_config
+    hosts::detect::tests::an_unknown_version_stays_unconfigured_pending_review
+    hosts::detect::tests::oversized_and_empty_output_stay_unverified
+    hosts::detect::tests::the_uncertified_stem_is_reported_for_agy
+    hosts::gemini::tests::a_document_outside_the_schema_is_refused_rather_than_guessed
+    hosts::gemini::tests::a_stdio_transport_requires_an_absolute_shell_free_command
+    hosts::gemini::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server
+    hosts::gemini::tests::an_uncertified_policy_path_is_refused
+    hosts::gemini::tests::appending_preserves_every_other_server
+    hosts::gemini::tests::every_rendered_entry_parses_back_to_the_same_server
+    hosts::gemini::tests::replacing_the_managed_entry_changes_only_that_entry
+    hosts::gemini::tests::the_instruction_fragment_uses_the_managed_block_markers
+    hosts::gemini::tests::the_scopes_pair_a_settings_file_with_an_instruction_and_policy_path
+    install::uninstall::tests::a_default_plan_separates_the_removal_classes_and_preserves_user_content
+    install::uninstall::tests::an_empty_class_is_not_reported_as_removed
+    install::uninstall::tests::an_uninstall_unregisters_only_the_owned_service_and_renders_the_report
+    install::uninstall::tests::the_uninstall_report_is_kept_and_cannot_be_removed
+    service::linux::tests::a_per_user_unit_is_rendered_under_the_user_systemd_directory
+    service::macos::tests::a_per_user_agent_is_rendered_under_the_user_agent_directory
+    service::macos::tests::an_install_loads_the_agent_and_reports_it
+
+test result: FAILED. 463 passed; 44 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+error: test failed, to rerun pass `-p axiom --lib`

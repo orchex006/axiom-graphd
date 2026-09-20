@@ -1,0 +1,29 @@
+# V2-030 produced artifacts (native Windows 11 x64 leg)
+# host triple : x86_64-pc-windows-msvc
+# profile     : dev (cargo build --locked), the profile the repo gates use
+# captured    : 2026-09-20T14:02:41.8028040+07:00
+# commit      : 682269338706c8ffc7d81efc0b266b5ac5a66765
+
+## sha256 of each produced executable
+sha256  77f15708dd1112053989d582750541c99a19dfbe529aaeda0a6d912baf363285  target\debug\axiom-graphd.exe
+size    2887680  target\debug\axiom-graphd.exe
+sha256  6309b3e06c1252bede8cd707a43c277eeb855223abe2a8a8db211b090e0e6039  target\debug\axiom.exe
+size    424448  target\debug\axiom.exe
+
+## source inputs that describe the build
+sha256  a305a60ece0becf17756dd505c8596276d0135908a0ed742d427c19197a38e23  Cargo.toml
+sha256  aadf2d19378ad7ace80ad7020a86dc1c40961f80e3f82fd48e087916dfe11de3  Cargo.lock
+sha256  41d6dcad8459c70f7e1fd5cfce8fb318a67d23a23e26133ac618781a3cbd03a1  rust-toolchain.toml
+sha256  a61697fadac0911f6531f15f4ab1d9e9f2643546f308ea5e845ad91bcc9dc51f  .cargo\config.toml
+
+## build command and result
+command : cargo build --locked
+exit    : 0
+log     : evidence/V2-030/build-windows.log
+
+## raw New-Object listing
+Name              Length LastWriteTime
+----              ------ -------------
+axiom-graphd.exe 2887680 20/9/2569 14:02:21
+axiom.exe         424448 20/9/2569 14:02:32
+

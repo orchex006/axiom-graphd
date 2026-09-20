@@ -1,0 +1,4 @@
+runtime: sqlite3.sqlite_version = 3.46.1
+not_run: runtime WAL-reset baseline: host sqlite 3.46.1 < documented baseline 3.51.3; the patched-runtime leg cannot be certified on this host
+not_run: cargo test --locked -p graph-store migrations backup (real migration and backup code; no Rust build taken in this lane)
+ok: F-022 migration and restore hold; 3 positive legs, 3 negative legs rejected as required

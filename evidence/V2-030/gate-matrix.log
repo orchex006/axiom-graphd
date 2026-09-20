@@ -1,0 +1,2 @@
+PASS native matrix: all four mandatory targets are legitimate and every evidence file backs its row
+PASS self-test: every negative control rejected, clean copy accepted
