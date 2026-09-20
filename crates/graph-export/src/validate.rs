@@ -90,8 +90,9 @@ pub fn validate_generation(generation_dir: &Path) -> Result<ValidationReport> {
     let mut files = Vec::with_capacity(manifest.files.len());
     for entry in &manifest.files {
         let path = generation_dir.join(&entry.path);
-        let bytes = fs::read(&path)
-            .map_err(|error| ExportError::new(ERR_MISSING, format!("{}: {error}", path.display())))?;
+        let bytes = fs::read(&path).map_err(|error| {
+            ExportError::new(ERR_MISSING, format!("{}: {error}", path.display()))
+        })?;
         files.push((entry.path.clone(), bytes, entry.records));
     }
     validate_files(&files, &manifest)
@@ -153,10 +154,7 @@ mod tests {
         let generation = dir.path().join("generations/gid-ok");
         let manifest = write_generation(&generation, shard_bytes());
         let report = validate_generation(&generation).expect("valid");
-        assert_eq!(
-            report.generation_id,
-            manifest.generation_id().expect("id")
-        );
+        assert_eq!(report.generation_id, manifest.generation_id().expect("id"));
         assert_eq!(report.files, 1);
         assert_eq!(report.records, 1);
     }

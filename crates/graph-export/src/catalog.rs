@@ -234,6 +234,83 @@ mod tests {
         assert_eq!(error.code, ERR_INTEGRITY);
     }
 
+    /// A manifest this suite can pin and re-verify: real header ids, real
+    /// digests and a role path, so `verify` reaches its fingerprint leg
+    /// instead of stopping at the digest leg.
+    fn fixture_manifest() -> crate::manifest::GenerationManifest {
+        crate::manifest::build(
+            crate::manifest::ManifestHeader {
+                solution_id: "demo-solution".to_owned(),
+                project_id: "a".to_owned(),
+                analysis_profile: "default".to_owned(),
+                generator_version: "w10-test".to_owned(),
+                analyzer_set_hash: "0".repeat(64),
+                source_fingerprint: "1".repeat(64),
+                config_fingerprint: "2".repeat(64),
+                dependency_fingerprint: "3".repeat(64),
+                coverage: crate::manifest::Coverage::complete_for_profile(1, 1, 0),
+            },
+            vec![crate::manifest::ManifestEntry::from_bytes(
+                "nodes/000000.json",
+                "nodes",
+                b"[]\n",
+                0,
+            )],
+        )
+        .expect("manifest")
+    }
+
+    fn member_of(manifest: &crate::manifest::GenerationManifest) -> CatalogMember {
+        CatalogMember {
+            project_id: "a".to_owned(),
+            generation_id: manifest.generation_id().expect("generation id"),
+            source_fingerprint: manifest.source_fingerprint.clone(),
+        }
+    }
+
+    fn write_manifest(
+        root: &std::path::Path,
+        member: &CatalogMember,
+        manifest: &crate::manifest::GenerationManifest,
+    ) {
+        let generation_dir = member.project_root(root);
+        fs::create_dir_all(&generation_dir).expect("mkdir");
+        fs::write(
+            generation_dir.join("manifest.json"),
+            manifest.canonical_bytes().expect("canonical bytes"),
+        )
+        .expect("manifest");
+    }
+
+    #[test]
+    fn a_conforming_member_generation_verifies() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let manifest = fixture_manifest();
+        let pinned = member_of(&manifest);
+        write_manifest(dir.path(), &pinned, &manifest);
+        let catalog = build(vec![pinned]).expect("catalog");
+        verify(dir.path(), &catalog).expect("a conforming member verifies");
+    }
+
+    #[test]
+    fn a_member_whose_source_fingerprint_changed_fails_verification() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let manifest = fixture_manifest();
+        let mut pinned = member_of(&manifest);
+        write_manifest(dir.path(), &pinned, &manifest);
+        // Same generation and manifest bytes, a different pinned input digest:
+        // the failure must be the fingerprint leg, not the digest leg.
+        pinned.source_fingerprint = "9".repeat(64);
+        let catalog = build(vec![pinned]).expect("catalog");
+        let error = verify(dir.path(), &catalog).expect_err("fingerprint must be checked");
+        assert_eq!(error.code, ERR_INTEGRITY);
+        assert!(
+            error.message.contains("fingerprint changed"),
+            "{}",
+            error.message
+        );
+    }
+
     #[test]
     fn a_vanished_member_generation_is_missing_rather_than_replaced() {
         let dir = tempfile::tempdir().expect("tempdir");

@@ -259,8 +259,8 @@ impl StagedGeneration {
         }
         let mut entries = Vec::with_capacity(self.files.len());
         for staged in &self.files {
-            let bytes = fs::read(self.dir.join(&staged.path))
-                .map_err(|error| ExportError::io(&error))?;
+            let bytes =
+                fs::read(self.dir.join(&staged.path)).map_err(|error| ExportError::io(&error))?;
             let records = count_records(&bytes)?;
             entries.push(ManifestEntry::from_bytes(
                 staged.path.clone(),

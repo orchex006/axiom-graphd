@@ -225,7 +225,10 @@ impl GenerationManifest {
     /// [`ERR_CANONICAL`] when the document cannot be encoded.
     pub fn canonical_bytes(&self) -> Result<Vec<u8>> {
         let value = serde_json::to_value(self).map_err(|error| {
-            ExportError::new(ERR_CANONICAL, format!("manifest cannot be encoded: {error}"))
+            ExportError::new(
+                ERR_CANONICAL,
+                format!("manifest cannot be encoded: {error}"),
+            )
         })?;
         crate::canonical::canonical_document_value(&value)
     }
@@ -270,19 +273,22 @@ impl GenerationManifest {
         if !is_identifier(&self.solution_id) {
             return Err(ExportError::new(
                 ERR_INTEGRITY,
-                format!("manifest solution_id {} is not a portable identifier", self.solution_id),
+                format!(
+                    "manifest solution_id {} is not a portable identifier",
+                    self.solution_id
+                ),
             ));
         }
         if !is_identifier(&self.project_id) {
             return Err(ExportError::new(
                 ERR_INTEGRITY,
-                format!("manifest project_id {} is not a portable identifier", self.project_id),
+                format!(
+                    "manifest project_id {} is not a portable identifier",
+                    self.project_id
+                ),
             ));
         }
-        for text in [
-            &self.analysis_profile,
-            &self.generator_version,
-        ] {
+        for text in [&self.analysis_profile, &self.generator_version] {
             if text.is_empty() {
                 return Err(ExportError::new(
                     ERR_INTEGRITY,
@@ -306,7 +312,10 @@ impl GenerationManifest {
         if !COVERAGE_STATUSES.contains(&self.coverage.status.as_str()) {
             return Err(ExportError::new(
                 ERR_INTEGRITY,
-                format!("manifest coverage status {} is not supported", self.coverage.status),
+                format!(
+                    "manifest coverage status {} is not supported",
+                    self.coverage.status
+                ),
             ));
         }
         if self.coverage.processed_files > self.coverage.input_files {
@@ -329,7 +338,10 @@ impl GenerationManifest {
             if !is_portable_relative(&entry.path) {
                 return Err(ExportError::new(
                     ERR_INTEGRITY,
-                    format!("manifest entry path {} is not a portable relative path", entry.path),
+                    format!(
+                        "manifest entry path {} is not a portable relative path",
+                        entry.path
+                    ),
                 ));
             }
             if !FILE_ROLES.contains(&entry.role.as_str()) {
@@ -348,7 +360,10 @@ impl GenerationManifest {
             if !is_sha256_hex(&entry.sha256) {
                 return Err(ExportError::new(
                     ERR_INTEGRITY,
-                    format!("manifest entry {} sha256 is not a lowercase digest", entry.path),
+                    format!(
+                        "manifest entry {} sha256 is not a lowercase digest",
+                        entry.path
+                    ),
                 ));
             }
             if entry.bytes < 1 || entry.bytes > MAX_SHARD_BYTES {
@@ -362,7 +377,10 @@ impl GenerationManifest {
             }
         }
         for (index, entry) in self.files.iter().enumerate() {
-            if self.files[..index].iter().any(|seen| seen.path == entry.path) {
+            if self.files[..index]
+                .iter()
+                .any(|seen| seen.path == entry.path)
+            {
                 return Err(ExportError::new(
                     ERR_INTEGRITY,
                     format!("manifest declares duplicate file path {}", entry.path),
@@ -430,7 +448,10 @@ impl GenerationManifest {
     /// * [`ERR_INTEGRITY`] when the document fails [`Self::validate`].
     pub fn from_canonical_bytes(raw: &[u8]) -> Result<Self> {
         let value: serde_json::Value = serde_json::from_slice(raw).map_err(|error| {
-            ExportError::new(ERR_CANONICAL, format!("manifest is not valid JSON: {error}"))
+            ExportError::new(
+                ERR_CANONICAL,
+                format!("manifest is not valid JSON: {error}"),
+            )
         })?;
         let rendered = crate::canonical::canonical_document_value(&value)?;
         if rendered != raw {
@@ -440,9 +461,9 @@ impl GenerationManifest {
                  single-trailing-LF encoding of its own value",
             ));
         }
-        let document = value.as_object().ok_or_else(|| {
-            ExportError::new(ERR_CANONICAL, "manifest is not a JSON object")
-        })?;
+        let document = value
+            .as_object()
+            .ok_or_else(|| ExportError::new(ERR_CANONICAL, "manifest is not a JSON object"))?;
         for field in SELF_HASH_FIELDS {
             if document.contains_key(field) {
                 return Err(ExportError::new(
@@ -454,9 +475,17 @@ impl GenerationManifest {
                 ));
             }
         }
-        require_exact_keys(document.keys().map(String::as_str), &MANIFEST_FIELDS, "manifest")?;
+        require_exact_keys(
+            document.keys().map(String::as_str),
+            &MANIFEST_FIELDS,
+            "manifest",
+        )?;
         if let Some(coverage) = document.get("coverage").and_then(|value| value.as_object()) {
-            require_exact_keys(coverage.keys().map(String::as_str), &COVERAGE_FIELDS, "coverage")?;
+            require_exact_keys(
+                coverage.keys().map(String::as_str),
+                &COVERAGE_FIELDS,
+                "coverage",
+            )?;
         }
         if let Some(entries) = document.get("files").and_then(|value| value.as_array()) {
             for entry in entries {
@@ -470,7 +499,10 @@ impl GenerationManifest {
             }
         }
         let manifest: Self = serde_json::from_value(value).map_err(|error| {
-            ExportError::new(ERR_INTEGRITY, format!("manifest fields are invalid: {error}"))
+            ExportError::new(
+                ERR_INTEGRITY,
+                format!("manifest fields are invalid: {error}"),
+            )
         })?;
         manifest.validate()?;
         Ok(manifest)
@@ -496,7 +528,9 @@ fn require_exact_keys<'a>(
     if !missing.is_empty() || !unknown.is_empty() {
         return Err(ExportError::new(
             ERR_CANONICAL,
-            format!("{what} fields do not match the contract; missing={missing:?} unknown={unknown:?}"),
+            format!(
+                "{what} fields do not match the contract; missing={missing:?} unknown={unknown:?}"
+            ),
         ));
     }
     Ok(())
@@ -584,11 +618,7 @@ mod tests {
                 shard(br#"[{"a":1},{"b":2}]"#),
                 2,
             ),
-            (
-                "edges/000000.json".to_owned(),
-                shard(br#"[{"c":3}]"#),
-                1,
-            ),
+            ("edges/000000.json".to_owned(), shard(br#"[{"c":3}]"#), 1),
         ]
     }
 
@@ -610,7 +640,10 @@ mod tests {
         assert_eq!(manifest.record_count(), 3);
         assert_eq!(
             manifest.total_bytes(),
-            actual.iter().map(|(_, bytes, _)| bytes.len()).sum::<usize>()
+            actual
+                .iter()
+                .map(|(_, bytes, _)| bytes.len())
+                .sum::<usize>()
         );
         manifest.verify(&actual).expect("verifies");
         let id = manifest.generation_id().expect("id");
@@ -670,8 +703,7 @@ mod tests {
         let mut value: serde_json::Value =
             serde_json::from_slice(&manifest.canonical_bytes().expect("bytes")).expect("json");
         value["generation_id"] = serde_json::Value::String("0".repeat(64));
-        let bytes =
-            crate::canonical::canonical_document_value(&value).expect("canonical");
+        let bytes = crate::canonical::canonical_document_value(&value).expect("canonical");
         let error = GenerationManifest::from_canonical_bytes(&bytes).expect_err("must refuse");
         assert_eq!(error.code, ERR_CANONICAL, "{}", error.message);
     }
@@ -691,9 +723,15 @@ mod tests {
     fn a_duplicate_role_is_refused() {
         let actual = files();
         let mut entries: Vec<ManifestEntry> = Vec::new();
-        for (index, (path, bytes, records)) in actual.iter().enumerate() {
-            let role = if index == 1 { "nodes" } else { "nodes" };
-            entries.push(ManifestEntry::from_bytes(path.clone(), role, bytes, *records));
+        for (path, bytes, records) in &actual {
+            // Both entries claim the same role: that duplication is the leg.
+            let role = "nodes";
+            entries.push(ManifestEntry::from_bytes(
+                path.clone(),
+                role,
+                bytes,
+                *records,
+            ));
         }
         let error = build(header(), entries).expect_err("must refuse");
         assert_eq!(error.code, ERR_INTEGRITY, "{}", error.message);
@@ -702,13 +740,13 @@ mod tests {
     #[test]
     fn a_non_portable_path_is_refused() {
         let actual = files();
-        for bad in ["../escape.json", "nodes\\x.json", "C:/tmp/x.json", "/abs.json"] {
-            let entries = vec![ManifestEntry::from_bytes(
-                bad,
-                "nodes",
-                &actual[0].1,
-                2,
-            )];
+        for bad in [
+            "../escape.json",
+            "nodes\\x.json",
+            "C:/tmp/x.json",
+            "/abs.json",
+        ] {
+            let entries = vec![ManifestEntry::from_bytes(bad, "nodes", &actual[0].1, 2)];
             let error = build(header(), entries).expect_err("must refuse");
             assert_eq!(error.code, ERR_INTEGRITY, "{bad}: {}", error.message);
         }
@@ -766,4 +804,3 @@ mod tests {
         assert_eq!(error.code, ERR_CANONICAL);
     }
 }
-

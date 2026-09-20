@@ -174,17 +174,17 @@ pub struct SelectedRecord {
 
 impl SelectedRecord {
     fn from_value(value: &serde_json::Value) -> Option<Self> {
-        let key = value.get("key")?.as_str()?.to_owned();
-        let kind = value
-            .get("kind")
-            .and_then(serde_json::Value::as_str)
-            .unwrap_or("unknown")
-            .to_owned();
-        let body = value
-            .get("body")
-            .cloned()
-            .unwrap_or(serde_json::Value::Null);
-        Some(Self { key, kind, body })
+        // A published record is a contract document, not an envelope: the
+        // identity is the document `id` and the body *is* the document. The
+        // coverage and architecture shards carry no `id`, so they are never
+        // selected records.
+        let key = value.get("id")?.as_str()?.to_owned();
+        let kind = if is_edge(value) { "edge" } else { "node" };
+        Some(Self {
+            key,
+            kind: kind.to_owned(),
+            body: value.clone(),
+        })
     }
 }
 
@@ -255,21 +255,29 @@ fn load_all(snapshot: &dyn PinnedSnapshot) -> Result<Vec<serde_json::Value>, Axi
     Ok(all)
 }
 
+/// Read the first present string field of a record.
+///
+/// A contract document carries its fields at the top level, so the document
+/// itself is searched. The legacy `body` envelope is still honoured, so a
+/// caller holding that shape keeps working.
 fn field<'a>(value: &'a serde_json::Value, names: &[&str]) -> Option<&'a str> {
-    let body = value.get("body")?;
+    let scope = value.get("body").unwrap_or(value);
     for name in names {
-        if let Some(text) = body.get(*name).and_then(serde_json::Value::as_str) {
+        if let Some(text) = scope.get(*name).and_then(serde_json::Value::as_str) {
             return Some(text);
         }
     }
     None
 }
 
+/// Whether a shard record is an edge document.
+///
+/// A contract edge carries `source_id` and never a `qualified_name`; a node is
+/// the mirror image. The projection classifies by document shape, which is what
+/// the published payload actually encodes, instead of depending on an envelope
+/// `kind` the frozen contract does not define.
 fn is_edge(value: &serde_json::Value) -> bool {
-    value
-        .get("kind")
-        .and_then(serde_json::Value::as_str)
-        .is_some_and(|kind| kind == "edge")
+    value.get("source_id").is_some() && value.get("qualified_name").is_none()
 }
 
 fn edge_from(value: &serde_json::Value) -> Option<&str> {
@@ -277,7 +285,7 @@ fn edge_from(value: &serde_json::Value) -> Option<&str> {
 }
 
 fn edge_to(value: &serde_json::Value) -> Option<&str> {
-    field(value, &["target_id", "to", "target"])
+    field(value, &["target_id", "unresolved_target", "to", "target"])
 }
 /// Assemble a bounded projection from an ordered candidate list.
 fn assemble(
@@ -354,14 +362,20 @@ pub fn context(
     let mut ordered: Vec<&serde_json::Value> = Vec::new();
     for value in &all {
         let key = value
-            .get("key")
+            .get("id")
             .and_then(serde_json::Value::as_str)
             .unwrap_or_default();
-        let named = field(value, &["qualified_name", "name", "id"]);
+        let named = field(value, &["qualified_name", "name"]);
         let matches =
             key == symbol || named == Some(symbol) || key.split(':').any(|part| part == symbol);
         if matches {
-            if let Some(identity) = named.or(Some(key)) {
+            // A contract edge addresses a node by its `id`, while a caller
+            // usually types the readable name. Both are seeded so an incident
+            // edge is found either way.
+            if !key.is_empty() {
+                seeds.insert(key.to_owned());
+            }
+            if let Some(identity) = named {
                 seeds.insert(identity.to_owned());
             }
             ordered.push(value);
@@ -417,7 +431,7 @@ pub fn impact(
     let all = load_all(snapshot)?;
     let edges: Vec<&serde_json::Value> = all.iter().filter(|value| is_edge(value)).collect();
     let known = all.iter().any(|value| {
-        value.get("key").and_then(serde_json::Value::as_str) == Some(node_id)
+        value.get("id").and_then(serde_json::Value::as_str) == Some(node_id)
             || field(value, &["qualified_name", "name", "id"]) == Some(node_id)
     });
     if !known {
@@ -472,7 +486,7 @@ pub fn impact(
     }
     for identity in &reachable {
         for value in &all {
-            let matches = value.get("key").and_then(serde_json::Value::as_str)
+            let matches = value.get("id").and_then(serde_json::Value::as_str)
                 == Some(identity.as_str())
                 || field(value, &["qualified_name", "name", "id"]) == Some(identity.as_str());
             if matches && !ordered.iter().any(|seen| **seen == *value) {
@@ -503,9 +517,13 @@ mod tests {
 
     impl FakeSnapshot {
         fn new(records: Vec<serde_json::Value>) -> Self {
+            Self::sharded(vec![("nodes/000000.json".to_owned(), records)])
+        }
+
+        fn sharded(shards: Vec<(String, Vec<serde_json::Value>)>) -> Self {
             Self {
                 generation_id: "gen-0001".to_owned(),
-                shards: vec![("bucket-000".to_owned(), records)],
+                shards,
             }
         }
     }
@@ -527,19 +545,36 @@ mod tests {
         }
     }
 
+    /// A node document with a readable stand-in id. The projection needs only
+    /// stable identity, readable names and the node/edge shape; conformance of
+    /// real ids and digests is covered by the `graph-export` suites.
     fn symbol(qualified_name: &str) -> serde_json::Value {
         serde_json::json!({
-            "key": format!("sym:{qualified_name}"),
-            "kind": "symbol",
-            "body": {"qualified_name": qualified_name, "name": qualified_name},
+            "id": format!("sym:{qualified_name}"),
+            "project_id": "demo-project",
+            "kind": "Class",
+            "name": qualified_name,
+            "qualified_name": qualified_name,
+            "language": "csharp",
+            "source": {"file": "src/Demo.cs", "start_line": 1, "end_line": 1},
+            "identity_quality": "syntax",
+            "attributes": {},
         })
     }
 
-    fn edge(key: &str, from: &str, to: &str) -> serde_json::Value {
+    fn edge(id: &str, from: &str, to: &str) -> serde_json::Value {
         serde_json::json!({
-            "key": key,
-            "kind": "edge",
-            "body": {"source_id": from, "target_id": to, "kind": "calls"},
+            "id": id,
+            "source_id": from,
+            "target_project_id": "demo-project",
+            "kind": "CALLS",
+            "resolution": "exact_static",
+            "target_id": to,
+            "evidence": [{
+                "source": {"file": "src/Demo.cs", "start_line": 1, "end_line": 1},
+                "rule_id": "demo-rule",
+            }],
+            "analyzer_id": "demo-analyzer",
         })
     }
 
@@ -726,5 +761,99 @@ mod tests {
                 Some("gen-0001")
             );
         }
+    }
+
+    /// The layout the publisher writes: one role shard per file, edges
+    /// addressing nodes by id, plus a coverage document that is not a record.
+    #[test]
+    fn a_role_sharded_payload_is_read_as_one_graph() {
+        let snapshot = FakeSnapshot::sharded(vec![
+            (
+                "nodes/000000.json".to_owned(),
+                vec![symbol("AuthService"), symbol("AuthController")],
+            ),
+            (
+                "edges/000000.json".to_owned(),
+                vec![edge(
+                    "edge:controller->auth",
+                    "sym:AuthController",
+                    "sym:AuthService",
+                )],
+            ),
+            (
+                "coverage.json".to_owned(),
+                vec![serde_json::json!({
+                    "status": "complete_for_profile",
+                    "input_files": 2,
+                    "processed_files": 2,
+                    "unresolved_references": 0,
+                    "unsupported_patterns": [],
+                })],
+            ),
+        ]);
+        let projection = context(
+            "demo-solution",
+            &snapshot,
+            "AuthService",
+            QueryLimits::default(),
+        )
+        .expect("context");
+        let edge = projection
+            .records
+            .iter()
+            .find(|record| record.key == "edge:controller->auth")
+            .expect("the incident edge is found through the node id");
+        assert_eq!(edge.kind, "edge");
+        // Only AuthService matched, so exactly one node is selected; the edge
+        // is reached through the id it addresses.
+        assert_eq!(
+            projection
+                .records
+                .iter()
+                .filter(|r| r.kind == "node")
+                .count(),
+            1
+        );
+        // The coverage document has no identity and is never a record.
+        assert!(projection
+            .records
+            .iter()
+            .all(|record| record.key != "coverage.json"));
+    }
+
+    /// An edge whose target could not be resolved is still incident to its
+    /// source, so a context answer does not silently drop it.
+    #[test]
+    fn an_unresolved_edge_is_incident_to_its_source() {
+        let snapshot = FakeSnapshot::sharded(vec![
+            ("nodes/000000.json".to_owned(), vec![symbol("AuthService")]),
+            (
+                "edges/000000.json".to_owned(),
+                vec![serde_json::json!({
+                    "id": "edge:unresolved-1",
+                    "source_id": "sym:AuthService",
+                    "target_project_id": "demo-project",
+                    "kind": "CALLS",
+                    "resolution": "unresolved",
+                    "unresolved_target": "Demo.Missing",
+                    "evidence": [{
+                        "source": {"file": "src/Demo.cs", "start_line": 1, "end_line": 1},
+                        "rule_id": "demo-rule",
+                    }],
+                    "analyzer_id": "demo-analyzer",
+                })],
+            ),
+        ]);
+        let projection = context(
+            "demo-solution",
+            &snapshot,
+            "AuthService",
+            QueryLimits::default(),
+        )
+        .expect("context");
+        assert!(projection
+            .records
+            .iter()
+            .any(|record| record.key == "edge:unresolved-1"));
     }
 }
