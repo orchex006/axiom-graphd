@@ -36,6 +36,32 @@ native adapters (`UserDirs`, `CrossProcessGuard`, `AtomicPublisher`,
 `WatchBackend`, `PathIdentity`, `ExecutableLocator`) stay behind narrow
 interfaces inside these crates (CP-02).
 
+## Command surface
+
+Every operator slice below is wired into `parse` (task H-001) and is listed by
+`axiom-graphd help`. Wiring is not implementation: each verb parses its full
+documented argument surface, rejects an unknown flag or a malformed argument
+(`VALIDATION_ERROR`, exit 2), and then answers `NOT_READY` (exit 4) with the
+reason that names the binding it still needs, so an unimplemented slice is never
+an empty success.
+
+| Verb | Forms | Answers today |
+| --- | --- | --- |
+| `version` | `version [--json]` | the version report (implemented) |
+| `serve` | `serve [--registry <path>] [--json]` | `NOT_READY` - the instance lock is taken, no reconcile loop is bound yet |
+| `doctor` | `doctor [--solution <id>] [--json]` | `NOT_READY` - no status sources in this build |
+| `status` | `status --solution <id> [--json]` | `NOT_READY` - no open store in this build |
+| `solution` | `solution register\|list\|remove ...` | `NOT_READY` - no registry write path in this build |
+| `changed` | `changed --solution <id> --project <p> --path <p> --reason <r>` / `--from-json <f>` | `NOT_READY` - no store binding in this build |
+| `reconcile` | `reconcile --solution <id> --scope dirty\|project\|full ...` | `NOT_READY` - no queue writer in this build |
+| `queue` | `queue list\|retry\|cancel ...` | `NOT_READY` - no open store in this build |
+| `query` | `query context\|impact --solution <id> (--symbol <s>\|--node-id <id>) ...` | `NOT_READY` - no pinned snapshot source in this build |
+| `update` | `update check` / `update apply --plan <file> [--approve-digest <sha>]` | `NOT_READY` - no trusted `axiom` CLI path in this build |
+| `help` | `help`, `--help`, `-h` | the usage text, every wired verb form and the frozen exit table |
+
+`checkpoint` and `snapshot` are documented in the CLI contract but have no owning
+module in this revision, so they are still rejected as unrecognised commands.
+
 ## Build and verify
 
 ```bash

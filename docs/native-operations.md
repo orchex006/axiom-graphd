@@ -15,6 +15,7 @@ Read the markers before trusting a sentence.
 | Marker | Meaning |
 | --- | --- |
 | **available** | The verb or module exists in this revision; the named source contains it. |
+| **wired, not implemented** | `parse` accepts the verb and its whole documented argument surface, but the verb answers `NOT_READY` (exit 4) because the binding that would let it work belongs to a later work package (task H-001). It is never shown below as a working command. |
 | **proposed** | Documented for a later work package. It is **not** runnable here and is never shown below as a command to run. |
 | **UNVERIFIED** | The behaviour is decided by source only. No native execution, no real host mechanism and no platform certification backs it. |
 
@@ -24,17 +25,30 @@ accepts it: `crates/axiom-graphd/src/cli.rs` and `crates/axiom/src/cli.rs`.
 ## 1. What actually runs today
 
 Two binaries ship from this repository: `axiom-graphd` (`crates/axiom-graphd`)
-and `axiom` (`crates/axiom-cli`). Only these verbs are parsed and executed in
-this revision.
+and `axiom` (`crates/axiom-cli`). These verbs are parsed in this revision. Only
+`version` and `help` do work; `serve`, `doctor` and the seven slices wired by
+task H-001 all answer `NOT_READY`.
 
 | Verb | State | Source |
 | --- | --- | --- |
-| `axiom-graphd serve [--registry <path>] [--json]` | available | `cli.rs` positional arm `["serve"]`; acquires the instance lock, then reports `NOT_READY` |
+| `axiom-graphd serve [--registry <path>] [--json]` | available | `cli.rs` arm `["serve"]`; acquires the instance lock, then reports `NOT_READY` |
 | `axiom-graphd version [--json]` | available | `cli.rs` arm `["version"]` |
-| `axiom-graphd doctor [--json]` | available | `cli.rs` arm `["doctor"]`; returns `NOT_READY` (no status sources in this build) |
 | `axiom-graphd help` (also `--help`, `-h`) | available | `cli.rs` arm `["help"]` and the empty argv case |
+| `axiom-graphd doctor [--solution <id>] [--json]` | available | `cli.rs` slice `doctor`; `NOT_READY` (no status sources in this build) |
+| `axiom-graphd status --solution <id> [--json]` | wired, not implemented | `cli.rs` slice `status` (task H-001); `NOT_READY` (no open store in this build) |
+| `axiom-graphd solution register|list|remove ...` | wired, not implemented | `cli.rs` slice `solution` (task H-001); `NOT_READY` (no registry write path in this build) |
+| `axiom-graphd changed ...` | wired, not implemented | `cli.rs` slice `changed` (task H-001); `NOT_READY` (no store binding in this build) |
+| `axiom-graphd reconcile ...` | wired, not implemented | `cli.rs` slice `reconcile` (task H-001); `NOT_READY` (no queue writer in this build) |
+| `axiom-graphd queue list|retry|cancel ...` | wired, not implemented | `cli.rs` slice `queue` (task H-001); `NOT_READY` (no open store in this build) |
+| `axiom-graphd query context|impact ...` | wired, not implemented | `cli.rs` slice `query` (task H-001); `NOT_READY` (no pinned snapshot source in this build) |
+| `axiom-graphd update check|apply ...` | wired, not implemented | `cli.rs` slice `update` (task H-001); `NOT_READY` (no trusted `axiom` CLI path in this build) |
 | `axiom version [--all] [--json]` | available | `crates/axiom/src/cli.rs` arm `["version"]` |
 | `axiom help` (also `--help`, `-h`) | available | `crates/axiom/src/cli.rs` |
+
+**wired, not implemented** is a separate state on purpose (task H-001): the verb
+and its arguments are accepted, then it answers `NOT_READY` (exit 4) with the
+reason that names the missing binding. It is not a working verb, and no recovery
+step below may be written as if it were one.
 
 These verbs do **not** exist. Do not run them: `parse` rejects them as an
 unrecognised command (`VALIDATION_ERROR`, exit 2), and no binary in this tree
@@ -44,7 +58,7 @@ implements the work.
 | --- | --- |
 | `axiom-graphd migrate ...` | No positional arm in `cli.rs`. The migration crates are libraries only. |
 | `axiom migrate apply`, `axiom migrate verify`, `axiom migrate rollback` | `migrate` is a recognised **pending** verb in `crates/axiom/src/cli.rs` (`PENDING_VERBS`) that maps to `NOT_READY` (exit 4). It plans, applies and rolls back nothing. |
-| `axiom-graphd update ...`, `axiom-graphd reconcile ...`, `axiom-graphd queue ...`, `axiom-graphd solution ...`, `axiom-graphd query ...`, `axiom-graphd changed ...`, `axiom-graphd status ...` | Modules exist under `crates/axiom-graphd/src/commands/`, but none is wired into `parse`. |
+| `axiom-graphd checkpoint ...`, `axiom-graphd snapshot ...` | Documented by the CLI contract, but no module owns them in this revision, so `parse` rejects them. |
 | `axiom install ...`, `axiom service ...`, `axiom bootstrap ...`, `axiom host ...`, `axiom skills ...`, `axiom specs ...`, `axiom update ...`, `axiom doctor ...`, `axiom support-bundle ...` | Recognised pending verbs (`PENDING_VERBS`) that map to `NOT_READY` (exit 4). |
 | `axiom-graphd rollback ...`, `axiom rollback ...` | No such verb exists at all. Recovery is a library call, not a command (see sections 4 and 6). |
 
@@ -459,10 +473,12 @@ line here is **UNVERIFIED**.
 - **`schtasks` / `systemctl --user` / `launchctl` were never really executed.**
   The startup lifecycle renders the host command and hands it to an injected
   `ServiceExec`; that boundary is exercised only by recording/denying doubles.
-- **No migrate / update / rollback CLI verbs.** `migrate`, `update`, `service`,
-  `install`, `bootstrap` and the rest are recognised pending verbs that map to
-  `NOT_READY` (exit 4); the daemon rejects them as unrecognised commands. There
-  is no command that reads a journal, resumes a cutover or rolls anything back.
+- **No migrate or rollback CLI verb, and no implemented operator verb.** In
+  `axiom-graphd` the seven slices wired by task H-001 accept their arguments and
+  then answer `NOT_READY`; in `axiom`, `migrate`, `service`, `install`,
+  `bootstrap` and the rest are recognised pending verbs that map to `NOT_READY`
+  (exit 4), and the daemon rejects them as unrecognised commands. There is no
+  command that reads a journal, resumes a cutover or rolls anything back.
 - **No native platform certification.** The migration and native-apply gates ran
   in a Linux container; no native Windows or macOS cutover, junction/ACL
   behaviour, code-signing path or real lock was exercised.
@@ -490,6 +506,12 @@ Identifier checks (all exit 0; output in the named log):
 | no native adapter implementations | `rg -n "impl ActivationFs\|impl JournalStore\|impl ApplyIo\|impl WriterFence" crates/` | 0 (all under `tests/` or `#[cfg(test)]`) | `_coord/logs/L47-wiring2.log`, `L47-wiring4.log` |
 | `serve` installs no signal handler | `rg -n "SIGINT\|SIGTERM\|signal" crates/axiom-graphd/src` | 0 (no handler in `cli.rs`) | `_coord/logs/L47-signal.log` |
 | docs check | `python tools/check-doc-status.py --root .` | 0 | `_coord/logs/L47-doc-check.log` |
+
+That table records the V2-026 revision, when only `serve`, `version`, `doctor`
+and `help` were parsed. Task H-001 has since wired the seven operator slices
+listed in section 1 (state **wired, not implemented**), so the "real CLI verbs
+only" row no longer describes this revision; it is kept as the record of what was
+checked when this runbook was written.
 
 **UNVERIFIED**: no native command in this runbook was executed. `axiom-graphd`
 was not built or run for this change, no journal was decoded on a real tree, no

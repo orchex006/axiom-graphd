@@ -274,8 +274,10 @@ reasons as `REFUSAL_REASONS`, the schema ceiling as
 `graph_store::migrations::CURRENT_SCHEMA_VERSION` (major `1`), the backup
 check as `graph_store::backup::verify_backup`, and an unconfigured trust root
 refuses every delegation (`UpdateTrust::Unconfigured`, task B-092). The daemon
-binary `axiom-graphd` implements `help` and `version` and answers `doctor` and
-`serve` with `NOT_READY` (exit 4) - reproduced by running the prebuilt binary
+binary `axiom-graphd` implements `help` and `version` and answers `doctor`,
+`serve` and the seven operator verbs wired by task H-001 (`status`, `solution`,
+`changed`, `reconcile`, `queue`, `query`, `update`) with `NOT_READY` (exit 4) -
+reproduced by running the prebuilt binary
 from the owner's primary checkout, whose `version` reports `build_revision` as
 `unknown`, so that run corroborates the source here but is not a revision-bound
 release run. The `axiom` argv layer exists here (task E-001) but this

@@ -704,8 +704,8 @@ mod tests {
     use super::{
         check_link_boundary, check_open_handle_replacement, check_path_length, check_replacement,
         check_same_filesystem_staging, check_staged_bytes, is_within_root, preserves_bytes,
-        EntryFacts, FilesystemProbe, HandleCheck, LineEndings, NativeFilesystemProbe,
-        ReplacementRequest, StorageLocation, SymlinkKind,
+        EntryFacts, FilesystemProbe, HandleCheck, LineEndings, ReplacementRequest, StorageLocation,
+        SymlinkKind,
     };
     use graph_core::error::{AxiomError, ErrorCode};
     use std::path::Path;
@@ -965,6 +965,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn the_native_probe_observes_a_real_file_and_a_real_symlink() {
+        use super::NativeFilesystemProbe;
         use std::os::unix::fs::symlink;
 
         let directory = tempfile::tempdir().expect("temp dir");

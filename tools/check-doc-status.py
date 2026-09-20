@@ -4,9 +4,9 @@
 Tasks D-002, D-003, D-004 and D-006 deliver four documents under docs/guides and
 docs/reference. Those documents are honest only if their availability tables
 agree with the real CLI surface and every relative link resolves. This checker
-reads the four markdown deliverables plus the real CLI source text
-(crates/axiom-graphd/src/cli.rs) and fails on any disagreement. It never builds,
-never executes the Rust binary and never touches the network.
+reads the four markdown deliverables plus the accepted-verb declaration in the
+real CLI source (crates/axiom-graphd/src/cli.rs) and fails on any disagreement.
+It never builds, never executes the Rust binary and never touches the network.
 
 Usage:
     python tools/check-doc-status.py --root <repository root>
@@ -58,8 +58,8 @@ RUNBOOK_TOPICS = (
 
 CELL_RE = re.compile(r"^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|")
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
-COMMAND_ARM_RE = re.compile(r'\["([a-z0-9][a-z0-9-]*)"\]')
-COMMAND_MATCH_MARKER = "let command = match positionals.as_slice() {"
+VERBS_MARKER = "pub const ACCEPTED_VERBS: &[&str] = &["
+VERB_RE = re.compile(r'"([a-z0-9][a-z0-9-]*)"')
 
 SECRET_PATTERNS = (
     ("aws access key id", re.compile(r"AKIA[0-9A-Z]{16}")),
@@ -115,14 +115,24 @@ def status_table(text, begin, end):
 
 
 def accepted_commands(cli_src):
-    """The positional commands `parse` really accepts, read from source text."""
-    start = cli_src.find(COMMAND_MATCH_MARKER)
+    """The verbs `parse` really accepts, read from the CLI's own declaration.
+
+    `cli.rs` declares its accepted verbs once, in `ACCEPTED_VERBS`, so this
+    checker does not depend on the parser's internal shape. The unit test
+    `accepted_verbs_match_the_parser_in_both_directions` in `cli.rs` proves that
+    declaration still agrees with `parse` in both directions; this function
+    compares the documents against that same declaration.
+    """
+    start = cli_src.find(VERBS_MARKER)
     if start == -1:
-        raise CheckError("cli.rs no longer contains the positional command match")
-    end = cli_src.find("};", start)
+        raise CheckError("cli.rs no longer declares ACCEPTED_VERBS")
+    end = cli_src.find("];", start)
     if end == -1:
-        raise CheckError("cli.rs positional command match is unterminated")
-    return set(COMMAND_ARM_RE.findall(cli_src[start:end]))
+        raise CheckError("cli.rs ACCEPTED_VERBS declaration is unterminated")
+    verbs = set(VERB_RE.findall(cli_src[start:end]))
+    if not verbs:
+        raise CheckError("cli.rs ACCEPTED_VERBS declaration lists no verb")
+    return verbs
 
 
 def section_for(text, name):
@@ -178,11 +188,9 @@ def check_reference(text, cli_src):
         problems.append(
             "reference marks accepted commands as proposed: %s" % sorted(overlap)
         )
-    for name in sorted(proposed):
-        if ('["%s"]' % name) in cli_src:
-            problems.append(
-                "reference marks %r proposed but cli.rs has a positional arm for it" % name
-            )
+    # `accepted` is read from cli.rs itself, so the overlap check above is the
+    # whole disagreement test: a proposed row that cli.rs accepts is caught
+    # there, and a proposed row cli.rs never accepted stays honestly proposed.
 
     # AC1: every implemented command has a section with arguments, exit codes
     # and a failure-recovery or behaviour statement.
@@ -263,15 +271,12 @@ def run(root):
 # --------------------------------------------------------------------------
 
 CLI_FIXTURE = (
-    "    let command = match positionals.as_slice() {\n"
-    "        [] => Command::Help,\n"
-    '        ["help"] => Command::Help,\n'
-    '        ["version"] => Command::Version,\n'
-    '        ["doctor"] => Command::Doctor,\n'
-    '        ["serve"] => Command::Serve { registry },\n'
-    '        [other] => { return rejected(format!("unrecognised command: {other}")); }\n'
-    '        _ => { return rejected(String::from("expected exactly one command")); }\n'
-    "    };\n"
+    "pub const ACCEPTED_VERBS: &[&str] = &[\n"
+    '    "help",\n'
+    '    "version",\n'
+    '    "doctor",\n'
+    '    "serve",\n'
+    "];\n"
 )
 
 REFERENCE_FIXTURE = (
@@ -342,7 +347,7 @@ def self_test():
     case("reference claims a command cli.rs does not accept",
          {REFERENCE: REFERENCE_FIXTURE.replace("| serve | available |", "| serve | proposed |")})
     case("cli.rs drops a documented command",
-         {CLI_SOURCE: CLI_FIXTURE.replace('        ["serve"] => Command::Serve { registry },\n', "")})
+         {CLI_SOURCE: CLI_FIXTURE.replace('    "serve",\n', "")})
     case("runbook uses an invented state",
          {RUNBOOKS[0]: RUNBOOK_FIXTURE.replace("| 3 Install the core release | pending |",
                                                "| 3 Install the core release | done |")})
