@@ -1,0 +1,70 @@
+I-003 test and gate evidence
+captured (Gregorian, invariant): 2026-09-20 14:29:43 +07:00
+worktree: D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-i003
+branch: feature/i-003-axiom-cli-install-surface ; HEAD 682269338706c8ffc7d81efc0b266b5ac5a66765
+
+Each block below records the exact command, its exit code, and the real output.
+
+==================================================================
+1) cargo build -p axiom
+exit code: 0
+--- output (tail) ---
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+
+==================================================================
+2) cargo test -p axiom   (whole crate; includes the 9 new cli:: tests)
+exit code: 101 (the crate has 44 pre-existing, host-platform failures; see note)
+--- result line ---
+test result: FAILED. 472 passed; 44 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+--- the 44 failures grouped by module ---
+  hosts::antigravity             8
+  hosts::claude                  7
+  hosts::codex                   7
+  hosts::detect                  6
+  hosts::gemini                  9
+  install::uninstall             4
+  service::linux                 1
+  service::macos                 2
+  total failed = 44
+  cli:: failures = 0
+
+NOTE: none of the 44 failures is in this task's module. They are pre-existing Windows
+path-handling failures in hosts::*, install::uninstall and service::linux/macos: the
+tests assert that an absolute host path is accepted, and on this Windows host the
+guard answers "a root must be an absolute host path". Representative failure bodies:
+  thread 'hosts::antigravity::tests::a_plan_inserts_then_replaces_without_touching_other_servers' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+  thread 'hosts::antigravity::tests::an_insert_refuses_a_document_that_already_declares_the_server' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+
+--- the 9 cli:: tests ---
+  cli::tests::advertised_commands_match_the_dispatcher_in_both_directions
+  cli::tests::advertised_options_match_the_dispatcher_in_both_directions
+  cli::tests::every_advertised_form_is_dispatchable
+  cli::tests::implemented_verbs_keep_their_behaviour
+  cli::tests::invalid_arguments_are_rejected_with_the_validation_exit_code
+  cli::tests::oversized_and_boundary_values_stay_honest
+  cli::tests::pending_verbs_match_the_declared_surface
+  cli::tests::the_drift_guard_notices_a_missing_and_an_extra_command
+  cli::tests::unbuilt_slices_answer_not_ready_with_a_stated_reason
+
+==================================================================
+3) cargo test -p axiom --lib cli::
+exit code: 0
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 507 filtered out; finished in 0.01s
+
+==================================================================
+4) cargo test -p axiom-cli   (the thin axiom executable's own tests)
+exit code: 0
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+==================================================================
+5) cargo fmt --all -- --check   (alias: cargo fmt-check)
+exit code: 0
+(no output: formatting is clean)
+
+==================================================================
+6) cargo lint   (clippy --locked --all-targets -- -D warnings)
+exit code: 0
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+

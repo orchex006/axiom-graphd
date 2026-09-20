@@ -1,0 +1,19 @@
+I-003 tool versions and platform
+captured (Gregorian, invariant): 2026-09-20 14:32:28 +07:00
+host locale culture: th-TH (PowerShell formats dates in a Buddhist-era calendar; the Gregorian date above uses InvariantCulture)
+worktree: D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-i003
+branch: feature/i-003-axiom-cli-install-surface
+HEAD (base revision, uncommitted at capture time): 682269338706c8ffc7d81efc0b266b5ac5a66765
+os: Microsoft Windows 11 Pro (build 10.0.26200)
+arch: AMD64
+powershell: 7.6.6 (Core)
+cargo: cargo 1.85.0 (d73d2caf9 2024-12-31)
+rustup: rustup 1.29.1 (d95a37b6a 2026-08-13)
+rustc -vV:
+  rustc 1.85.0 (4d91de4e4 2025-02-17)
+  binary: rustc
+  commit-hash: 4d91de4e48198da2e33413efdcd9cd2cc0c46688
+  commit-date: 2025-02-17
+  host: x86_64-pc-windows-msvc
+  release: 1.85.0
+  LLVM version: 19.1.7

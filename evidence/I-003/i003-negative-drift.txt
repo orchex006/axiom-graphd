@@ -1,0 +1,116 @@
+I-003 negative drift proof (AC1)
+captured (Gregorian, invariant): 2026-09-20 14:26:53 +07:00
+repository root confirmed by git rev-parse --show-toplevel: D:/SP-Billy/axiom-worktrees/axiom-graphd-w10-i003
+branch: feature/i-003-axiom-cli-install-surface
+file under test: crates\axiom\src\cli.rs
+test under test: cargo test -p axiom --lib cli::tests::advertised_commands_match_the_dispatcher_in_both_directions
+sha256 before mutation: 51AE124F14F0E97DED5670BB046FFB7450F6F29B97A03965DB7DE48A469948DF (50517 bytes, 1399 lines)
+
+AC1 requires that removing a subcommand from the dispatcher while leaving it in the
+usage text - or the reverse - fails a test. Each mutation below is applied to the real
+source file, then PROVEN to have applied (the sha256 changed and the line count moved as
+expected) before the test is run. The proof aborts rather than reporting a false negative
+if a mutation does not land. After each run the file is restored byte for byte.
+
+mutation A: deleted the "migrate status --transaction <id>" line from USAGE; the dispatcher still declares migrate status
+  applied: sha256 changed = True ; lines 1399 -> 1398 (expected -1)
+------------------------------------------------------------------
+MUTATION: A - the usage text loses a command, the dispatcher keeps it
+command: cargo test -p axiom --lib cli::tests::advertised_commands_match_the_dispatcher_in_both_directions
+--- output ---
+   Compiling axiom v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-i003\crates\axiom)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.83s
+     Running unittests src\lib.rs (target\debug\deps\axiom-907f9e30396c62dc.exe)
+
+running 1 test
+test cli::tests::advertised_commands_match_the_dispatcher_in_both_directions ... FAILED
+
+failures:
+
+---- cli::tests::advertised_commands_match_the_dispatcher_in_both_directions stdout ----
+
+thread 'cli::tests::advertised_commands_match_the_dispatcher_in_both_directions' panicked at crates\axiom\src\cli.rs:1052:9:
+assertion `left == right` failed: --help must list exactly the declared forms, in dispatcher order
+  left: [["version"], ["help"], ["specs", "version"], ["skills", "version"], ["install", "plan"], ["install", "apply"], ["service", "install"], ["service", "start"], ["service", "stop"], ["service", "status"], ["service", "uninstall"], ["bootstrap", "plan"], ["bootstrap", "apply"], ["bootstrap", "verify"], ["bootstrap", "update", "plan"], ["bootstrap", "update", "apply"], ["host", "detect"], ["host", "configure"], ["host", "verify"], ["skills", "check"], ["skills", "update", "plan"], ["skills", "update", "apply"], ["specs", "check"], ["specs", "update", "plan"], ["specs", "update", "apply"], ["update", "check"], ["update", "plan"], ["update", "apply"], ["update", "rollback"], ["doctor"], ["support-bundle"], ["migrate", "plan"], ["migrate", "apply"], ["migrate", "rollback"]]
+ right: [["version"], ["help"], ["specs", "version"], ["skills", "version"], ["install", "plan"], ["install", "apply"], ["service", "install"], ["service", "start"], ["service", "stop"], ["service", "status"], ["service", "uninstall"], ["bootstrap", "plan"], ["bootstrap", "apply"], ["bootstrap", "verify"], ["bootstrap", "update", "plan"], ["bootstrap", "update", "apply"], ["host", "detect"], ["host", "configure"], ["host", "verify"], ["skills", "check"], ["skills", "update", "plan"], ["skills", "update", "apply"], ["specs", "check"], ["specs", "update", "plan"], ["specs", "update", "apply"], ["update", "check"], ["update", "plan"], ["update", "apply"], ["update", "rollback"], ["doctor"], ["support-bundle"], ["migrate", "plan"], ["migrate", "apply"], ["migrate", "status"], ["migrate", "rollback"]]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    cli::tests::advertised_commands_match_the_dispatcher_in_both_directions
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 515 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p axiom --lib`
+exit code: 101
+
+restored sha256: 51AE124F14F0E97DED5670BB046FFB7450F6F29B97A03965DB7DE48A469948DF
+restored byte-identical to the verified revision: True
+
+mutation B: removing FormSpec lines 432-437 (the migrate status form) from VERBS
+  removed block:
+        FormSpec {
+            verb: "migrate",
+            subcommands: &["status"],
+            options: &[OPT_TRANSACTION],
+            not_ready: Some(NOT_READY_MIGRATE),
+        },
+  applied: sha256 changed = True ; lines 1399 -> 1393 (expected -6)
+------------------------------------------------------------------
+MUTATION: B - the dispatcher loses a command, the usage text keeps it
+command: cargo test -p axiom --lib cli::tests::advertised_commands_match_the_dispatcher_in_both_directions
+--- output ---
+   Compiling axiom v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-i003\crates\axiom)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.62s
+     Running unittests src\lib.rs (target\debug\deps\axiom-907f9e30396c62dc.exe)
+
+running 1 test
+test cli::tests::advertised_commands_match_the_dispatcher_in_both_directions ... FAILED
+
+failures:
+
+---- cli::tests::advertised_commands_match_the_dispatcher_in_both_directions stdout ----
+
+thread 'cli::tests::advertised_commands_match_the_dispatcher_in_both_directions' panicked at crates\axiom\src\cli.rs:1047:9:
+assertion `left == right` failed: --help must list exactly the declared forms, in dispatcher order
+  left: [["version"], ["help"], ["specs", "version"], ["skills", "version"], ["install", "plan"], ["install", "apply"], ["service", "install"], ["service", "start"], ["service", "stop"], ["service", "status"], ["service", "uninstall"], ["bootstrap", "plan"], ["bootstrap", "apply"], ["bootstrap", "verify"], ["bootstrap", "update", "plan"], ["bootstrap", "update", "apply"], ["host", "detect"], ["host", "configure"], ["host", "verify"], ["skills", "check"], ["skills", "update", "plan"], ["skills", "update", "apply"], ["specs", "check"], ["specs", "update", "plan"], ["specs", "update", "apply"], ["update", "check"], ["update", "plan"], ["update", "apply"], ["update", "rollback"], ["doctor"], ["support-bundle"], ["migrate", "plan"], ["migrate", "apply"], ["migrate", "status"], ["migrate", "rollback"]]
+ right: [["version"], ["help"], ["specs", "version"], ["skills", "version"], ["install", "plan"], ["install", "apply"], ["service", "install"], ["service", "start"], ["service", "stop"], ["service", "status"], ["service", "uninstall"], ["bootstrap", "plan"], ["bootstrap", "apply"], ["bootstrap", "verify"], ["bootstrap", "update", "plan"], ["bootstrap", "update", "apply"], ["host", "detect"], ["host", "configure"], ["host", "verify"], ["skills", "check"], ["skills", "update", "plan"], ["skills", "update", "apply"], ["specs", "check"], ["specs", "update", "plan"], ["specs", "update", "apply"], ["update", "check"], ["update", "plan"], ["update", "apply"], ["update", "rollback"], ["doctor"], ["support-bundle"], ["migrate", "plan"], ["migrate", "apply"], ["migrate", "rollback"]]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    cli::tests::advertised_commands_match_the_dispatcher_in_both_directions
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 515 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p axiom --lib`
+exit code: 101
+
+restored sha256: 51AE124F14F0E97DED5670BB046FFB7450F6F29B97A03965DB7DE48A469948DF
+restored byte-identical to the verified revision: True
+
+------------------------------------------------------------------
+RE-RUN on the restored file (must be green)
+command: cargo test -p axiom --lib cli::tests::advertised_commands_match_the_dispatcher_in_both_directions
+--- output ---
+   Compiling axiom v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-i003\crates\axiom)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.44s
+     Running unittests src\lib.rs (target\debug\deps\axiom-907f9e30396c62dc.exe)
+
+running 1 test
+test cli::tests::advertised_commands_match_the_dispatcher_in_both_directions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 515 filtered out; finished in 0.00s
+
+exit code: 0
+
+SUMMARY
+  mutation A (the usage text loses a command): exit code 101 -> FAILED as required
+  mutation B (the dispatcher loses a command): exit code 101 -> FAILED as required
+  restored file sha256: 51AE124F14F0E97DED5670BB046FFB7450F6F29B97A03965DB7DE48A469948DF
+  restored file is byte-identical to the verified revision: True
+  re-run on the restored file: exit code 0 -> GREEN
+
+git status --porcelain after the proof (must show only crates/axiom/src/cli.rs):
+   M crates/axiom/src/cli.rs
+  ?? evidence/

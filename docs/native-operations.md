@@ -52,16 +52,19 @@ reason that names the missing binding. It is not a working verb, and no recovery
 step below may be written as if it were one. Task H-002 left only `changed` and
 `update` in that state; the other operator verbs are `available` and execute.
 
-These verbs do **not** exist. Do not run them: `parse` rejects them as an
-unrecognised command (`VALIDATION_ERROR`, exit 2), and no binary in this tree
-implements the work.
+Except for the `migrate` and pending-verb rows below, these verbs do **not**
+exist: `parse` rejects them as an unrecognised command (`VALIDATION_ERROR`,
+exit 2), and no binary in this tree implements the work. The `migrate` and
+pending-verb rows are recognised, and since task I-003 `axiom --help` advertises
+them and `axiom` dispatches them, so they answer `NOT_READY` (exit 4) instead of
+exit 2 - still with no implementation behind them.
 
 | Not a verb | Why |
 | --- | --- |
 | `axiom-graphd migrate ...` | No positional arm in `cli.rs`. The migration crates are libraries only. |
-| `axiom migrate apply`, `axiom migrate verify`, `axiom migrate rollback` | `migrate` is a recognised **pending** verb in `crates/axiom/src/cli.rs` (`PENDING_VERBS`) that maps to `NOT_READY` (exit 4). It plans, applies and rolls back nothing. |
+| `axiom migrate apply`, `axiom migrate verify`, `axiom migrate rollback` | `migrate` is a recognised **pending** verb in `crates/axiom/src/cli.rs` (`PENDING_VERBS`). Since task I-003 `axiom --help` advertises `migrate plan|apply|status|rollback` and argv reaches them, and each answers `NOT_READY` (exit 4). `migrate verify` is not a declared form and is rejected (`VALIDATION_ERROR`, exit 2). Nothing plans, applies or rolls back. |
 | `axiom-graphd checkpoint ...`, `axiom-graphd snapshot ...` | Documented by the CLI contract, but no module owns them in this revision, so `parse` rejects them. |
-| `axiom install ...`, `axiom service ...`, `axiom bootstrap ...`, `axiom host ...`, `axiom skills ...`, `axiom specs ...`, `axiom update ...`, `axiom doctor ...`, `axiom support-bundle ...` | Recognised pending verbs (`PENDING_VERBS`) that map to `NOT_READY` (exit 4). |
+| `axiom install ...`, `axiom service ...`, `axiom bootstrap ...`, `axiom host ...`, `axiom skills ...`, `axiom specs ...`, `axiom update ...`, `axiom doctor ...`, `axiom support-bundle ...` | Recognised pending verbs (`PENDING_VERBS`). Since task I-003 `axiom --help` advertises every documented form and argv reaches it, and each answers `NOT_READY` (exit 4) with the reason that names the missing binding. None is implemented. |
 | `axiom-graphd rollback ...`, `axiom rollback ...` | No such verb exists at all. Recovery is a library call, not a command (see sections 4 and 6). |
 
 Consequence for this runbook: every recovery sequence in sections 4, 5 and 6 is

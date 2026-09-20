@@ -1,0 +1,420 @@
+I-003 argv matrix - real process runs of target\debug\axiom.exe
+captured (Gregorian, invariant): 2026-09-20 14:27:41 +07:00
+binary: D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-i003\target\debug\axiom.exe
+binary sha256: A54CAD81C7AD8ACCE84898D6BF6A9387FC8EF5DA74EDABFA9DB3198076BD5E70
+each case below is a spawned process; stdout and stderr were captured to separate files and read back verbatim
+
+==================================================================
+CASE P1 - help (implemented)
+argv: axiom --help
+exit code: 0
+stdout bytes: 3497 ; stdout non-empty lines: 65
+stderr bytes: 0
+--- stdout (verbatim) ---
+axiom - Axiom installation, bootstrap and operations CLI
+
+Usage: axiom <command> [options]
+
+Commands:
+  version [--all]  print component and build versions
+  help, --help  print this help
+  specs version  print the managed specification bundle version
+  skills version  print the managed skills bundle version
+  install plan --bundle <signed-bundle> [--out <file>]  plan an installation from a signed bundle
+  install apply --plan <file> [--approve-digest <sha256>]  apply an approved installation plan
+  service install --component <id> [--user]  install the managed service for one component
+  service start --component <id>  start the managed service
+  service stop --component <id>  stop the managed service
+  service status --component <id>  report the managed service status
+  service uninstall --component <id>  remove the managed service
+  bootstrap plan --solution <id> [--hosts <list>] [--out <file>]  plan a solution bootstrap for the named hosts
+  bootstrap apply --plan <file> [--approve-digest <sha256>]  apply an approved bootstrap plan
+  bootstrap verify --solution <id>  verify a bootstrapped solution
+  bootstrap update plan --solution <id> [--to <version>]  plan a bootstrap update
+  bootstrap update apply --plan <file> [--approve-digest <sha256>]  apply an approved bootstrap update plan
+  host detect  detect the installed agent hosts
+  host configure --host <name> [--dry-run]  configure one agent host client
+  host verify --host <name>  verify one configured agent host client
+  skills check [--updates]  check the managed skills bundle
+  skills update plan [--to <target>]  plan a skills update
+  skills update apply --plan <file>  apply an approved skills update plan
+  specs check [--updates]  check the managed specification bundle
+  specs update plan [--to <version>]  plan a specification update
+  specs update apply --plan <file>  apply an approved specification update plan
+  update check [--all]  check every updatable component
+  update plan [--to <target>] [--out <file>]  plan a core update
+  update apply --plan <file> [--approve-digest <sha256>]  apply an approved core update plan
+  update rollback --transaction <id>  roll back one recorded update transaction
+  doctor [--all]  run diagnostics
+  support-bundle --out <file> [--redact]  write a redacted support bundle
+  migrate plan --solution <id> [--from <ref>] [--to-layout <n>] [--out <file>]  plan the V2 namespace migration
+  migrate apply --plan <file> --approve-digest <sha256>  apply an approved migration plan
+  migrate status --transaction <id>  report one migration transaction
+  migrate rollback --transaction <id> --approve-digest <sha256>  roll back one migration transaction
+
+Options:
+  --all  report every component or host of this release
+  --json  write exactly one JSON object to stdout; diagnostics go to stderr
+  --help, -h  print this help
+  --version, -V  print the version report
+
+Every command above is reachable from argv. A command whose production
+behaviour is not built yet answers the frozen not ready/stale code (4) with the
+module that owns it, and never an empty success. `install apply`, `bootstrap
+apply`, `bootstrap update apply`, `update apply` and `migrate apply` bind their
+approval to the canonical plan digest recorded by --approve-digest.
+
+Exit codes:
+  0  success
+  2  validation
+  3  not found
+  4  not ready/stale
+  5  authorization
+  6  conflict
+  7  timeout/busy
+  8  I/O internal
+  9  incompatible
+  10  lock unavailable
+  20  partial multi-repo operation
+--- end stdout ---
+--- stderr (verbatim) ---
+
+--- end stderr ---
+
+==================================================================
+CASE P2 - help verb (implemented)
+argv: axiom help
+exit code: 0
+stdout bytes: 3497 ; stdout non-empty lines: 65
+stderr bytes: 0
+--- stdout (verbatim) ---
+axiom - Axiom installation, bootstrap and operations CLI
+
+Usage: axiom <command> [options]
+
+Commands:
+  version [--all]  print component and build versions
+  help, --help  print this help
+  specs version  print the managed specification bundle version
+  skills version  print the managed skills bundle version
+  install plan --bundle <signed-bundle> [--out <file>]  plan an installation from a signed bundle
+  install apply --plan <file> [--approve-digest <sha256>]  apply an approved installation plan
+  service install --component <id> [--user]  install the managed service for one component
+  service start --component <id>  start the managed service
+  service stop --component <id>  stop the managed service
+  service status --component <id>  report the managed service status
+  service uninstall --component <id>  remove the managed service
+  bootstrap plan --solution <id> [--hosts <list>] [--out <file>]  plan a solution bootstrap for the named hosts
+  bootstrap apply --plan <file> [--approve-digest <sha256>]  apply an approved bootstrap plan
+  bootstrap verify --solution <id>  verify a bootstrapped solution
+  bootstrap update plan --solution <id> [--to <version>]  plan a bootstrap update
+  bootstrap update apply --plan <file> [--approve-digest <sha256>]  apply an approved bootstrap update plan
+  host detect  detect the installed agent hosts
+  host configure --host <name> [--dry-run]  configure one agent host client
+  host verify --host <name>  verify one configured agent host client
+  skills check [--updates]  check the managed skills bundle
+  skills update plan [--to <target>]  plan a skills update
+  skills update apply --plan <file>  apply an approved skills update plan
+  specs check [--updates]  check the managed specification bundle
+  specs update plan [--to <version>]  plan a specification update
+  specs update apply --plan <file>  apply an approved specification update plan
+  update check [--all]  check every updatable component
+  update plan [--to <target>] [--out <file>]  plan a core update
+  update apply --plan <file> [--approve-digest <sha256>]  apply an approved core update plan
+  update rollback --transaction <id>  roll back one recorded update transaction
+  doctor [--all]  run diagnostics
+  support-bundle --out <file> [--redact]  write a redacted support bundle
+  migrate plan --solution <id> [--from <ref>] [--to-layout <n>] [--out <file>]  plan the V2 namespace migration
+  migrate apply --plan <file> --approve-digest <sha256>  apply an approved migration plan
+  migrate status --transaction <id>  report one migration transaction
+  migrate rollback --transaction <id> --approve-digest <sha256>  roll back one migration transaction
+
+Options:
+  --all  report every component or host of this release
+  --json  write exactly one JSON object to stdout; diagnostics go to stderr
+  --help, -h  print this help
+  --version, -V  print the version report
+
+Every command above is reachable from argv. A command whose production
+behaviour is not built yet answers the frozen not ready/stale code (4) with the
+module that owns it, and never an empty success. `install apply`, `bootstrap
+apply`, `bootstrap update apply`, `update apply` and `migrate apply` bind their
+approval to the canonical plan digest recorded by --approve-digest.
+
+Exit codes:
+  0  success
+  2  validation
+  3  not found
+  4  not ready/stale
+  5  authorization
+  6  conflict
+  7  timeout/busy
+  8  I/O internal
+  9  incompatible
+  10  lock unavailable
+  20  partial multi-repo operation
+--- end stdout ---
+--- stderr (verbatim) ---
+
+--- end stderr ---
+
+==================================================================
+CASE P3 - positive verb, implemented, text mode
+argv: axiom version
+exit code: 0
+stdout bytes: 120 ; stdout non-empty lines: 1
+stderr bytes: 0
+--- stdout (verbatim) ---
+axiom 0.0.0-dev (spec 2.0.0-draft.1, graph schema 1, control api 1, queue schema 1, build unknown, update unconfigured)
+--- end stdout ---
+--- stderr (verbatim) ---
+
+--- end stderr ---
+
+==================================================================
+CASE P4 - positive verb, implemented, one JSON object
+argv: axiom version --all --json
+exit code: 0
+stdout bytes: 390 ; stdout non-empty lines: 1
+stderr bytes: 0
+--- stdout (verbatim) ---
+{"components":[{"component":"axiom","version":"0.0.0-dev","spec_version":"2.0.0-draft.1","graph_schema":1,"control_api":1,"queue_schema":1,"build_revision":"unknown","update_status":"unconfigured"},{"component":"axiom-graphd","version":"0.0.0-dev","spec_version":"2.0.0-draft.1","graph_schema":1,"control_api":1,"queue_schema":1,"build_revision":"unknown","update_status":"unconfigured"}]}
+--- end stdout ---
+--- stderr (verbatim) ---
+
+--- end stderr ---
+
+==================================================================
+CASE P5 - positive verb, single-component JSON object
+argv: axiom version --json
+exit code: 0
+stdout bytes: 183 ; stdout non-empty lines: 1
+stderr bytes: 0
+--- stdout (verbatim) ---
+{"component":"axiom","version":"0.0.0-dev","spec_version":"2.0.0-draft.1","graph_schema":1,"control_api":1,"queue_schema":1,"build_revision":"unknown","update_status":"unconfigured"}
+--- end stdout ---
+--- stderr (verbatim) ---
+
+--- end stderr ---
+
+==================================================================
+CASE U1 - unbuilt slice, documented form, text mode
+argv: axiom install plan --bundle bundle.zip --out install-plan.json
+exit code: 4
+stdout bytes: 0 ; stdout non-empty lines: 0
+stderr bytes: 244
+--- stdout (verbatim) ---
+
+--- end stdout ---
+--- stderr (verbatim) ---
+NOT_READY: the install plan command is recognised, but not built: the `crate::install` planner/apply slices are unit tested, but installing from the documented entrypoint is not composed in this build (task I-003 exposes the argv surface only)
+--- end stderr ---
+
+==================================================================
+CASE U2 - unbuilt slice, documented form, JSON mode
+argv: axiom doctor --all --json
+exit code: 4
+stdout bytes: 253 ; stdout non-empty lines: 1
+stderr bytes: 183
+--- stdout (verbatim) ---
+{"code":"NOT_READY","message":"the doctor command is recognised, but not built: the diagnostics slice is not composed into the `axiom` entrypoint in this build (task I-003 exposes the argv surface only)","retryable":true,"details":{},"request_id":null}
+--- end stdout ---
+--- stderr (verbatim) ---
+NOT_READY: the doctor command is recognised, but not built: the diagnostics slice is not composed into the `axiom` entrypoint in this build (task I-003 exposes the argv surface only)
+--- end stderr ---
+
+==================================================================
+CASE U3 - unbuilt slice, approval-bound apply
+argv: axiom bootstrap apply --plan plan.json --approve-digest aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+exit code: 4
+stdout bytes: 0 ; stdout non-empty lines: 0
+stderr bytes: 248
+--- stdout (verbatim) ---
+
+--- end stdout ---
+--- stderr (verbatim) ---
+NOT_READY: the bootstrap apply command is recognised, but not built: the `crate::bootstrap` engine is unit tested, but bootstrapping a solution from the documented entrypoint is not composed in this build (task I-003 exposes the argv surface only)
+--- end stderr ---
+
+==================================================================
+CASE U4 - unbuilt slice, V2 migrate namespace
+argv: axiom migrate status --transaction txn-1
+exit code: 4
+stdout bytes: 0 ; stdout non-empty lines: 0
+stderr bytes: 263
+--- stdout (verbatim) ---
+
+--- end stdout ---
+--- stderr (verbatim) ---
+NOT_READY: the migrate status command is recognised, but not built: `docs/16-CLI-AND-CONTROL-API.md` V2 migration commands are intended interfaces rather than shipped commands, so `migrate` is not composed in this build (task I-003 exposes the argv surface only)
+--- end stderr ---
+
+==================================================================
+CASE E1 - unknown verb, text mode
+argv: axiom frobnicate
+exit code: 2
+stdout bytes: 0 ; stdout non-empty lines: 0
+stderr bytes: 51
+--- stdout (verbatim) ---
+
+--- end stdout ---
+--- stderr (verbatim) ---
+VALIDATION_ERROR: unrecognised command: frobnicate
+--- end stderr ---
+
+==================================================================
+CASE E2 - unknown verb, JSON mode
+argv: axiom frobnicate --json
+exit code: 2
+stdout bytes: 122 ; stdout non-empty lines: 1
+stderr bytes: 51
+--- stdout (verbatim) ---
+{"code":"VALIDATION_ERROR","message":"unrecognised command: frobnicate","retryable":false,"details":{},"request_id":null}
+--- end stdout ---
+--- stderr (verbatim) ---
+VALIDATION_ERROR: unrecognised command: frobnicate
+--- end stderr ---
+
+==================================================================
+CASE E3 - verb with no subcommand
+argv: axiom install
+exit code: 2
+stdout bytes: 0 ; stdout non-empty lines: 0
+stderr bytes: 48
+--- stdout (verbatim) ---
+
+--- end stdout ---
+--- stderr (verbatim) ---
+VALIDATION_ERROR: unrecognised command: install
+--- end stderr ---
+
+==================================================================
+CASE E4 - unknown subcommand
+argv: axiom install frobnicate
+exit code: 2
+stdout bytes: 0 ; stdout non-empty lines: 0
+stderr bytes: 59
+--- stdout (verbatim) ---
+
+--- end stdout ---
+--- stderr (verbatim) ---
+VALIDATION_ERROR: unrecognised command: install frobnicate
+--- end stderr ---
+
+==================================================================
+CASE E5 - missing option value (option is last token)
+argv: axiom install plan --bundle
+exit code: 2
+stdout bytes: 0 ; stdout non-empty lines: 0
+stderr bytes: 55
+--- stdout (verbatim) ---
+
+--- end stdout ---
+--- stderr (verbatim) ---
+VALIDATION_ERROR: the --bundle option requires a value
+--- end stderr ---
+
+==================================================================
+CASE E6 - missing option value, JSON mode
+argv: axiom install plan --bundle --json
+exit code: 2
+stdout bytes: 149 ; stdout non-empty lines: 1
+stderr bytes: 78
+--- stdout (verbatim) ---
+{"code":"VALIDATION_ERROR","message":"the --bundle option requires a value, not the option --json","retryable":false,"details":{},"request_id":null}
+--- end stdout ---
+--- stderr (verbatim) ---
+VALIDATION_ERROR: the --bundle option requires a value, not the option --json
+--- end stderr ---
+
+==================================================================
+CASE E7 - invalid flag combination (--all outside version/update check/doctor)
+argv: axiom install plan --bundle bundle.zip --all
+exit code: 2
+stdout bytes: 0 ; stdout non-empty lines: 0
+stderr bytes: 76
+--- stdout (verbatim) ---
+
+--- end stdout ---
+--- stderr (verbatim) ---
+VALIDATION_ERROR: the install plan command does not accept the option --all
+--- end stderr ---
+
+==================================================================
+CASE E8 - invalid flag combination (--all with no command)
+argv: axiom --all
+exit code: 2
+stdout bytes: 0 ; stdout non-empty lines: 0
+stderr bytes: 45
+--- stdout (verbatim) ---
+
+--- end stdout ---
+--- stderr (verbatim) ---
+VALIDATION_ERROR: unrecognised option: --all
+--- end stderr ---
+
+==================================================================
+CASE E9 - missing required option
+argv: axiom service start
+exit code: 2
+stdout bytes: 0 ; stdout non-empty lines: 0
+stderr bytes: 76
+--- stdout (verbatim) ---
+
+--- end stdout ---
+--- stderr (verbatim) ---
+VALIDATION_ERROR: the service start command requires the --component option
+--- end stderr ---
+
+==================================================================
+CASE E10 - unknown option for a valid form
+argv: axiom install plan --bundle bundle.zip --nope
+exit code: 2
+stdout bytes: 0 ; stdout non-empty lines: 0
+stderr bytes: 77
+--- stdout (verbatim) ---
+
+--- end stdout ---
+--- stderr (verbatim) ---
+VALIDATION_ERROR: the install plan command does not accept the option --nope
+--- end stderr ---
+
+==================================================================
+CASE E11 - malformed approval digest
+argv: axiom migrate apply --plan plan.json --approve-digest nothex
+exit code: 2
+stdout bytes: 0 ; stdout non-empty lines: 0
+stderr bytes: 103
+--- stdout (verbatim) ---
+
+--- end stdout ---
+--- stderr (verbatim) ---
+VALIDATION_ERROR: the --approve-digest option needs a 64-character lowercase hexadecimal sha256 digest
+--- end stderr ---
+
+==================================================================
+CASE E12 - unknown host vocabulary
+argv: axiom host configure --host not-a-host
+exit code: 2
+stdout bytes: 0 ; stdout non-empty lines: 0
+stderr bytes: 81
+--- stdout (verbatim) ---
+
+--- end stdout ---
+--- stderr (verbatim) ---
+VALIDATION_ERROR: the --host option needs one of the known hosts, got not-a-host
+--- end stderr ---
+
+==================================================================
+CASE E13 - stray argument after a valid form
+argv: axiom install plan --bundle bundle.zip stray
+exit code: 2
+stdout bytes: 0 ; stdout non-empty lines: 0
+stderr bytes: 78
+--- stdout (verbatim) ---
+
+--- end stdout ---
+--- stderr (verbatim) ---
+VALIDATION_ERROR: the install plan command does not accept the argument stray
+--- end stderr ---
+
