@@ -32,6 +32,7 @@ rejects or cannot complete it.
 | queue | available | `queue list\|retry\|cancel` executes against the operational queue in the open store. |
 | reconcile | available | Runs the same bounded pass as `serve` for one solution (or one project) and returns its report. |
 | query | available | `query context\|impact` executes against a pinned published generation. |
+| render | available | `render --solution <id> [--project <id>]... --out <dir>` writes a deterministic `result.html` and `summary.json` for a published generation (task H-005). |
 | update | available | Wired in task H-001: accepts `update check\|apply` and answers `NOT_READY`. |
 | install | proposed | Not accepted by `parse`; belongs to the installation work package. |
 | service | proposed | Not accepted by `parse`; belongs to the native lifecycle work package. |
@@ -42,12 +43,12 @@ rejects or cannot complete it.
 `available` means `parse` accepts the command and the verb has a production
 binding; it does not mean every verb is complete. Task H-002 bound `serve`,
 `solution`, `status`, `doctor`, `reconcile`, `queue` and `query` to the store,
-registry, queue and pinned-generation pipeline. Two verbs remain wired but not
-implemented: `changed` and `update` accept their full documented argument
-surface and then answer `NOT_READY` (exit 4) with one stable reason that names
-the binding they still need. Sections 8 and 12 describe those two; the remaining
-sections describe the implemented verbs, their accepted forms and their
-behaviour.
+registry, queue and pinned-generation pipeline, and task H-005 bound `render` to
+that same pinned-generation reader. Two verbs remain wired but not implemented:
+`changed` and `update` accept their full documented argument surface and then
+answer `NOT_READY` (exit 4) with one stable reason that names the binding they
+still need. Sections 8 and 13 describe those two; the remaining sections describe
+the implemented verbs, their accepted forms and their behaviour.
 
 Global arguments:
 
@@ -57,7 +58,8 @@ Global arguments:
 | `--registry <path>` | available | `serve` only | Explicit registry config path, passed as argv. Supplying it for any other command is rejected. |
 | `--help`, `-h` | available | - | Same as the `help` command. |
 | `--version`, `-V` | available | - | Same as the `version` command. |
-| `--solution <id>` | available | `doctor`, `status`, `changed`, `reconcile`, `queue`, `query`, `solution list`/`remove` | Named solution scope. Rejected for a verb that does not accept it. |
+| `--solution <id>` | available | `doctor`, `status`, `changed`, `reconcile`, `queue`, `query`, `render` | Named solution scope. Rejected for a verb that does not accept it. |
+| `--project <id>`, `--out <dir>` | available | `render` | Repeatable project scope (empty means every registered project) and the output directory; an empty `--out` is rejected. |
 | `--dry-run` / `--apply` | available | `solution register`, `solution remove` | Exactly one of the two is required; supplying neither is a rejection. |
 | `--limit <n>` | available | `queue list` | Bounded 1..`queue::MAX_LIST_LIMIT`. |
 | `--wait`, `--timeout <ms\|Ns>` | available | `reconcile --scope dirty` | Bounded wait, bounded by `reconcile::MIN/MAX_TIMEOUT_MS`. |
@@ -407,7 +409,42 @@ axiom-graphd query impact --solution <id> (--symbol <name>|--node-id <id>) [--ma
   the selector to a qualified name. Never widen `--max-nodes` or `--depth` past
   their bounds to force an answer; the bounds are contract.
 
-## 12. `update`
+## 12. `render`
+
+```text
+axiom-graphd render --solution <id> [--project <id>]... --out <dir>
+```
+
+- Arguments: required `--solution <id>`; repeatable `--project <id>`, where an
+  empty list means every registered project; required `--out <dir>`, which must
+  be a non-empty directory path (`--out ""` is rejected).
+- Behaviour: reads every selected project's published generation through the
+  frozen reader and concatenates **every** node shard and **every** edge shard the
+  generation's manifest names - never only the first - then writes two artifacts
+  into `--out`: a self-contained `result.html` that draws the relationship graph,
+  and a machine-readable `summary.json` that carries the same inventory.
+  `result.html` draws each node and edge with its frozen `kind`, draws the four
+  resolution classes (`exact_static`, `inferred_static`, `annotated`,
+  `unresolved`) distinctly, and draws an edge whose target is unresolved or absent
+  as a placeholder rather than as a resolved node. Both artifacts carry an
+  always-present coverage-and-freshness banner taken from the generation's
+  coverage document and manifest, so a partially analysed graph is never
+  presented as complete. Two renders of the same generation are byte-identical,
+  and neither artifact carries a machine-local absolute path.
+- Exit codes: `0` when both artifacts are written. A solution or project that is
+  not registered is `NOT_FOUND` (exit `3`), and so is a solution that has no
+  registered project; a missing or malformed argument is `2`
+  (`VALIDATION_ERROR`). A manifest that disagrees with the shards it names, or a
+  shard that cannot be read, is an `Internal` error rather than a silently short
+  diagram.
+- Failure recovery: a `NOT_FOUND` means nothing has been published for that
+  project yet - run `serve` or `reconcile` to publish the current tree, then
+  render again. A manifest disagreement means the generation is damaged: publish
+  a fresh generation instead of editing the checkpoint by hand. Never drop a
+  shard from the manifest to make a render succeed; a diagram that silently omits
+  a shard is a failure, not a partial success.
+
+## 13. `update`
 
 ```text
 axiom-graphd update check
@@ -441,7 +478,7 @@ out-of-range number or a malformed path is a rejection (`VALIDATION_ERROR`, exit
 `--path a\b.cs`, `--approve-digest abc`, `--max-nodes 0` and `--depth 99` are all
 rejected, and a JSON rejection still writes the error envelope to stdout.
 
-## 13. Proposed commands (not implemented)
+## 14. Proposed commands (not implemented)
 
 The following shapes appear in the installation contract and are **not**
 implemented in this revision. They are listed so an operator is not surprised by
@@ -457,9 +494,9 @@ a rejection, and so a future implementation has a documented target.
 
 Do not treat a module existing in `crates/` as a command: availability is decided
 by `parse` in `crates/axiom-graphd/src/cli.rs`, and the tables in sections 1 and
-4 to 12 mirror exactly that.
+4 to 13 mirror exactly that.
 
-## 14. Exit-code and envelope rules
+## 15. Exit-code and envelope rules
 
 - Every invocation returns exactly one frozen exit code. Code `1` is unassigned
   on purpose so a generic shell or runtime failure is never mistaken for an Axiom
@@ -471,7 +508,7 @@ by `parse` in `crates/axiom-graphd/src/cli.rs`, and the tables in sections 1 and
   no source path leaks into it.
 - See [CLI-EXIT-CODES](../CLI-EXIT-CODES.md) for the complete frozen tables.
 
-## 15. Related documents
+## 16. Related documents
 
 - [CLI-EXIT-CODES](../CLI-EXIT-CODES.md) - frozen exit-code and error-code
   tables.

@@ -13,7 +13,8 @@
 //! * [`commands`] - the operator command slices: explicit changed-file hints
 //!   (task B-032), queue inspection/retry/cancel (task B-043), the solution
 //!   registry (task B-084), doctor/status (task B-085), reconcile (task
-//!   B-086), bounded query (task B-087) and update delegation (task B-092),
+//!   B-086), bounded query (task B-087), diagram rendering (task H-005) and
+//!   update delegation (task B-092),
 //! * [`control`] - loopback control authentication (task B-083),
 //! * [`runtime`] - the shared store/registry/bindings opening that every
 //!   operator command and the foreground daemon reuse (task H-002),

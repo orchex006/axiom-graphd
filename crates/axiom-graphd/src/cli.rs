@@ -26,7 +26,7 @@ use graph_store::open::Store;
 
 pub use graph_core::error::ExitCode;
 
-use crate::commands::{changed, doctor, query, queue, reconcile, solution, update};
+use crate::commands::{changed, doctor, query, queue, reconcile, render, solution, update};
 use crate::runtime;
 use crate::serve;
 use crate::telemetry::Telemetry;
@@ -109,6 +109,14 @@ pub const OPERATOR_SLICES: &[OperatorSlice] = &[
         not_ready: "",
     },
     OperatorSlice {
+        module: "render",
+        verb: "render",
+        forms: &[
+            "render --solution <id> [--project <project>]... --out <dir> [--json]",
+        ],
+        not_ready: "",
+    },
+    OperatorSlice {
         module: "update",
         verb: "update",
         forms: &[
@@ -138,6 +146,7 @@ pub const ACCEPTED_VERBS: &[&str] = &[
     "reconcile",
     "queue",
     "query",
+    "render",
     "update",
 ];
 
@@ -154,6 +163,7 @@ pub fn slice_links() -> Vec<(&'static str, String)> {
         ("doctor", String::from(doctor::REASON_CATALOG_MISSING)),
         ("reconcile", reconcile::DEFAULT_TIMEOUT_MS.to_string()),
         ("query", query::DEFAULT_MAX_BYTES.to_string()),
+        ("render", render::SCHEMA_VERSION.to_string()),
         ("update", String::from(update::AXIOM_PROGRAM)),
     ]
 }
@@ -174,6 +184,7 @@ Commands:
   reconcile ...                        request a bounded reconcile
   queue list|retry|cancel ...          inspect and steer the operational queue
   query context|impact ...             bounded context and impact over a pinned snapshot
+  render --solution <id> --out <dir>   render a published generation as a diagram
   update check|apply ...               delegate to the trusted axiom CLI
   help, --help                         print this help
 
@@ -379,6 +390,17 @@ pub enum QueryCommand {
     },
 }
 
+/// One parsed `render` invocation (task H-005).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RenderCommand {
+    /// Solution whose published generations are rendered.
+    pub solution: String,
+    /// Projects to render; empty means every registered project.
+    pub projects: Vec<String>,
+    /// Directory the `result.html` and `summary.json` artifacts are written to.
+    pub out: PathBuf,
+}
+
 /// Delegated update verbs (task B-092).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum UpdateCommand {
@@ -423,6 +445,8 @@ pub enum Command {
     Queue(QueueCommand),
     /// Bounded context and impact (task B-087).
     Query(QueryCommand),
+    /// Deterministic diagram of one published generation (task H-005).
+    Render(RenderCommand),
     /// Delegated update verbs (task B-092).
     Update(UpdateCommand),
     /// Print usage.
@@ -495,6 +519,7 @@ const KNOWN_OPTIONS: &[&str] = &[
     "--max-bytes",
     "--max-nodes",
     "--depth",
+    "--out",
     "--plan",
     "--approve-digest",
 ];
@@ -518,6 +543,15 @@ impl Tokens {
     /// Remove `name` as a value-less switch, reporting whether it was present.
     fn flag(&mut self, name: &str) -> bool {
         self.take(name).is_some()
+    }
+
+    /// Remove and return every value recorded for `name`, in argv order.
+    fn take_all(&mut self, name: &str) -> Vec<String> {
+        let mut values = Vec::new();
+        while let Some(index) = self.options.iter().position(|(key, _)| key == name) {
+            values.push(self.options.remove(index).1);
+        }
+        values
     }
 
     /// Remove and return the next positional word.
@@ -744,6 +778,7 @@ fn parse_verb(verb: &str, tokens: &mut Tokens) -> Result<Command, AxiomError> {
         "reconcile" => parse_reconcile(tokens),
         "queue" => parse_queue(tokens),
         "query" => parse_query(tokens),
+        "render" => parse_render(tokens),
         "update" => parse_update(tokens),
         other => Err(AxiomError::new(
             ErrorCode::ValidationError,
@@ -1435,6 +1470,98 @@ fn query_command(command: &QueryCommand) -> Result<String, AxiomError> {
     }))
 }
 
+/// `render --solution <id> [--project <project>]... --out <dir>`.
+fn parse_render(tokens: &mut Tokens) -> Result<Command, AxiomError> {
+    const CONTEXT: &str = "the render command";
+    let solution = tokens.required("--solution", CONTEXT)?;
+    validate_identifier(&solution, "--solution", CONTEXT)?;
+    let projects = tokens.take_all("--project");
+    for project in &projects {
+        validate_identifier(project, "--project", CONTEXT)?;
+    }
+    let out = tokens.required("--out", CONTEXT)?;
+    if out.trim().is_empty() {
+        return Err(AxiomError::new(
+            ErrorCode::ValidationError,
+            format!("--out for {CONTEXT} must be a non-empty directory path"),
+        ));
+    }
+    tokens.finish(CONTEXT)?;
+    Ok(Command::Render(RenderCommand {
+        solution,
+        projects,
+        out: PathBuf::from(out),
+    }))
+}
+
+/// Render a deterministic diagram of one solution's published generations.
+fn render_command(command: &RenderCommand) -> Result<String, AxiomError> {
+    let context = open_operator()?;
+    runtime::solution(context.store.connection(), &command.solution)?;
+    let registered = runtime::projects(context.store.connection(), &command.solution)?;
+    let selected: Vec<runtime::ProjectRow> = if command.projects.is_empty() {
+        registered
+    } else {
+        let mut selected = Vec::with_capacity(command.projects.len());
+        for id in &command.projects {
+            match registered.iter().find(|project| &project.id == id) {
+                Some(project) => selected.push(project.clone()),
+                None => {
+                    return Err(AxiomError::new(
+                        ErrorCode::NotFound,
+                        "a selected project is not a member of this solution",
+                    )
+                    .with_detail("rule", reconcile::REASON_PROJECT_NOT_FOUND)
+                    .with_detail("solution_id", command.solution.clone())
+                    .with_detail("project_id", id.clone()))
+                }
+            }
+        }
+        selected
+    };
+    if selected.is_empty() {
+        return Err(AxiomError::new(
+            ErrorCode::NotFound,
+            "this solution has no registered project",
+        )
+        .with_detail("rule", render::REASON_NO_PROJECT)
+        .with_detail("solution_id", command.solution.clone()));
+    }
+
+    // Each project is read through the frozen reader under the store's shared
+    // lock, and the store's own publication row is compared with the generation
+    // that was actually read. Freshness is only claimed when every project's
+    // recorded generation agrees with the rendered one.
+    let mut graphs = Vec::with_capacity(selected.len());
+    let mut latest_published: Vec<String> = Vec::with_capacity(selected.len());
+    let mut compared = true;
+    for project in &selected {
+        let root = serve::resolve_one_project(&context.home, project)?;
+        let snapshot = serve::load_snapshot(&command.solution, project, &root)?;
+        match runtime::latest_published(context.store.connection(), &project.id)? {
+            Some((generation, _)) => {
+                compared = compared && generation == snapshot.generation_id();
+                latest_published.push(generation);
+            }
+            None => compared = false,
+        }
+        graphs.push(render::ProjectGraph::new(project.id.clone(), snapshot));
+    }
+    let status = doctor::status(context.store.connection(), &command.solution)?;
+    let freshness = render::FreshnessInput::new(
+        usize::try_from(status.dirty_files).unwrap_or(usize::MAX),
+        latest_published,
+        if compared {
+            render::VerificationMode::InventoryHash
+        } else {
+            render::VerificationMode::None
+        },
+    );
+    let diagram = render::build_diagram(&command.solution, &graphs, &freshness)?;
+    let report = render::write_diagram(&diagram, &command.out)?;
+    report_json(&report)
+}
+
 fn execute(command: &Command, telemetry: &mut Telemetry) -> Result<String, AxiomError> {
     match command {
         Command::Help => Ok(usage()),
@@ -1455,6 +1582,7 @@ fn execute(command: &Command, telemetry: &mut Telemetry) -> Result<String, Axiom
         Command::Reconcile(command) => reconcile_command(command, telemetry),
         Command::Queue(command) => queue_command(command),
         Command::Query(command) => query_command(command),
+        Command::Render(command) => render_command(command),
         // Still unwired: no production binding reaches these from argv yet.
         Command::Changed(_) => Err(not_ready("changed")),
         Command::Update(_) => Err(not_ready("update")),
@@ -1555,6 +1683,16 @@ mod tests {
                 "node-1",
                 "--depth",
                 "2",
+                "--json",
+            ]),
+            argv(&[
+                "render",
+                "--solution",
+                "demo-solution",
+                "--project",
+                "auth-api",
+                "--out",
+                "out",
                 "--json",
             ]),
         ]
@@ -1712,6 +1850,7 @@ mod tests {
             vec!["reconcile", "--help"],
             vec!["queue", "list", "--help"],
             vec!["query", "context", "--help"],
+            vec!["render", "--help"],
             vec!["update", "--help"],
         ] {
             assert!(

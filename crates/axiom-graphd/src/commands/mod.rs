@@ -22,6 +22,8 @@
 //!   (task B-086).
 //! * [`query`] - bounded context and impact over a pinned snapshot
 //!   (task B-087).
+//! * [`render`] - deterministic diagram projection of one published
+//!   generation (task H-005).
 //! * [`update`] - delegated, approval-bound update apply (task B-092).
 
 pub mod changed;
@@ -29,6 +31,7 @@ pub mod doctor;
 pub mod query;
 pub mod queue;
 pub mod reconcile;
+pub mod render;
 pub mod solution;
 pub mod update;
 
