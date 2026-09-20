@@ -15,7 +15,7 @@ workspace = true
 # The portable-path, storage-class and cross-process lock vocabulary is owned by
 # graph-core; this crate adds the native/policy layers the V2 cards require
 # instead of copying those rules (they would drift).
-graph-core = { version = "0.0.0-dev", path = "../graph-core" }
+graph-core = { version = "0.1.0", path = "../graph-core" }
 
 [dev-dependencies]
 tempfile.workspace = true

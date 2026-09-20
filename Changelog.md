@@ -1,6 +1,11 @@
 # Changelog — axiom-graphd
 
 ## Unreleased
+### 0.1.0 experimental Windows release
+- Set the core workspace, daemon and CLI to `0.1.0` for an unsigned Windows x64
+  experiment. The `axiom install` path remains not ready, the Windows suite has
+  44 known failures, and the tested SQLite reports WAL support below its baseline.
+  macOS Intel has not been tested.
 V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned docs/tests. Runtime implementation and platform certification are pending.
 
 ### lane-publication (W10)

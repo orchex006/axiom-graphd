@@ -23,4 +23,4 @@ serde_json.workspace = true
 [dev-dependencies]
 # The daemon is the other half of the core release; the CLI tests compare both
 # halves so a drifting second version fails in CI rather than at release time.
-axiom-graphd = { version = "0.0.0-dev", path = "../axiom-graphd" }
+axiom-graphd = { version = "0.1.0", path = "../axiom-graphd" }
