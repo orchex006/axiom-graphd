@@ -6,6 +6,16 @@
 //! replacement. When a platform cannot do that, [`PointerStrategy::Unsupported`]
 //! returns an error instead of falling back to remove-then-rename, because that
 //! fallback has a window with no pointer at all.
+//!
+//! The wire document is fixed by `contracts/schemas/pointer.schema.json` and by
+//! `docs/12-SNAPSHOT-READ-WRITE-PROTOCOL.md`: exactly
+//! `{schema_version, generation_id, manifest_sha256}`, with
+//! `additionalProperties: false`, `generation_id == manifest_sha256`, and
+//! `schema_version` a required integer. The shipped `axiom-mcp` reader
+//! additionally accepts a pointer only when its bytes are the compact,
+//! lexicographic, single-trailing-LF encoding of their own value, so
+//! [`canonical_bytes`] is the one writer form and [`replace`] writes it rather
+//! than relying on struct field order.
 
 use crate::{ExportError, Result, ERR_UNSUPPORTED};
 use std::fs;
@@ -16,6 +26,19 @@ use std::path::{Path, PathBuf};
 pub const POINTER_FILE: &str = "current.json";
 /// Error code for a pointer that is present but not a complete document.
 pub const ERR_TORN_POINTER: &str = "export-pointer-torn";
+/// The pointer schema major `pointer.schema.json` fixes at `1`.
+pub const POINTER_SCHEMA_VERSION: u32 = 1;
+
+/// A pointer written before `schema_version` existed is read as schema 1.
+///
+/// Pre-field pointers are regenerable artifacts, not human work, so refusing to
+/// read them would turn a routine writer upgrade into an outage: a reader would
+/// report `ERR_TORN_POINTER` for a lane that is in fact complete and consistent.
+/// The value is still not trusted for anything that needs a version, because
+/// [`read`] refuses any other major instead of guessing.
+fn legacy_schema_version() -> u32 {
+    POINTER_SCHEMA_VERSION
+}
 
 /// The pointer that names the current generation.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -24,6 +47,9 @@ pub struct CurrentPointer {
     pub generation_id: String,
     /// The manifest digest, which must equal `generation_id`.
     pub manifest_sha256: String,
+    /// The pointer schema major. Absent on a legacy document, then read as 1.
+    #[serde(default = "legacy_schema_version")]
+    pub schema_version: u32,
 }
 
 impl CurrentPointer {
@@ -34,6 +60,7 @@ impl CurrentPointer {
         Self {
             manifest_sha256: generation_id.clone(),
             generation_id,
+            schema_version: POINTER_SCHEMA_VERSION,
         }
     }
 
@@ -47,6 +74,37 @@ impl CurrentPointer {
                 .bytes()
                 .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
     }
+}
+
+/// The exact canonical bytes `pointer.schema.json` fixes for a pointer.
+///
+/// Keys are sorted, separators are `,`/`:`, there is no insignificant
+/// whitespace and the document ends in exactly one LF, so the shipped
+/// `axiom-mcp` reader's canonical-form check accepts these bytes unchanged.
+///
+/// # Errors
+///
+/// [`crate::ERR_CANONICAL`] when the document cannot be encoded.
+pub fn canonical_bytes(pointer: &CurrentPointer) -> Result<Vec<u8>> {
+    // A BTreeMap sorts the keys, so the encoding does not depend on the struct
+    // field order or on serde_json's map feature.
+    let mut document = std::collections::BTreeMap::new();
+    document.insert(
+        "schema_version",
+        serde_json::Value::from(pointer.schema_version),
+    );
+    document.insert(
+        "generation_id",
+        serde_json::Value::from(pointer.generation_id.clone()),
+    );
+    document.insert(
+        "manifest_sha256",
+        serde_json::Value::from(pointer.manifest_sha256.clone()),
+    );
+    let mut bytes = serde_json::to_vec(&document)
+        .map_err(|error| ExportError::new(crate::ERR_CANONICAL, format!("pointer: {error}")))?;
+    bytes.push(b'\n');
+    Ok(bytes)
 }
 
 /// How a caller is allowed to replace the pointer.
@@ -83,6 +141,19 @@ pub fn read(root: &Path) -> Result<Option<CurrentPointer>> {
             format!("{} is not a complete pointer: {error}", path.display()),
         )
     })?;
+    // A pointer this writer did not produce may name a different schema; it is
+    // refused rather than read as if it were this one.
+    if pointer.schema_version != POINTER_SCHEMA_VERSION {
+        return Err(ExportError::new(
+            ERR_UNSUPPORTED,
+            format!(
+                "{} declares pointer schema_version {} but this reader implements {}",
+                path.display(),
+                pointer.schema_version,
+                POINTER_SCHEMA_VERSION
+            ),
+        ));
+    }
     if !pointer.is_self_consistent() {
         return Err(ExportError::new(
             ERR_TORN_POINTER,
@@ -118,8 +189,7 @@ pub fn replace(root: &Path, pointer: &CurrentPointer, strategy: PointerStrategy)
     let temporary = root.join(format!(".{POINTER_FILE}.{}.tmp", std::process::id()));
     {
         let mut file = fs::File::create(&temporary).map_err(|error| ExportError::io(&error))?;
-        let body = serde_json::to_vec(pointer)
-            .map_err(|error| ExportError::new(crate::ERR_CANONICAL, format!("pointer: {error}")))?;
+        let body = canonical_bytes(pointer)?;
         file.write_all(&body)
             .map_err(|error| ExportError::io(&error))?;
         file.sync_all().map_err(|error| ExportError::io(&error))?;
@@ -196,10 +266,73 @@ mod tests {
         let bad = CurrentPointer {
             generation_id: digest('f'),
             manifest_sha256: digest('0'),
+            schema_version: POINTER_SCHEMA_VERSION,
         };
         let error = replace(dir.path(), &bad, PointerStrategy::AtomicReplace)
             .expect_err("inconsistent pointer must not be published");
         assert_eq!(error.code, ERR_TORN_POINTER);
         assert!(!pointer_path(dir.path()).exists());
+    }
+
+    #[test]
+    fn the_written_pointer_is_the_exact_schema_document_the_reader_requires() {
+        // The wire bytes are fixed by contracts/schemas/pointer.schema.json and by
+        // the shipped axiom-mcp reader: three keys, no extra key, sorted,
+        // compact, and exactly one trailing LF.
+        let dir = tempfile::tempdir().expect("tempdir");
+        let pointer = CurrentPointer::new(digest('a'));
+        replace(dir.path(), &pointer, PointerStrategy::AtomicReplace).expect("replace");
+        let written = fs::read(pointer_path(dir.path())).expect("read back");
+        assert_eq!(
+            String::from_utf8(written.clone()).expect("utf8"),
+            format!(
+                "{{\"generation_id\":\"{}\",\"manifest_sha256\":\"{}\",\"schema_version\":1}}\n",
+                digest('a'),
+                digest('a')
+            )
+        );
+        assert_eq!(written, canonical_bytes(&pointer).expect("canonical"));
+        assert!(written.ends_with(b"\n"));
+        assert!(!written[..written.len() - 1].contains(&b'\n'));
+        assert!(!written.contains(&b' '));
+    }
+
+    #[test]
+    fn a_pointer_written_before_the_schema_field_existed_still_reads() {
+        // An on-disk pointer from an earlier revision carries no schema_version.
+        // It is complete and consistent, so it reads as schema 1 instead of being
+        // reported torn; the writer emits the field from now on.
+        let dir = tempfile::tempdir().expect("tempdir");
+        fs::write(
+            pointer_path(dir.path()),
+            format!(
+                "{{\"generation_id\":\"{}\",\"manifest_sha256\":\"{}\"}}",
+                digest('a'),
+                digest('a')
+            ),
+        )
+        .expect("legacy write");
+        let pointer = read(dir.path())
+            .expect("legacy pointer must read")
+            .expect("present");
+        assert_eq!(pointer.schema_version, POINTER_SCHEMA_VERSION);
+        assert_eq!(pointer.generation_id, digest('a'));
+    }
+
+    #[test]
+    fn a_pointer_from_an_unknown_schema_major_is_refused() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        fs::write(
+            pointer_path(dir.path()),
+            format!(
+                "{{\"generation_id\":\"{}\",\"manifest_sha256\":\"{}\",\"schema_version\":2}}",
+                digest('b'),
+                digest('b')
+            ),
+        )
+        .expect("future write");
+        let error = read(dir.path()).expect_err("an unknown major must be refused");
+        assert_eq!(error.code, ERR_UNSUPPORTED);
+        assert!(error.message.contains("schema_version 2"));
     }
 }

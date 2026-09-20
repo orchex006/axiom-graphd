@@ -132,8 +132,22 @@ pub fn checkpoint_root(project_root: &str, solution_id: &str, project_id: &str) 
     project_graph_root(project_root, solution_id, project_id).join(LANE)
 }
 
-/// The single lane this revision publishes to.
+/// The live lane root a generation is published under.
+#[must_use]
+pub fn live_root(project_root: &str, solution_id: &str, project_id: &str) -> PathBuf {
+    project_graph_root(project_root, solution_id, project_id).join(LIVE_LANE)
+}
+
+/// The tracked checkpoint lane: an artifact a human chose to publish.
 pub const LANE: &str = "checkpoint";
+
+/// The Git-ignored live lane, rewritten on every publication.
+///
+/// `docs/12-SNAPSHOT-READ-WRITE-PROTOCOL.md` section 2 requires both lanes
+/// under a project, and the shipped `axiom-mcp` data plane resolves its query
+/// lane to `live`. A publication that wrote only the checkpoint lane therefore
+/// left every query with nothing to read.
+pub const LIVE_LANE: &str = "live";
 
 /// A registered solution, as the worker loop reads it.
 #[derive(Debug, Clone, PartialEq, Eq)]
