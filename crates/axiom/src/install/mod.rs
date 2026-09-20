@@ -16,6 +16,9 @@
 //!   the current one atomically, with rollback metadata (task E-006).
 //! * [`credentials`] -- the scoped MCP and local service credentials the
 //!   daemon control surface accepts (task E-007).
+//! * [`ecosystem`] -- the ecosystem-wide prerequisite probe and the one
+//!   `axiom install` plan that places all three contract components in contract
+//!   order behind a single approval digest (task I-004).
 //! * [`uninstall`] -- the planned removal of the runtime components this
 //!   install owns, which preserves project source, annotations, checkpoint JSON
 //!   and user instructions unless a separate approval purges user data
@@ -26,6 +29,7 @@
 
 pub mod apply;
 pub mod credentials;
+pub mod ecosystem;
 pub mod plan;
 pub mod uninstall;
 pub mod verify;

@@ -184,3 +184,61 @@ Native Windows activation of a running image is the one leg that cannot be prove
 on this host: a running executable cannot be replaced on Windows, which is why
 activation is a pointer move, and the native `BinaryActivation` evidence is
 recorded as `not_run` rather than invented.
+
+## L. Ecosystem prerequisite probe and one-command install (I-004)
+
+`crates/axiom/src/install/ecosystem.rs` owns the *ecosystem* view of an
+installation. It is library behaviour in `crates/axiom`, so `axiom install`
+still exits with the frozen `not ready/stale` code `4` until the command task
+binds the verb; what follows is what the module already guarantees for it.
+
+- **Probe before write.** `plan_ecosystem` probes all thirteen declared
+  `(component, class)` rows — interpreter, toolchain, runtime, native dependency,
+  host executable, permission and approval, for `axiom-graphd`, `axiom-mcp` and
+  `axiom-skills` — and reports each as `satisfied`, `unsatisfied` or `unknown`
+  before it opens the bundle. A required row that is unsatisfied or unknown
+  refuses with exit code `4` (`ErrorCode::NotReady`, rule
+  `prerequisite-unsatisfied`) naming every blocking row. `unknown` is never
+  treated as satisfied.
+- **Declared, never invented.** A row the owning repository declares as
+  `undeclared` — the patched SQLite runtime, whose baseline is rendered from
+  `graph_store::open::MIN_SQLITE_VERSION` rather than copied — is reported and
+  recorded in `verification_gaps`. The store's own runtime gate stays the
+  enforcement point, and no pin is invented where the contract declares none.
+- **One plan, one digest, contract order.** The plan carries one sealed
+  component plan per contract position (`axiom-graphd`, `axiom-mcp`,
+  `axiom-skills`) behind a single approval digest. `apply_ecosystem` re-verifies
+  every component digest, the contract order and positions, the per-component
+  activation digests and the recorded prerequisite rows before it writes a byte.
+  A bundle that omits a core component, or declares a component with no contract
+  position, is refused by name (`component-missing`, `component-order`) rather
+  than silently dropped.
+- **Exit codes.** `0` for a successful apply and for an already-installed re-run,
+  `4` when a required prerequisite is not ready, `5` when the plan is not
+  approved at the digest it is applied at, `6` when a planned payload is not
+  staged as the plan declared. The exit-code table in `CLI-EXIT-CODES.md` is
+  unchanged: the module reports through the existing `ErrorCode` mapping.
+- **Idempotent re-run.** A re-run whose destinations already hold the planned
+  bytes reports `already-installed` and moves nothing — no payload, pointer,
+  journal entry or rollback record is rewritten, and a consumed staging tree
+  never blocks it. An interrupted or partially applied installation resumes at
+  component granularity: only the components whose bytes are not in place are
+  activated.
+- **Engine boundaries preserved.** Activation goes through the existing update
+  engine (`install::apply`), so each component keeps its own transaction
+  identifier, journal entry and rollback record, the versioned directory plus
+  pointer layout and the byte-equality rollback boundary that a later human edit
+  survives.
+- **Never required.** The plan is per-user, requests no `elevated` permission and
+  launches programs as program plus argv rather than an interpolated shell
+  string. A foreground install requires no WSL, Docker, Bash, Node.js, elevation
+  or system service.
+
+Evidence status for this slice: Windows 11 x64 native is the primary verified
+leg (unit tests, the real probe over the local search path, and native
+positive/negative/partially-applied runs). The Linux leg could not execute the
+Rust suite: the WSL2 Ubuntu host carries no `cargo`/`rustc`, so only its raw
+host facts were observed and recorded (Ubuntu 26.04.1 LTS, glibc 2.43,
+`python3` 3.14.4 - outside the declared `>=3.13,<3.14` range - and no `python`),
+and the module itself stays `not_run` there. No macOS host exists in the
+environment, so the Apple rows stay `not_run`.
