@@ -2,14 +2,14 @@
   "fixture": "partial_class_boundary.cs",
   "language": "csharp",
   "analyzer": "graph_analyze::csharp::declarations::analyze",
-  "purpose": "Pin the partial-class boundary: two partial declarations of one type in one file are recorded literally and are not merged.",
+  "purpose": "Pin the partial-class boundary: two partial declarations of one type in one file are recorded literally and are not merged. Each block keeps its own disambiguated identity key (H-007), so one file can never contribute a repeated node id.",
   "supported_evidence_kinds": [
     "declarations"
   ],
   "not_supported_evidence_kinds": [
     {
       "id": "partial-class-merge",
-      "expect": "the scan does not merge partial declarations and does not detect that these two declarations are one type, so both class declarations share one identity key; a caller must not treat the repeated key as two distinct symbols."
+      "expect": "the scan does not merge partial declarations and does not detect that these two declarations are one type, so the two class declarations carry two different identity keys and a caller must not treat them as a merged definition."
     }
   ],
   "expected_coverage_status": "complete_for_profile",
@@ -57,10 +57,11 @@
       "span_text": "Second"
     }
   ],
-  "expected_duplicate_key": {
+  "expected_distinct_class_keys": {
     "kind": "class",
     "name": "Widget",
-    "count": 2
+    "count": 2,
+    "rule": "two declarations of one type in one file must not share an identity key"
   },
   "expected_distinct_method_keys": true
 }
