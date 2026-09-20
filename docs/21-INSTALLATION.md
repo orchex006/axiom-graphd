@@ -188,9 +188,13 @@ recorded as `not_run` rather than invented.
 ## L. Ecosystem prerequisite probe and one-command install (I-004)
 
 `crates/axiom/src/install/ecosystem.rs` owns the *ecosystem* view of an
-installation. It is library behaviour in `crates/axiom`, so `axiom install`
-still exits with the frozen `not ready/stale` code `4` until the command task
-binds the verb; what follows is what the module already guarantees for it.
+installation. It is library behaviour in `crates/axiom`, so the entrypoint
+still answers honestly rather than pretending: `axiom install plan --bundle
+<signed-bundle>` and `axiom install apply --plan <file> --approve-digest
+<sha256>` both return `NOT_READY` with the frozen `not ready/stale` code `4`
+until a command-binding task composes them, and a bare `axiom install` is a
+`VALIDATION_ERROR` with code `2` because these forms require a subcommand. What
+follows is what the module already guarantees for that command to use.
 
 - **Probe before write.** `plan_ecosystem` probes all thirteen declared
   `(component, class)` rows — interpreter, toolchain, runtime, native dependency,
