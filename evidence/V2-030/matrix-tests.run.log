@@ -1,0 +1,15 @@
+   Compiling axiom-graphd v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\axiom-graphd)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.83s
+     Running tests\native_matrix.rs (target\debug\deps\native_matrix-53988997a67a6147.exe)
+
+running 7 tests
+test native_matrix_covers_exactly_the_mandatory_targets ... ok
+test native_matrix_not_run_rows_state_a_reason_and_claim_nothing_else ... ok
+test native_matrix_verified_rows_are_backed_by_committed_evidence ... ok
+test native_matrix_parser_rejects_malformed_documents ... ok
+test native_matrix_row_validator_rejects_broken_rows ... ok
+test native_matrix_python_checker_agrees_with_the_document ... ok
+test native_matrix_python_checker_negative_controls_are_caught ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.45s
+

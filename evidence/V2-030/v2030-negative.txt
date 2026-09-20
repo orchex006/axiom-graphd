@@ -1,0 +1,93 @@
+# V2-030 negative and failure-boundary checks (native Windows 11 x64)
+# host      : Microsoft Windows 11 Pro build 26200
+# artifact  : target/debug/axiom-graphd.exe sha256 77f15708dd1112053989d582750541c99a19dfbe529aaeda0a6d912baf363285
+# captured  : 2026-09-20T14:04:49.1904584+07:00
+
+## [neg01] unrecognised verb, text mode: stdout must stay empty, diagnostic on stderr
+command : target\debug\axiom-graphd.exe bogusverb
+exit    : 2
+stdout  :
+  | (empty)
+stderr  :
+  | {"level":"error","message":"VALIDATION_ERROR: unrecognised command: bogusverb","target":"axiom-graphd"}
+
+## [neg02] unrecognised verb, --json: exactly one error envelope on stdout
+command : target\debug\axiom-graphd.exe bogusverb --json
+exit    : 2
+stdout  :
+  | {"code":"VALIDATION_ERROR","message":"unrecognised command: bogusverb","retryable":false,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"VALIDATION_ERROR: unrecognised command: bogusverb","target":"axiom-graphd"}
+
+## [neg03] unrecognised option on an otherwise valid verb
+command : target\debug\axiom-graphd.exe version --nope --json
+exit    : 2
+stdout  :
+  | {"code":"VALIDATION_ERROR","message":"unrecognised option: --nope","retryable":false,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"VALIDATION_ERROR: unrecognised option: --nope","target":"axiom-graphd"}
+
+## [neg04] option that requires a value with no value (boundary: end of argv)
+command : target\debug\axiom-graphd.exe status --solution
+exit    : 2
+stdout  :
+  | (empty)
+stderr  :
+  | {"level":"error","message":"VALIDATION_ERROR: --solution requires a value","target":"axiom-graphd"}
+
+## [neg05] option whose value starts with '-': rejected instead of consumed
+command : target\debug\axiom-graphd.exe status --solution --json
+exit    : 2
+stdout  :
+  | {"code":"VALIDATION_ERROR","message":"--solution requires a value","retryable":false,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"VALIDATION_ERROR: --solution requires a value","target":"axiom-graphd"}
+
+## [neg06] unknown subcommand of a wired slice
+command : target\debug\axiom-graphd.exe queue bogus --json
+exit    : 2
+stdout  :
+  | {"code":"VALIDATION_ERROR","message":"queue does not accept the subcommand bogus","retryable":false,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"VALIDATION_ERROR: queue does not accept the subcommand bogus","target":"axiom-graphd"}
+
+## [neg07] out-of-enum value for --scope
+command : target\debug\axiom-graphd.exe reconcile --solution demo-solution --scope bogus --json
+exit    : 2
+stdout  :
+  | {"code":"VALIDATION_ERROR","message":"--scope for the reconcile command must be one of dirty, project, full, got bogus","retryable":false,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"VALIDATION_ERROR: --scope for the reconcile command must be one of dirty, project, full, got bogus","target":"axiom-graphd"}
+
+## [neg08] missing required selector (--symbol/--node-id) on query context
+command : target\debug\axiom-graphd.exe query context --solution demo-solution --json
+exit    : 2
+stdout  :
+  | {"code":"VALIDATION_ERROR","message":"query context requires --symbol or --node-id","retryable":false,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"VALIDATION_ERROR: query context requires --symbol or --node-id","target":"axiom-graphd"}
+
+## [neg09] missing required mode switch (--dry-run/--apply) on solution register
+command : target\debug\axiom-graphd.exe solution register --config solution.yaml --json
+exit    : 2
+stdout  :
+  | {"code":"VALIDATION_ERROR","message":"solution register requires exactly one of --dry-run or --apply","retryable":false,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"VALIDATION_ERROR: solution register requires exactly one of --dry-run or --apply","target":"axiom-graphd"}
+
+## [neg10] out-of-range bounded integer (--limit 0)
+command : target\debug\axiom-graphd.exe queue list --solution demo-solution --limit 0 --json
+exit    : 2
+stdout  :
+  | {"code":"VALIDATION_ERROR","message":"--limit for queue list must be between 1 and 500, got 0","retryable":false,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"VALIDATION_ERROR: --limit for queue list must be between 1 and 500, got 0","target":"axiom-graphd"}
+
+## [neg11] non-integer bounded integer (--timeout 5x)
+command : target\debug\axiom-graphd.exe reconcile --solution demo-solution --scope dirty --timeout 5x --json
+exit    : 2
+stdout  :
+  | {"code":"VALIDATION_ERROR","message":"--timeout for the reconcile command must be milliseconds, seconds or a plain millisecond count, got 5x","retryable":false,"details":{},"request_id":null}
+stderr  :
+  | {"level":"error","message":"VALIDATION_ERROR: --timeout for the reconcile command must be milliseconds, seconds or a plain millisecond count, got 5x","target":"axiom-graphd"}
+

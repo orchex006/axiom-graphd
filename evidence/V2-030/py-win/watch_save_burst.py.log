@@ -1,0 +1,2 @@
+not_run: cargo test --locked -p graph-watch debounce (real coalescer; no Rust build taken in this lane)
+ok: F-011 coalescing holds; 3 positive legs, 2 negative legs rejected as required

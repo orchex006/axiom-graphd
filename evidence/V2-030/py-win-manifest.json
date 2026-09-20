@@ -1,0 +1,77 @@
+{
+  "executable": "C:\\Users\\006006\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+  "harnesses": [
+    {
+      "exit": 0,
+      "harness_sha256": "8825cdcd6b45d527e0f23a04294a4e742a3d5484317065e194a6bf17dcdd6765",
+      "log_sha256": "fdc5798a56676fb5264d908ebbd0aca0ee3785eb10b3e70f3c710abdbe6c44b3",
+      "name": "watch_save_burst.py"
+    },
+    {
+      "exit": 0,
+      "harness_sha256": "c1090557678be4d0d3e40e7735d616067ee261a1df0ae55956de6bbf1086f74a",
+      "log_sha256": "e939028529911e4a468b98ad5f687a313d82784bb0c19d15929838c71f63e0b6",
+      "name": "watch_overflow.py"
+    },
+    {
+      "exit": 0,
+      "harness_sha256": "4121060562ef9325f83617acdb8eec532ef30e1a6d0179d95a515b0634092670",
+      "log_sha256": "a30917e3235b481c4d1138814bf9d03620cad210b766e8072f891d1132c7c670",
+      "name": "queue_crash.py"
+    },
+    {
+      "exit": 0,
+      "harness_sha256": "2284f52e93c9ed51c680fb930ba8d3de4ef335e38827502e7e8a13010834e39e",
+      "log_sha256": "69972044af1129c2cae4372b0d404a34efd261b273372bf4d639392110becd07",
+      "name": "queue_concurrent_edit.py"
+    },
+    {
+      "exit": 0,
+      "harness_sha256": "7c1a5a8d3debefd34ca0e251d0d6eba9bda65965694db82e52830aaae5329cf1",
+      "log_sha256": "9f05af8f735c6495e45af2437b57106e429865a65691daca2917c9471dfffab9",
+      "name": "publish_crash.py"
+    },
+    {
+      "exit": 0,
+      "harness_sha256": "653f8937433446cdd5dd1d898020f34aaed2c361a2493b8b7ea56ff2a65b4203",
+      "log_sha256": "d2c686dd4a5a1f36c18bdde4387e86f1c0907fdf4d680bde640507bcc30ca7e3",
+      "name": "storage_failure.py"
+    },
+    {
+      "exit": 0,
+      "harness_sha256": "acd9cd7e903a07093c0f7670557571504848bd21d916485a20930f56abdc6345",
+      "log_sha256": "5d5b0b31bd88f96bea5dbc92370b14e815db43eaa2c61d6d553ba3a8b89f1172",
+      "name": "git_checkpoint.py"
+    },
+    {
+      "exit": 0,
+      "harness_sha256": "260682af3854d5e90cdcf83406aea3e7e1f6a4a35969def0319fd07c9ab4c847",
+      "log_sha256": "658c98fdf6ce29feb1b97ccba4080905f1b14d1c484fc2f6d0402586be5ade6b",
+      "name": "sqlite_migration.py"
+    },
+    {
+      "exit": 2,
+      "harness_sha256": "2e7ff7dcbbcafd345fd7832ceac04f885ea68ca95a7098aa490c4d0c96e2a0af",
+      "log_sha256": "579303d29ae8025c3063ca449113f0094ca5191e1b65befaa9f6075e39213cbc",
+      "name": "core_manifest.py"
+    },
+    {
+      "exit": 0,
+      "harness_sha256": "816d1fccb64897846384cb84b0d5fe87c625a736f9c3cb821664809af5137bcc",
+      "log_sha256": "dd44161df45b8be73d527276ae658c3b93e6d30452119fcf2388a0443170288a",
+      "name": "bootstrap_e2e.py"
+    },
+    {
+      "exit": 0,
+      "harness_sha256": "c9f23bc3c9a4015393256f70bb3e11f7e43d91175730ec8d885b5c173155ba5d",
+      "log_sha256": "51e8d08cd000c2f1255e2430d8c5c4aac5b5bf210087c56bb367f2316766b95f",
+      "name": "update_e2e.py"
+    }
+  ],
+  "manifest_kind": "axiom-native-matrix-run",
+  "non_zero_exits": 1,
+  "note": "Real native Windows execution of the repository Python harnesses. The Rust artifact of this target is target/debug/axiom-graphd.exe, hashed in v2030-windows-artifacts.txt; this manifest is the Python-side record of the same host.",
+  "python": "3.13.14",
+  "scope": "python-side harnesses executed on the native Windows host",
+  "target": "windows-x64"
+}

@@ -1,0 +1,153 @@
+# V2-030 native platform matrix / not-run evidence - SUMMARY
+# task      : V2-030 (axiom-graphd) - native core and migration matrix
+# worktree  : D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030
+# branch    : feature/native-matrix-notrun
+# base      : 682269338706c8ffc7d81efc0b266b5ac5a66765 (axiom-graphd origin/main)
+# revision  : 682269338706c8ffc7d81efc0b266b5ac5a66765
+# captured  : 2026-09-20T14:44:20.087133+07:00
+# host      : Microsoft Windows 11 Pro build 26200 (10.0.26200) x64, 13th Gen Intel Core i7-1355U
+# toolchain : rustc 1.85.0 (4d91de4e4 2025-02-17) / cargo 1.85.0 (d73d2caf9 2024-12-31), host triple x86_64-pc-windows-msvc
+# deliverable: tests/native/README.md plus tests/native/check_matrix.py, crates/axiom-graphd/tests/native_matrix.rs, this evidence set, Changelog.md and tests/README.md
+
+## Per-target verdict
+
+target       | status   | execution identity / reason
+windows-x64  | verified | native Windows 11 Pro 10.0.26200 x86_64 execution of target/debug/axiom-graphd.exe
+linux-x64    | verified | real WSL2 Linux execution (Ubuntu 26.04.1 LTS, kernel 6.18.33.2-microsoft-standard-WSL2) of the Python harnesses only; NOT Windows evidence; no Linux Rust binary exists (no cargo in WSL); platform-matrix.json declares wsl2-linux-x64 with evidence_target linux-x64, and this is that evidence
+macos-x64    | not_run  | no macOS host available in this environment
+macos-arm64  | not_run  | no macOS host available in this environment
+
+A cross-compile is not native execution and a Linux reference result does not certify Windows or
+macOS, so no row is verified on the strength of a compile. Both Apple rows carry no digest, no
+toolchain identity and no exit status. compatibility/platform-matrix.json is untouched and keeps
+every target certified: false.
+
+## Windows x64 artifact hashes (AC1)
+
+sha256  77f15708dd1112053989d582750541c99a19dfbe529aaeda0a6d912baf363285  target/debug/axiom-graphd.exe  2887680 bytes
+sha256  6309b3e06c1252bede8cd707a43c277eeb855223abe2a8a8db211b090e0e6039  target/debug/axiom.exe          424448 bytes
+The graphd hash was re-verified byte-identically at this revision (evidence/V2-030/v2030-windows-native-recheck.txt).
+
+SQLite runtime reported by the built binary (AC1): sqlite_version 3.50.2 (bundled), pinned WAL baseline 3.51.3, sqlite_wal_supported false.
+SQLite runtime on the WSL2 Linux host: python sqlite3 module 3.46.1 (the host SQLite, not the bundled one).
+
+## Positive / negative / failure-boundary runs (AC2)
+
+positive   : version --json exit 0 (frozen report); --help exit 0; axiom version --all --json exit 0;
+             the eight H-001-wired verbs answered exit 4 NOT_READY with a stated reason instead of
+             pretending success. 12 invocations, evidence/V2-030/v2030-windows-native.txt.
+negative   : 11 malformed invocations, all exit 2 VALIDATION_ERROR, evidence/V2-030/v2030-negative.txt.
+boundary   : missing value at the end of argv, value starting with '-', --limit 0, --timeout 5x,
+             out-of-enum --scope, missing selector, missing mode switch (within the 11 above).
+python side: 11 harnesses run natively on Windows (evidence/V2-030/v2030-windows-python-harnesses.txt,
+             logs in py-win/) and again inside WSL2 Linux (evidence/V2-030/v2030-wsl-linux.txt, logs in
+             py-wsl/). Both hosts: ten harnesses exit 0, core_manifest.py exit 2.
+matrix     : evidence/V2-030/v2030-matrix-tests.txt (Rust test 7 passed/exit 0; python checker exit 0;
+             python checker --self-test exit 0).
+
+## Evidence file digests (sha256)
+Every digest above is sha256 over the stored bytes. Every text file in this set is written
+LF-only and pinned by the `evidence/** text eol=lf` rule in `.gitattributes`, so a fresh
+checkout (any platform) reproduces exactly these digests with `sha256sum`; SUMMARY.txt itself
+is not listed because it cannot contain its own digest. The per-harness digests recorded inside
+py-win-manifest.json and wsl-linux-manifest.json were re-verified against the committed py-win/
+and py-wsl/ logs and the committed tests/*.py harnesses.
+
+  cca7a2e6cd9b94af1aef37a715ad943295e054cadd7a541ce9b1757f2b1d9d5f  evidence/V2-030/build-windows.log
+  83239ed133ecdaf8c5bb4f276255d4620a4f1f45311984b4bde453fb35e20f97  evidence/V2-030/gate-doc-status.log
+  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  evidence/V2-030/gate-fmt-check.log
+  e9d5c1de2f596b556787518936ae16f6805265f91f07dd7788ca64220d0628ec  evidence/V2-030/gate-lint.log
+  16020250d2438f926bd7afa259feb031be9e55a81a309fc2f4e5a4d09026c61c  evidence/V2-030/gate-matrix.log
+  30831aee2fc39d6ebf386b683a8585d96026180892a1259818c32672fec966c7  evidence/V2-030/gate-test-graphd.log
+  77b0d751c7cf9bec8d8583a82b01aca84c53d67e8c1daf8026a812554ac82ac8  evidence/V2-030/gate-verify.log
+  16020250d2438f926bd7afa259feb031be9e55a81a309fc2f4e5a4d09026c61c  evidence/V2-030/matrix-checker.run.log
+  c4609eb4cebc187baaa8cc2888856829e2e51f2d5f64d531dc7b0411e053e4cc  evidence/V2-030/matrix-tests.run.log
+  dd44161df45b8be73d527276ae658c3b93e6d30452119fcf2388a0443170288a  evidence/V2-030/py-win/bootstrap_e2e.py.log
+  579303d29ae8025c3063ca449113f0094ca5191e1b65befaa9f6075e39213cbc  evidence/V2-030/py-win/core_manifest.py.log
+  e0f7a0516c70cf662b66c49a2e401f6a9d3ddf9e77e366049907c054933df68e  evidence/V2-030/py-win/_exit-codes.tsv
+  5d5b0b31bd88f96bea5dbc92370b14e815db43eaa2c61d6d553ba3a8b89f1172  evidence/V2-030/py-win/git_checkpoint.py.log
+  51a1d419cc633833fd0cb1badb638fee94bd276c0d2b87de4635457cdda64583  evidence/V2-030/py-win-manifest.json
+  9f05af8f735c6495e45af2437b57106e429865a65691daca2917c9471dfffab9  evidence/V2-030/py-win/publish_crash.py.log
+  69972044af1129c2cae4372b0d404a34efd261b273372bf4d639392110becd07  evidence/V2-030/py-win/queue_concurrent_edit.py.log
+  a30917e3235b481c4d1138814bf9d03620cad210b766e8072f891d1132c7c670  evidence/V2-030/py-win/queue_crash.py.log
+  658c98fdf6ce29feb1b97ccba4080905f1b14d1c484fc2f6d0402586be5ade6b  evidence/V2-030/py-win/sqlite_migration.py.log
+  d2c686dd4a5a1f36c18bdde4387e86f1c0907fdf4d680bde640507bcc30ca7e3  evidence/V2-030/py-win/storage_failure.py.log
+  51e8d08cd000c2f1255e2430d8c5c4aac5b5bf210087c56bb367f2316766b95f  evidence/V2-030/py-win/update_e2e.py.log
+  e939028529911e4a468b98ad5f687a313d82784bb0c19d15929838c71f63e0b6  evidence/V2-030/py-win/watch_overflow.py.log
+  fdc5798a56676fb5264d908ebbd0aca0ee3785eb10b3e70f3c710abdbe6c44b3  evidence/V2-030/py-win/watch_save_burst.py.log
+  dd44161df45b8be73d527276ae658c3b93e6d30452119fcf2388a0443170288a  evidence/V2-030/py-wsl/bootstrap_e2e.py.log
+  41d5720aa0fb6d19a7271af867f0303e1dbf510478b5c4c130872971aac1cd14  evidence/V2-030/py-wsl/core_manifest.py.log
+  e0f7a0516c70cf662b66c49a2e401f6a9d3ddf9e77e366049907c054933df68e  evidence/V2-030/py-wsl/_exit-codes.tsv
+  5d5b0b31bd88f96bea5dbc92370b14e815db43eaa2c61d6d553ba3a8b89f1172  evidence/V2-030/py-wsl/git_checkpoint.py.log
+  9f05af8f735c6495e45af2437b57106e429865a65691daca2917c9471dfffab9  evidence/V2-030/py-wsl/publish_crash.py.log
+  69972044af1129c2cae4372b0d404a34efd261b273372bf4d639392110becd07  evidence/V2-030/py-wsl/queue_concurrent_edit.py.log
+  a30917e3235b481c4d1138814bf9d03620cad210b766e8072f891d1132c7c670  evidence/V2-030/py-wsl/queue_crash.py.log
+  098c3de1628f3e7169eafcfbefdb7d65aaf9400498d57bc6c7f20ec6d365d600  evidence/V2-030/py-wsl/sqlite_migration.py.log
+  d2c686dd4a5a1f36c18bdde4387e86f1c0907fdf4d680bde640507bcc30ca7e3  evidence/V2-030/py-wsl/storage_failure.py.log
+  51e8d08cd000c2f1255e2430d8c5c4aac5b5bf210087c56bb367f2316766b95f  evidence/V2-030/py-wsl/update_e2e.py.log
+  e939028529911e4a468b98ad5f687a313d82784bb0c19d15929838c71f63e0b6  evidence/V2-030/py-wsl/watch_overflow.py.log
+  fdc5798a56676fb5264d908ebbd0aca0ee3785eb10b3e70f3c710abdbe6c44b3  evidence/V2-030/py-wsl/watch_save_burst.py.log
+  e356968543cbb19eb516a26c1454e789e414fedee82741b249f9e92e2983104a  evidence/V2-030/run-windows-harnesses.py
+  c13138bdadf3f8b1ac782382e273c9cba9f6ad66a1ce5e790832aef1a38b2bdd  evidence/V2-030/run-wsl-linux.sh
+  0f601d2fbcb1afc2cc18c0c207b4057757d42fdedddeb24ca6e60373a26326c1  evidence/V2-030/v2030-macos-notrun.txt
+  f7d27d31d141ac107361cd2b9f1dd5a54bb64d5ed4b5ad60f4b626286071b0d8  evidence/V2-030/v2030-matrix-tests.txt
+  39696b08e24e93591739303815e077c1900959ee13a4b51276787f2e401895ad  evidence/V2-030/v2030-negative.txt
+  b4de8584b5433650e64be635d5c5711ba2c8b0880d2d823281245c8482a1e393  evidence/V2-030/v2030-tool-versions.txt
+  bd6212694a5c810f7ce853531882e8b49a91d5f0042897406bdd763cf78bca96  evidence/V2-030/v2030-windows-artifacts.txt
+  299279f639bce359442a90bc9741867fdb1fdf7e00ad39739ca08779b6936538  evidence/V2-030/v2030-windows-native-recheck.txt
+  6f4999f0807a485fdefff97079faadefd0af2af00f0f65ba0ba4ec04e59dd7a8  evidence/V2-030/v2030-windows-native.txt
+  8a3c4a1036a4665fb585bf20912fe65fa1d26ce28d6ecd15e53d80248d929da6  evidence/V2-030/v2030-windows-python-harnesses.txt
+  7943e9f0fb41d4cda0ed5586e615841b579d85685d03564560c4a60253d93bac  evidence/V2-030/v2030-wsl-linux.txt
+  f3241af25085428499fd08221bc813ea567b920b0a8ee40337a5cdcf12736876  evidence/V2-030/wsl-linux-manifest.json
+
+## Acceptance criteria
+
+AC1 - native target outputs and exact artifact/toolchain/SQLite hashes, with cross-compile-only
+      results and Linux reference tests not certifying Windows or macOS:
+      met for windows-x64 (real execution, real hashes, real SQLite runtime fact); met only as a
+      scoped WSL2 Linux Python-side execution for linux-x64 (labelled WSL2, no Linux binary);
+      both macOS targets are not_run with the reason and no digest, which is the honest outcome.
+AC2 - positive, negative and failure-boundary checks with actual output, platform identity and
+      hashes under evidence/V2-030/, unperformed native tests left unverified: met. The CP-10
+      release gates remain unperformed for every target and are left unverified.
+
+## Limitations, not-run items and blockers
+
+* No macOS row is verified and none can be from this environment (no macOS host, VM, Rosetta
+  environment or reachable runner). Both rows are not_run with the fixed reason.
+* linux-x64 covers the Windows-side and WSL2 Python harnesses, not a Linux Rust binary and not a
+  bare-metal Ubuntu 24.04 LTS host: WSL carries no cargo. A full linux-x64 certification still
+  needs a real Linux cargo build and the CP-10 gates on that host.
+* The CP-10 release gates (install/uninstall, queue restart, watcher recovery, Rust/Python locks,
+  snapshot/GC races, UTF-8 path/case/CRLF handling, stdio and HTTP transports, offline read,
+  migration, update/rollback, no-admin workflows) were not executed natively for any target.
+* tests/core_manifest.py exits 2 on both hosts for a pre-existing reason unrelated to this task:
+  release/core-manifest.json records lockfile_sha256
+  178068d5fe6d39d956ad6ea9354e034b52103822f706ae95e99cb88f335f030d while Cargo.lock at this
+  revision hashes to aadf2d19378ad7ace80ad7020a86dc1c40961f80e3f82fd48e087916dfe11de3.
+  That is V2-021 territory; it is recorded, not fixed and not hidden.
+* cargo verify (workspace-wide test --locked --all-targets) exits 101 on 44 pre-existing failures in
+  the crates/axiom host/install/service unit tests (Windows path handling). They exist at the base
+  revision and this task changes no file in crates/axiom. cargo test -p axiom-graphd --all-targets
+  exits 0. Recorded, not fixed: out of scope and outside this card's owner boundary.
+* specctl begin/validate/complete were NOT run: they act on the axiom-specs repository, which this
+  task must not touch. The V2-030 card file therefore still reads Status: blocked in the spec
+  checkout and this run does not change it.
+* Path decision recorded (the card proposes evidence/artifacts/V2-030/): the owner instruction for
+  this task fixed the evidence set at evidence/V2-030/ with the exact file names listed in this evidence set, so the
+  evidence lives there. Nothing was moved or duplicated and the earlier slice's
+  evidence/artifacts/H-001/ convention is unchanged. tests/native/README.md section 8 records it.
+
+## Repository authority actually used
+
+* files changed: tests/native/README.md (new), tests/native/check_matrix.py (new),
+  crates/axiom-graphd/tests/native_matrix.rs (new), tests/README.md (native matrix section),
+  Changelog.md (V2-030 entry), .gitattributes (one rule: evidence/** text eol=lf, so the
+  evidence bytes are the same on every platform and the recorded digests reproduce), and
+  evidence/V2-030/** (new).
+* no merge, no rebase, no force-push, no tag, no push and no release: per the owner instruction the
+  work is committed locally only on feature/native-matrix-notrun.
+* the primary checkout D:\SP-Billy\axiom\axiom-graphd and the axiom-specs repository were not
+  modified; this work happened only inside the assigned worktree.
+* existing repository files (tests/README.md, Changelog.md) were edited with explicit UTF-8 (no
+  BOM) and LF line endings, so no file's line endings were rewritten by accident.

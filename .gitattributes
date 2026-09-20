@@ -7,3 +7,7 @@
 *.py text eol=lf
 *.rs text eol=lf
 *.ps1 text eol=crlf
+# V2-030 native-matrix evidence: keep every evidence file LF on every
+# platform so the recorded sha256 digests stay reproducible and the WSL
+# runner (evidence/V2-030/run-wsl-linux.sh) is not broken by CRLF.
+evidence/** text eol=lf

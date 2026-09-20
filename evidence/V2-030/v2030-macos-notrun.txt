@@ -1,0 +1,38 @@
+# V2-030 macOS targets: not_run
+#
+# No macOS host available in this environment.
+#
+# This host is Windows 11 x64. There is no macOS machine, no macOS VM, no Rosetta
+# environment and no macOS CI runner reachable from this worktree, so no macOS
+# target was built, executed or hashed. Cross-compiling an Apple target would not
+# certify it either: CP-01 requires native execution, so this record claims no
+# artifact, no toolchain identity and no exit status for macOS.
+#
+# The macOS rows of tests/native/README.md are consequently status=not_run with the
+# reason "no macOS host available in this environment" and no digest.
+#
+# captured : 2026-09-20T14:00:00+07:00
+
+## macos-x64 (x86_64-apple-darwin), reference baseline macOS 14+
+status    : not_run
+reason    : no macOS host available in this environment
+artifact  : none produced, none hashed
+toolchain : not observed (no macOS toolchain exists here)
+reproducible command that a macOS x64 host must run:
+  cargo build --release --target x86_64-apple-darwin then target/x86_64-apple-darwin/release/axiom-graphd version --json
+
+## macos-arm64 (aarch64-apple-darwin), reference baseline macOS 14+
+status    : not_run
+reason    : no macOS host available in this environment
+artifact  : none produced, none hashed
+toolchain : not observed (no macOS toolchain exists here)
+reproducible command that a macOS arm64 host must run:
+  cargo build --release --target aarch64-apple-darwin then target/aarch64-apple-darwin/release/axiom-graphd version --json
+
+## what would still be required before either row can become verified
+  - a real macOS 14+ x64 host and a real macOS 14+ arm64 host (Apple silicon), no Rosetta for the arm64 row;
+  - a real cargo build on each host and the sha256 of each produced axiom-graphd binary;
+  - the real version --json output, exit code, platform identity and the SQLite runtime version reported there;
+  - the positive, negative and failure-boundary checks of AC2 executed on that same host;
+  - the release gates named in CP-10 for each target, or an explicit not_run for each gate.
+

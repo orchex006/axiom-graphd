@@ -1,0 +1,61 @@
+   Compiling version_check v0.9.5
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.26
+   Compiling windows_x86_64_msvc v0.53.1
+   Compiling typenum v1.20.1
+   Compiling quote v1.0.47
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+   Compiling serde v1.0.229
+   Compiling serde_json v1.0.151
+   Compiling cfg-if v1.0.5
+   Compiling itoa v1.0.18
+   Compiling cpufeatures v0.2.17
+   Compiling memchr v2.8.3
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.12
+   Compiling generic-array v0.14.7
+   Compiling windows-link v0.2.1
+   Compiling bitflags v2.13.2
+   Compiling pkg-config v0.3.34
+   Compiling vcpkg v0.2.15
+   Compiling cc v1.4.6
+   Compiling foldhash v0.1.5
+   Compiling libc v0.2.189
+   Compiling windows-targets v0.53.5
+   Compiling windows-sys v0.61.2
+   Compiling hashbrown v0.15.5
+   Compiling notify-types v2.1.0
+   Compiling smallvec v1.16.1
+   Compiling windows-sys v0.60.2
+   Compiling syn v3.0.6
+   Compiling fallible-streaming-iterator v0.1.9
+   Compiling log v0.4.34
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling hashlink v0.10.0
+   Compiling getrandom v0.4.3
+   Compiling winapi-util v0.1.11
+   Compiling digest v0.10.7
+   Compiling same-file v1.0.6
+   Compiling fallible-iterator v0.3.0
+   Compiling sha2 v0.10.9
+   Compiling walkdir v2.5.0
+   Compiling axiom-bootstrap v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\bootstrap)
+   Compiling notify v8.2.0
+   Compiling libsqlite3-sys v0.35.0
+   Compiling serde_derive v1.0.229
+   Compiling graph-core v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\graph-core)
+   Compiling rusqlite v0.37.0
+   Compiling graph-export v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\graph-export)
+   Compiling axiom-platform v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\platform)
+   Compiling graph-watch v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\graph-watch)
+   Compiling graph-queue v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\graph-queue)
+   Compiling axiom-config v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\config)
+   Compiling graph-analyze v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\graph-analyze)
+   Compiling graph-store v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\graph-store)
+   Compiling axiom-migration v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\migration)
+   Compiling axiom v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\axiom)
+   Compiling axiom-graphd v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\axiom-graphd)
+   Compiling axiom-cli v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-v2030\crates\axiom-cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 49.85s

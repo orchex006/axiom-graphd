@@ -1,0 +1,14 @@
+# V2-030 re-verification of the Windows 11 x64 leg (executed by this work package run)
+# host: Microsoft Windows 11 Pro 10.0.26200 x64, PowerShell 7.6.6
+# revision: 682269338706c8ffc7d81efc0b266b5ac5a66765
+
+artifact : target\debug\axiom-graphd.exe
+sha256   : 77f15708dd1112053989d582750541c99a19dfbe529aaeda0a6d912baf363285
+recorded : 77f15708dd1112053989d582750541c99a19dfbe529aaeda0a6d912baf363285  (v2030-windows-artifacts.txt)
+match    : True
+
+## version --json, re-executed on this host
+command : target\debug\axiom-graphd.exe version --json
+exit    : 0
+stdout  :
+  | {"component":"axiom-graphd","version":"0.0.0-dev","spec_version":"2.0.0-draft.1","graph_schema":1,"control_api":1,"queue_schema":1,"build_revision":"unknown","update_status":"unconfigured","sqlite_version":"3.50.2","sqlite_wal_baseline":"3.51.3","sqlite_wal_supported":false,"analyzers":[]}

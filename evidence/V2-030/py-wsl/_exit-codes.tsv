@@ -1,0 +1,11 @@
+watch_save_burst.py	0
+watch_overflow.py	0
+queue_crash.py	0
+queue_concurrent_edit.py	0
+publish_crash.py	0
+storage_failure.py	0
+git_checkpoint.py	0
+sqlite_migration.py	0
+core_manifest.py	2
+bootstrap_e2e.py	0
+update_e2e.py	0
