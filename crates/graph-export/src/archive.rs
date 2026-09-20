@@ -163,33 +163,54 @@ impl Archive {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::manifest::{self, ManifestEntry};
+    use crate::manifest::{self, Coverage, ManifestEntry, ManifestHeader};
     use crate::pointer::{self, CurrentPointer, PointerStrategy};
     use std::fs;
 
     fn archive_fixture() -> (tempfile::TempDir, String) {
         let dir = tempfile::tempdir().expect("tempdir");
-        let shard =
-            b"{\"body\":{\"from\":\"a\",\"to\":\"b\"},\"key\":\"edge:a->b\",\"kind\":\"edge\"}\n"
-                .to_vec();
-        let manifest = manifest::build(vec![ManifestEntry::from_bytes("bucket-000", &shard, 1)])
-            .expect("manifest");
+        let shard = crate::canonical::canonical_document_value(&serde_json::json!([
+            {"body": {"from": "a", "to": "b"}, "key": "edge:a->b", "kind": "edge"}
+        ]))
+        .expect("canonical");
+        let header = ManifestHeader {
+            solution_id: "demo-solution".to_owned(),
+            project_id: "demo-project".to_owned(),
+            analysis_profile: "default".to_owned(),
+            generator_version: "0.1.0".to_owned(),
+            analyzer_set_hash: "a".repeat(64),
+            source_fingerprint: "b".repeat(64),
+            config_fingerprint: "c".repeat(64),
+            dependency_fingerprint: "d".repeat(64),
+            coverage: Coverage::complete_for_profile(1, 1, 0),
+        };
+        let manifest = manifest::build(
+            header,
+            vec![ManifestEntry::from_bytes(
+                "nodes/000000.json",
+                "nodes",
+                &shard,
+                1,
+            )],
+        )
+        .expect("manifest");
+        let generation_id = manifest.generation_id().expect("id");
         let generation_dir =
-            crate::staging::StagingLayout::new(dir.path()).generation_dir(&manifest.generation_id);
-        fs::create_dir_all(&generation_dir).expect("mkdir");
-        fs::write(generation_dir.join("bucket-000"), &shard).expect("shard");
+            crate::staging::StagingLayout::new(dir.path()).generation_dir(&generation_id);
+        fs::create_dir_all(generation_dir.join("nodes")).expect("mkdir");
+        fs::write(generation_dir.join("nodes/000000.json"), &shard).expect("shard");
         fs::write(
             generation_dir.join("manifest.json"),
-            serde_json::to_vec(&manifest).expect("json"),
+            manifest.canonical_bytes().expect("bytes"),
         )
         .expect("manifest");
         pointer::replace(
             dir.path(),
-            &CurrentPointer::new(manifest.generation_id.clone()),
+            &CurrentPointer::new(generation_id.clone()),
             PointerStrategy::AtomicReplace,
         )
         .expect("pointer");
-        (dir, manifest.generation_id)
+        (dir, generation_id)
     }
 
     #[test]
@@ -231,9 +252,9 @@ mod tests {
             .expect("entry")
             .expect("entry")
             .path();
-        let mut shard = fs::read(generation_dir.join("bucket-000")).expect("read");
+        let mut shard = fs::read(generation_dir.join("nodes/000000.json")).expect("read");
         shard[1] = b'!';
-        fs::write(generation_dir.join("bucket-000"), &shard).expect("write");
+        fs::write(generation_dir.join("nodes/000000.json"), &shard).expect("write");
         let archive = open(dir.path(), ArchiveMode::SnapshotOnly);
         let error = archive
             .serve(ArchiveRequest::VerifyHashes)

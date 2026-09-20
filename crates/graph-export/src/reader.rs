@@ -97,10 +97,15 @@ impl Snapshot {
     /// Parse one shard into records. This does not need the guard, because the
     /// bytes are already owned by the snapshot.
     ///
+    /// A shard is one canonical JSON document, not a sequence of JSONL lines: an
+    /// array yields its items and a single object yields itself, which is the
+    /// record count the manifest declares.
+    ///
     /// # Errors
     ///
     /// Returns [`ERR_MISSING`] for an unknown shard and
-    /// [`crate::ERR_CANONICAL`] for a line that is not a JSON object.
+    /// [`crate::ERR_CANONICAL`] for a document that is neither an array nor an
+    /// object.
     pub fn parse_shard(&self, relative_path: &str) -> Result<Vec<serde_json::Value>> {
         let bytes = self.shard(relative_path).ok_or_else(|| {
             ExportError::new(
@@ -111,14 +116,17 @@ impl Snapshot {
                 ),
             )
         })?;
-        let text = String::from_utf8_lossy(bytes);
-        let mut records = Vec::new();
-        for line in text.lines().filter(|line| !line.trim().is_empty()) {
-            records.push(serde_json::from_str(line).map_err(|error| {
-                ExportError::new(crate::ERR_CANONICAL, format!("{relative_path}: {error}"))
-            })?);
+        let value: serde_json::Value = serde_json::from_slice(bytes).map_err(|error| {
+            ExportError::new(crate::ERR_CANONICAL, format!("{relative_path}: {error}"))
+        })?;
+        match value {
+            serde_json::Value::Array(items) => Ok(items),
+            object @ serde_json::Value::Object(_) => Ok(vec![object]),
+            _ => Err(ExportError::new(
+                crate::ERR_CANONICAL,
+                format!("{relative_path} is neither a JSON array nor a JSON object"),
+            )),
         }
-        Ok(records)
     }
 }
 
@@ -157,15 +165,15 @@ pub fn load<G: LoadGuard>(root: &Path, guard: &G) -> Result<Snapshot> {
     check(LOAD_PHASES[1])?;
     let manifest = validate::read_manifest(&generation_dir)?;
 
-    let mut shards = Vec::with_capacity(manifest.entries.len());
-    for entry in &manifest.entries {
+    let mut shards = Vec::with_capacity(manifest.files.len());
+    for entry in &manifest.files {
         check(LOAD_PHASES[2])?;
-        let path = generation_dir.join(&entry.relative_path);
+        let path = generation_dir.join(&entry.path);
         let bytes = fs::read(&path).map_err(|error| {
             ExportError::new(ERR_MISSING, format!("{}: {error}", path.display()))
         })?;
         shards.push(ShardBytes {
-            relative_path: entry.relative_path.clone(),
+            relative_path: entry.path.clone(),
             bytes,
         });
     }
@@ -185,11 +193,11 @@ pub fn load<G: LoadGuard>(root: &Path, guard: &G) -> Result<Snapshot> {
 /// The same errors as [`load`] plus [`crate::ERR_NOT_CANONICAL`].
 pub fn load_verified<G: LoadGuard>(root: &Path, guard: &G) -> Result<Snapshot> {
     let snapshot = load(root, guard)?;
-    let files: Vec<(String, Vec<u8>, usize)> = snapshot
-        .shards
-        .iter()
-        .map(|shard| (shard.relative_path.clone(), shard.bytes.clone(), 0))
-        .collect();
+    let mut files: Vec<(String, Vec<u8>, usize)> = Vec::with_capacity(snapshot.shards.len());
+    for shard in &snapshot.shards {
+        let records = crate::staging::count_records(&shard.bytes)?;
+        files.push((shard.relative_path.clone(), shard.bytes.clone(), records));
+    }
     validate::validate_files(&files, snapshot.manifest())?;
     Ok(snapshot)
 }
@@ -197,7 +205,7 @@ pub fn load_verified<G: LoadGuard>(root: &Path, guard: &G) -> Result<Snapshot> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::manifest::{self, ManifestEntry};
+    use crate::manifest::{self, Coverage, ManifestEntry, ManifestHeader};
     use crate::pointer::{self, CurrentPointer, PointerStrategy};
     use std::cell::Cell;
 
@@ -218,39 +226,56 @@ mod tests {
         }
     }
 
+    fn header() -> ManifestHeader {
+        ManifestHeader {
+            solution_id: "demo-solution".to_owned(),
+            project_id: "demo-project".to_owned(),
+            analysis_profile: "default".to_owned(),
+            generator_version: "0.1.0".to_owned(),
+            analyzer_set_hash: "a".repeat(64),
+            source_fingerprint: "b".repeat(64),
+            config_fingerprint: "c".repeat(64),
+            dependency_fingerprint: "d".repeat(64),
+            coverage: Coverage::complete_for_profile(2, 2, 0),
+        }
+    }
+
     fn fixture() -> (tempfile::TempDir, String, usize) {
         let dir = tempfile::tempdir().expect("tempdir");
-        let shards = [
-            b"{\"key\":\"edge:a->b\",\"kind\":\"edge\",\"body\":{\"from\":\"a\",\"to\":\"b\"}}\n"
-                .to_vec(),
-            b"{\"key\":\"edge:b->c\",\"kind\":\"edge\",\"body\":{\"from\":\"b\",\"to\":\"c\"}}\n"
-                .to_vec(),
+        let nodes = crate::canonical::canonical_document_value(&serde_json::json!([
+            {"key": "node:a", "kind": "symbol", "body": {"name": "a"}},
+            {"key": "node:b", "kind": "symbol", "body": {"name": "b"}}
+        ]))
+        .expect("canonical");
+        let edges = crate::canonical::canonical_document_value(&serde_json::json!([
+            {"key": "edge:a->b", "kind": "edge", "body": {"from": "a", "to": "b"}}
+        ]))
+        .expect("canonical");
+        let entries = vec![
+            ManifestEntry::from_bytes("nodes/000000.json", "nodes", &nodes, 2),
+            ManifestEntry::from_bytes("edges/000000.json", "edges", &edges, 1),
         ];
-        let entries: Vec<ManifestEntry> = shards
-            .iter()
-            .enumerate()
-            .map(|(index, bytes)| ManifestEntry::from_bytes(format!("bucket-{index:03}"), bytes, 1))
-            .collect();
-        let manifest = manifest::build(entries).expect("manifest");
+        let manifest = manifest::build(header(), entries).expect("manifest");
+        let generation_id = manifest.generation_id().expect("id");
         let generation_dir =
-            crate::staging::StagingLayout::new(dir.path()).generation_dir(&manifest.generation_id);
-        fs::create_dir_all(&generation_dir).expect("mkdir");
-        for (index, bytes) in shards.iter().enumerate() {
-            fs::write(generation_dir.join(format!("bucket-{index:03}")), bytes).expect("shard");
-        }
+            crate::staging::StagingLayout::new(dir.path()).generation_dir(&generation_id);
+        fs::create_dir_all(generation_dir.join("nodes")).expect("mkdir");
+        fs::create_dir_all(generation_dir.join("edges")).expect("mkdir");
+        fs::write(generation_dir.join("nodes/000000.json"), &nodes).expect("shard");
+        fs::write(generation_dir.join("edges/000000.json"), &edges).expect("shard");
         fs::write(
             generation_dir.join("manifest.json"),
-            serde_json::to_vec(&manifest).expect("json"),
+            manifest.canonical_bytes().expect("bytes"),
         )
         .expect("manifest");
         pointer::replace(
             dir.path(),
-            &CurrentPointer::new(manifest.generation_id.clone()),
+            &CurrentPointer::new(generation_id.clone()),
             PointerStrategy::AtomicReplace,
         )
         .expect("pointer");
-        let checks = 2 + shards.len();
-        (dir, manifest.generation_id, checks)
+        let checks = 2 + 2;
+        (dir, generation_id, checks)
     }
 
     #[test]
@@ -291,7 +316,7 @@ mod tests {
         };
         // The guard is gone here; the snapshot still has everything it needs.
         assert_eq!(snapshot.generation_id(), generation_id);
-        assert_eq!(snapshot.manifest().record_count, 2);
+        assert_eq!(snapshot.manifest().record_count(), 3);
         assert!(snapshot.total_bytes() > 0);
     }
 
@@ -304,9 +329,11 @@ mod tests {
                 .expect("writer");
             load(dir.path(), &guard).expect("load")
         };
-        let records = snapshot.parse_shard("bucket-000").expect("parse");
-        assert_eq!(records.len(), 1);
-        assert_eq!(records[0]["key"], "edge:a->b");
-        assert!(snapshot.parse_shard("bucket-999").is_err());
+        let records = snapshot.parse_shard("nodes/000000.json").expect("parse");
+        assert_eq!(records.len(), 2);
+        assert_eq!(records[0]["key"], "node:a");
+        let edges = snapshot.parse_shard("edges/000000.json").expect("parse");
+        assert_eq!(edges.len(), 1);
+        assert!(snapshot.parse_shard("nodes/999999.json").is_err());
     }
 }

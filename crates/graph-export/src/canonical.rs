@@ -108,6 +108,24 @@ pub fn canonical_document(records: &[GraphRecord]) -> Result<Vec<u8>> {
     Ok(out)
 }
 
+/// Canonically encode one value as a standalone document.
+///
+/// The contract fixes one byte form for every metadata document a generation
+/// publishes: compact separators, object keys sorted by code point, UTF-8 with
+/// no BOM and exactly one trailing LF. A document is a JSON array or object, not
+/// a sequence of lines, so `docs/11-GRAPH-DATA-CONTRACT.md` section 6's "JSON
+/// ทุกไฟล์ parse แยกได้ ไม่เป็น JSONL" holds: a reader parses the whole file,
+/// and the shipped `axiom-mcp` reader's canonical check accepts these bytes
+/// unchanged.
+///
+/// # Errors
+///
+/// [`ERR_CANONICAL`] when the value cannot be encoded.
+pub fn canonical_document_value(value: &Value) -> Result<Vec<u8>> {
+    let mut bytes = canonical_value(value)?.into_bytes();
+    bytes.push(b'\n');
+    Ok(bytes)
+}
 /// Return a copy of `value` with volatile fields removed and paths normalised.
 #[must_use]
 pub fn identity_value(value: &Value, policy: &IdentityPolicy) -> Value {
