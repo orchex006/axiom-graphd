@@ -242,10 +242,11 @@ modules in `axiom-graphd` (`crates/axiom-graphd/src/checkpoint/`), and the input
 classification is implemented in `graph-watch`. The **argv surface that exposes
 them is still not wired**: task H-001 wired the operator verbs `status`,
 `solution`, `changed`, `reconcile`, `queue`, `query` and `update` into argv, so
-`checkpoint`-style commands remain the exception. The `axiom-graphd` binary
-implements `help` and `version`; `doctor`, `serve` and the seven verbs above are
-recognised but answer `NOT_READY` (exit 4) because their status sources, queue
-writer and store bindings belong to later work packages, and any other verb
+`checkpoint`-style commands remain the exception. Task H-002 then bound the
+runtime behind `serve`, `doctor`, `status`, `solution`, `reconcile`, `queue` and
+`query` - they execute now - while `changed` and `update` still answer
+`NOT_READY` (exit 4) because the change-hint path has no binding source in argv
+and delegated update apply has no trusted `axiom` CLI path. Any other verb
 (`checkpoint`, `snapshot`, `frobnicate`) is rejected with a validation error
 (exit 2) rather than silently doing nothing. So today:
 

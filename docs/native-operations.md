@@ -25,22 +25,23 @@ accepts it: `crates/axiom-graphd/src/cli.rs` and `crates/axiom/src/cli.rs`.
 ## 1. What actually runs today
 
 Two binaries ship from this repository: `axiom-graphd` (`crates/axiom-graphd`)
-and `axiom` (`crates/axiom-cli`). These verbs are parsed in this revision. Only
-`version` and `help` do work; `serve`, `doctor` and the seven slices wired by
-task H-001 all answer `NOT_READY`.
+and `axiom` (`crates/axiom-cli`). These verbs are parsed in this revision.
+`version`, `help`, `serve`, `doctor`, `status`, `solution`, `reconcile`, `queue`
+and `query` do work; `changed` and `update` are wired but still answer
+`NOT_READY`.
 
 | Verb | State | Source |
 | --- | --- | --- |
-| `axiom-graphd serve [--registry <path>] [--json]` | available | `cli.rs` arm `["serve"]`; acquires the instance lock, then reports `NOT_READY` |
+| `axiom-graphd serve [--registry <path>] [--json]` | available | `cli.rs` arm `["serve"]`; acquires the instance lock and runs one bounded reconcile pass, publishing a generation |
 | `axiom-graphd version [--json]` | available | `cli.rs` arm `["version"]` |
 | `axiom-graphd help` (also `--help`, `-h`) | available | `cli.rs` arm `["help"]` and the empty argv case |
-| `axiom-graphd doctor [--solution <id>] [--json]` | available | `cli.rs` slice `doctor`; `NOT_READY` (no status sources in this build) |
-| `axiom-graphd status --solution <id> [--json]` | wired, not implemented | `cli.rs` slice `status` (task H-001); `NOT_READY` (no open store in this build) |
-| `axiom-graphd solution register|list|remove ...` | wired, not implemented | `cli.rs` slice `solution` (task H-001); `NOT_READY` (no registry write path in this build) |
-| `axiom-graphd changed ...` | wired, not implemented | `cli.rs` slice `changed` (task H-001); `NOT_READY` (no store binding in this build) |
-| `axiom-graphd reconcile ...` | wired, not implemented | `cli.rs` slice `reconcile` (task H-001); `NOT_READY` (no queue writer in this build) |
-| `axiom-graphd queue list|retry|cancel ...` | wired, not implemented | `cli.rs` slice `queue` (task H-001); `NOT_READY` (no open store in this build) |
-| `axiom-graphd query context|impact ...` | wired, not implemented | `cli.rs` slice `query` (task H-001); `NOT_READY` (no pinned snapshot source in this build) |
+| `axiom-graphd doctor [--solution <id>] [--json]` | available | `cli.rs` slice `doctor`; prints a diagnostic report from the open store (`overall` may be `degraded`) |
+| `axiom-graphd status --solution <id> [--json]` | available | `cli.rs` slice `status`; reads queue, freshness and coverage state from the open store |
+| `axiom-graphd solution register|list|remove ...` | available | `cli.rs` slice `solution`; reads and writes the solution registry in the open store |
+| `axiom-graphd changed ...` | wired, not implemented | `cli.rs` slice `changed` (task H-001); `NOT_READY` (the change-hint path has no binding source in argv) |
+| `axiom-graphd reconcile ...` | available | `cli.rs` slice `reconcile`; enqueues the plan and runs the same bounded pass as `serve` |
+| `axiom-graphd queue list|retry|cancel ...` | available | `cli.rs` slice `queue`; reads and steers the durable queue in the open store |
+| `axiom-graphd query context|impact ...` | available | `cli.rs` slice `query`; answers from the project's pinned published generation |
 | `axiom-graphd update check|apply ...` | wired, not implemented | `cli.rs` slice `update` (task H-001); `NOT_READY` (no trusted `axiom` CLI path in this build) |
 | `axiom version [--all] [--json]` | available | `crates/axiom/src/cli.rs` arm `["version"]` |
 | `axiom help` (also `--help`, `-h`) | available | `crates/axiom/src/cli.rs` |
@@ -48,7 +49,8 @@ task H-001 all answer `NOT_READY`.
 **wired, not implemented** is a separate state on purpose (task H-001): the verb
 and its arguments are accepted, then it answers `NOT_READY` (exit 4) with the
 reason that names the missing binding. It is not a working verb, and no recovery
-step below may be written as if it were one.
+step below may be written as if it were one. Task H-002 left only `changed` and
+`update` in that state; the other operator verbs are `available` and execute.
 
 These verbs do **not** exist. Do not run them: `parse` rejects them as an
 unrecognised command (`VALIDATION_ERROR`, exit 2), and no binary in this tree
@@ -78,27 +80,36 @@ axiom-graphd serve --json --registry <path>
 ```
 
 `serve` resolves `AXIOM_HOME`, verifies the destination, loads the service
-config, then takes the single-owner instance lock at `AXIOM_HOME/run/daemon.lock`
+config, takes the single-owner instance lock at `AXIOM_HOME/run/daemon.lock`
 (`crates/axiom-graphd/src/instance_lock.rs`, `LOCK_FORMAT =
-"axiom-daemon-lock-v1"`, plus the readable `run/daemon.owner.json` record). It
-then reports that the reconcile worker loop is not part of this work package and
-exits `NOT_READY` (exit 4).
+"axiom-daemon-lock-v1"`, plus the readable `run/daemon.owner.json` record), then
+runs **one bounded reconcile pass** over every registered solution
+(`crates/axiom-graphd/src/serve.rs`, task H-002). The pass resumes the checkpoint
+lane, plans a stat-based inventory delta, analyses the changed files and
+publishes the closed generation through the publication barrier (staging seal,
+analysis commit, event-sequence bump, exclusive solution guard,
+content-addressed install, atomic pointer replace, outbox acknowledgement). One
+invocation publishes at most one generation per project and then exits `0` with
+a report naming the published `generation_id` and `manifest_hash`.
 
 What that means in practice:
 
 - Only one daemon per OS user is allowed; the lock is how that is enforced. A
   second `serve` fails with `WRITER_ALREADY_RUNNING` (exit 10). Do not delete
   `run/daemon.lock` to clear it; identify the owning process first.
-- `serve` does not serve yet. There is no reconcile loop bound to it in this
-  revision, so `serve` is a lock-contract exercise, not a running service.
+- `serve` runs one bounded pass, not a continuous loop. Re-run it (or use
+  `reconcile`) to pick up the next change; there is no resident process in this
+  revision.
 
 A shutdown/graceful-drain contract exists as a library module
 (`crates/axiom-graphd/src/lifecycle.rs`, task B-006): `ShutdownToken`,
 `DEFAULT_SHUTDOWN_DEADLINE_MS = 90_000`, `SHUTDOWN_EXIT_CODE = NOT_READY`, and a
 `DrainState` of `Running` / `Draining` / `Drained` / `DeadlineExpired`.
-**UNVERIFIED**: `serve` does not install a `SIGINT` / `SIGTERM` handler and does
-not construct a `ShutdownToken`, so no signal-driven drain has ever run. Treat
-the drain as a design target, not as observed behaviour.
+The bounded pass constructs a `ShutdownToken` and claims it per file, so the pass
+stops at a file boundary if the deadline passes. **UNVERIFIED**: `serve` installs
+no `SIGINT` / `SIGTERM` handler, so no signal-driven drain has ever run and the
+reported `shutdown` state is the token's state at the end of the pass. Treat a
+signal-driven drain as a design target, not as observed behaviour.
 
 ### 2.2 Opt-in per-user startup registration
 
@@ -473,17 +484,20 @@ line here is **UNVERIFIED**.
 - **`schtasks` / `systemctl --user` / `launchctl` were never really executed.**
   The startup lifecycle renders the host command and hands it to an injected
   `ServiceExec`; that boundary is exercised only by recording/denying doubles.
-- **No migrate or rollback CLI verb, and no implemented operator verb.** In
-  `axiom-graphd` the seven slices wired by task H-001 accept their arguments and
-  then answer `NOT_READY`; in `axiom`, `migrate`, `service`, `install`,
-  `bootstrap` and the rest are recognised pending verbs that map to `NOT_READY`
-  (exit 4), and the daemon rejects them as unrecognised commands. There is no
-  command that reads a journal, resumes a cutover or rolls anything back.
+- **No migrate or rollback CLI verb.** In `axiom`, `migrate`, `service`,
+  `install`, `bootstrap` and the rest are recognised pending verbs that map to
+  `NOT_READY` (exit 4), and the daemon rejects them as unrecognised commands.
+  There is no command that reads a journal, resumes a cutover or rolls anything
+  back. In `axiom-graphd`, `changed` and `update` are still
+  wired-but-not-ready (task H-002); the other operator verbs execute.
 - **No native platform certification.** The migration and native-apply gates ran
   in a Linux container; no native Windows or macOS cutover, junction/ACL
   behaviour, code-signing path or real lock was exercised.
-- **No reconcile loop.** `serve` takes the lock and exits `NOT_READY`; the
-  reconcile worker loop of `crates/graph-watch` is not bound to it.
+- **No continuous reconcile loop.** `serve` runs one bounded pass and exits
+  (task H-002); `crates/graph-watch` is bound as the reconcile source, but there
+  is no resident loop and no `SIGINT`/`SIGTERM` handler. No continuous
+  filesystem watcher is bound either - every pass plans a stat-based inventory,
+  which is why `doctor` reports `watcher-degraded`.
 
 ## 9. How this runbook was verified
 
@@ -508,15 +522,22 @@ Identifier checks (all exit 0; output in the named log):
 | docs check | `python tools/check-doc-status.py --root .` | 0 | `_coord/logs/L47-doc-check.log` |
 
 That table records the V2-026 revision, when only `serve`, `version`, `doctor`
-and `help` were parsed. Task H-001 has since wired the seven operator slices
-listed in section 1 (state **wired, not implemented**), so the "real CLI verbs
-only" row no longer describes this revision; it is kept as the record of what was
-checked when this runbook was written.
+and `help` were parsed. Task H-001 wired the seven operator slices, and task
+H-002 then bound six of them (`serve`, `doctor`, `status`, `solution`,
+`reconcile`, `queue`, `query`) to the store, registry, queue and
+pinned-generation pipeline, leaving `changed` and `update` wired-but-not-ready.
+The "real CLI verbs only" row therefore no longer describes this revision; it is
+kept as the record of what was checked when this runbook was written.
 
-**UNVERIFIED**: no native command in this runbook was executed. `axiom-graphd`
-was not built or run for this change, no journal was decoded on a real tree, no
-replacement was staged, and no rollback was performed. The platform table is read
-from source, not observed.
+**UNVERIFIED (this runbook)**: no native command in this runbook was executed.
+`axiom-graphd` was not built or run for this documentation change, no journal was
+decoded on a real tree, no replacement was staged, and no rollback was performed.
+The platform table is read from source, not observed. The `serve` bounded pass
+itself is verified separately by task H-002 (Windows 11 x64): `solution register
+--apply` exit 0, `serve --json` exit 0 publishing generation
+`3e1996028b0ee400673115f6fadb8881c8daa024a74fc2d4a38a1617be618f34`, and a
+second pass after a source edit publishing `588e49d7...` with
+`inventory_changed:1`.
 
 ## 10. Related documents
 

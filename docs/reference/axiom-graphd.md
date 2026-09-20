@@ -24,14 +24,14 @@ rejects or cannot complete it.
 | ------- | ----- | -------- |
 | help | available | Accepted positional; also `--help` and `-h`. |
 | version | available | Accepted positional; also `--version` and `-V`. |
-| doctor | available | Accepted positional; `doctor [--solution <id>]` executes and answers `NOT_READY`. |
-| serve | available | Accepted positional; takes the instance lock, then reports `NOT_READY`. |
-| status | available | Wired in task H-001: accepts `status --solution <id>` and answers `NOT_READY`. |
-| solution | available | Wired in task H-001: accepts `solution register\|list\|remove` and answers `NOT_READY`. |
+| doctor | available | `doctor [--solution <id>]` executes against the open store and prints a diagnostic report. |
+| serve | available | Takes the instance lock and runs one bounded reconcile pass over every registered solution, publishing a generation. |
+| status | available | `status --solution <id>` executes against the open store and prints queue, freshness and coverage state. |
+| solution | available | `solution register\|list\|remove` executes against the registry in the open store. |
 | changed | available | Wired in task H-001: accepts the explicit-hint and `--from-json` forms and answers `NOT_READY`. |
-| queue | available | Wired in task H-001: accepts `queue list\|retry\|cancel` and answers `NOT_READY`. |
-| reconcile | available | Wired in task H-001: accepts all three `--scope` forms and answers `NOT_READY`. |
-| query | available | Wired in task H-001: accepts `query context\|impact` and answers `NOT_READY`. |
+| queue | available | `queue list\|retry\|cancel` executes against the operational queue in the open store. |
+| reconcile | available | Runs the same bounded pass as `serve` for one solution (or one project) and returns its report. |
+| query | available | `query context\|impact` executes against a pinned published generation. |
 | update | available | Wired in task H-001: accepts `update check\|apply` and answers `NOT_READY`. |
 | install | proposed | Not accepted by `parse`; belongs to the installation work package. |
 | service | proposed | Not accepted by `parse`; belongs to the native lifecycle work package. |
@@ -39,11 +39,15 @@ rejects or cannot complete it.
 | host | proposed | Not accepted by `parse`; belongs to the host-configuration work package. |
 <!-- END COMMAND STATUS -->
 
-`available` means `parse` accepts the command; it does not mean the pipeline
-behind it exists. Every verb wired in task H-001 accepts its full documented
-argument surface and then answers `NOT_READY` (exit 4) with one stable reason
-that names the binding it still needs. Sections 6 to 12 list those verbs, their
-accepted forms and their reasons.
+`available` means `parse` accepts the command and the verb has a production
+binding; it does not mean every verb is complete. Task H-002 bound `serve`,
+`solution`, `status`, `doctor`, `reconcile`, `queue` and `query` to the store,
+registry, queue and pinned-generation pipeline. Two verbs remain wired but not
+implemented: `changed` and `update` accept their full documented argument
+surface and then answer `NOT_READY` (exit 4) with one stable reason that names
+the binding they still need. Sections 8 and 12 describe those two; the remaining
+sections describe the implemented verbs, their accepted forms and their
+behaviour.
 
 Global arguments:
 
@@ -160,22 +164,35 @@ axiom-graphd -V
 
 ```text
 axiom-graphd doctor
+axiom-graphd doctor --solution <id>
 axiom-graphd doctor --json
 ```
 
-- Arguments: optional `--solution <id>` (wired in task H-001); `--all` is proposed.
-- Example response in this revision: none. The command does not produce a
-  diagnostic report; it fails with a stable reason.
-- Exit codes: `4` (`NOT_READY`) with `NOT_READY` and the reason that `doctor` has
-  no status sources in this build and that the diagnostic inventory is
-  implemented by a later work package. With `--json`, stdout is the error
-  envelope `{code,message,retryable,details,request_id}` and nothing else; in
-  text mode stdout stays empty and the diagnostic goes to stderr.
-- Failure recovery: the diagnostic inventory is a later work package; use the
-  version report and the platform runbooks
-  ([install-windows](../guides/install-windows.md), [install-linux](../guides/install-linux.md),
-  [install-macos](../guides/install-macos.md)) until it is implemented. `doctor` never
-  repairs automatically, so a repair is never expected from it.
+- Arguments: optional `--solution <id>` (wired in task H-001); `--all` is
+  proposed. With no `--solution`, `doctor` prints one report per registered
+  solution.
+- Behaviour: opens the instance store and, for the named solution or each
+  registered solution, prints the watcher, queue, database and catalog health
+  plus an `overall` verdict. `doctor` never repairs automatically:
+  `automatic_repair` is always `false`.
+- Example response (captured run, Windows 11 x64, task H-002):
+
+```json
+{"solution_id":"demo-solution","watcher":{"mode":"polling","healthy":false,"detail":"no continuous filesystem watcher is bound in this build; each pass plans a stat-based inventory"},"queue":{"pending":0,"leased":0,"retry_wait":0,"failed":0,"healthy":true,"detail":"pending=0 leased=0 failed=0"},"database":{"healthy":true,"schema_version":1,"detail":"integrity=ok schema_version=1"},"catalog":{"healthy":false,"generation_id":null,"refs":0,"detail":"refs=0"},"overall":"degraded","diagnostics":["watcher-degraded","catalog-missing"],"automatic_repair":false}
+```
+
+- Exit codes: `0` when the report is produced, whether `overall` is `healthy` or
+  `degraded` - a degraded verdict is a report, not an error. An unknown solution
+  is `NOT_FOUND` (exit `3`); an unparsable or unsafe configuration is
+  `CONFIG_INVALID` (exit `2`).
+- Failure recovery: a `degraded` verdict names its own diagnostics. In this
+  revision they are `watcher-degraded` (no continuous filesystem watcher is
+  bound; every pass plans a stat-based inventory) and `catalog-missing` (no
+  catalog generation is bound). Neither blocks a published generation. `doctor`
+  never repairs automatically, so read the diagnostic and use the platform
+  runbooks ([install-windows](../guides/install-windows.md),
+  [install-linux](../guides/install-linux.md),
+  [install-macos](../guides/install-macos.md)) rather than expecting a repair.
 
 ## 5. `serve`
 
@@ -189,21 +206,37 @@ axiom-graphd serve --json --registry <path>
   characters, apostrophes, ampersands or parentheses; it is passed as an argv
   element and is never concatenated into a shell command.
 - Behaviour: resolves `AXIOM_HOME`, verifies the destination, loads the service
-  config, then takes the single-owner instance lock at `AXIOM_HOME/run/daemon.lock`.
-  It then reports that the reconcile worker loop is not part of this work package
-  and exits. `serve` does not serve yet.
+  config, takes the single-owner instance lock at `AXIOM_HOME/run/daemon.lock`,
+  then runs **one bounded reconcile pass** over every registered solution: it
+  resumes the checkpoint lane, plans a stat-based inventory delta, analyses the
+  changed files and publishes the closed generation through the publication
+  barrier (staging seal, analysis commit, event-sequence bump, exclusive
+  solution guard, content-addressed install, atomic pointer replace, outbox
+  acknowledgement). The JSON report names, per project, the inventory delta, the
+  analysed files, the node and edge counts, whether a generation was published
+  and the published `generation_id`/`manifest_hash`. One pass is not a daemon
+  loop: `serve` installs no `SIGINT`/`SIGTERM` handler and exits after the pass,
+  so the `lifecycle.rs` drain stays a design target.
+- Example response (captured run, Windows 11 x64, task H-002):
+
+```json
+{"instance_id":"default","solutions":1,"projects":1,"dirty_before":0,"dirty_after":0,"published_generations":1,"recoveries":[],"outcomes":[{"solution_id":"demo-solution","project_id":"auth-api","inventory_generation":1,"inventory_added":1,"inventory_changed":0,"inventory_deleted":0,"analyzed_files":1,"nodes":5,"edges":4,"published":true,"generation_id":"3e1996028b0ee400673115f6fadb8881c8daa024a74fc2d4a38a1617be618f34","manifest_hash":"531ad8de70848a3d6c7bb22072c63193a380b088292983283df37694102b99d7","current_generation":"3e1996028b0ee400673115f6fadb8881c8daa024a74fc2d4a38a1617be618f34"}],"shutdown":"Running"}
+```
+
 - Exit codes and recovery:
 
 | Condition | Exit code | Recovery |
 | --------- | --------- | -------- |
-| Reconcile loop not implemented | `4` (`NOT_READY`) | Expected in this revision. Use the read-only/foreground path or wait for the owning work package. |
+| Bounded pass completed (with or without a published generation) | `0` | The report names what was published; nothing to recover. |
 | `AXIOM_HOME` relative, remote, cloud-synchronised or a device path | `2` (`UNSAFE_HOME_PATH`) | Set an absolute `AXIOM_HOME` on a supported local filesystem. |
-| Registry/config rejected or malformed | `2` (`CONFIG_INVALID`) | Fix the named field and re-run. Never delete the database to silence a config error. |
+| Registry/config rejected or malformed, or a registered project has no binding | `2` (`CONFIG_INVALID`) | Fix the named field, or add the binding to `AXIOM_HOME/config/bindings.json`, then re-run. Never delete the database to silence a config error. |
 | Another owner holds the instance lock | `10` (`WRITER_ALREADY_RUNNING`) | Identify the owning process and coordinate. Never delete `run/daemon.lock` by guess. |
 | Lock held but unusable | Retryable; bounded retry | Retry with a bounded wait, then report. |
 | `--registry` supplied for another command | `2` (`VALIDATION_ERROR`) | Remove the flag; it applies only to `serve`. |
 
-- `SIGINT`/`SIGTERM` request a bounded graceful drain, not queue deletion.
+- `SIGINT`/`SIGTERM` are not handled in this revision: a pass runs to its
+  bounded end and exits. The `lifecycle.rs` design target is a bounded graceful
+  drain, not queue deletion.
 - Only one writer per bound output namespace and one daemon per OS user is
   allowed; the instance lock is how that is enforced.
 
@@ -216,18 +249,22 @@ axiom-graphd status --solution <id> --json
 
 - Arguments: required `--solution <id>`; optional `--json`. Omitting `--solution`
   is a rejection, not a defaulted scope.
-- Behaviour: accepts the full documented argument surface, then answers
-  `NOT_READY`. The verb has no open store in this build, so it never reports a
-  solution state it cannot verify. It is a wired slice (task H-001), not an
-  implemented one.
-- Exit codes: `4` (`NOT_READY`) with the reason that `status` has no open store
-  in this build. With `--json`, stdout is exactly the error envelope
-  `{code,message,retryable,details,request_id}`; in text mode stdout stays empty
-  and the reason goes to stderr.
-- Failure recovery: the open-store binding is owned by a later work package.
-  Until it lands, read the project manifest and generation pointer through the
-  frozen reader instead of asking this verb. Never delete a store to silence the
-  reason.
+- Behaviour: opens the instance store and prints the named solution's queue,
+  freshness and coverage state: the event sequence, the dirty-file count, the
+  queue depth by state and the generation counts on disk. It reports only what
+  it can verify and never invents a solution state.
+- Example response (captured run, Windows 11 x64, task H-002):
+
+```json
+{"solution_id":"demo-solution","full_scan_required":false,"event_seq":1,"dirty_files":0,"queue":{"pending":0,"leased":0,"retry_wait":0,"failed":0,"healthy":true,"detail":"pending=0 leased=0 failed=0"},"generations":0,"checkpoint_generations":1}
+```
+
+- Exit codes: `0` when the report is produced. An unknown solution is
+  `NOT_FOUND` (exit `3`); an unparsable or unsafe configuration is
+  `CONFIG_INVALID` (exit `2`).
+- Failure recovery: a dirty-file count above zero means the next `serve` or
+  `reconcile` pass will analyse it; a failed job names its own retry. Never
+  delete a store to silence a count.
 
 ## 7. `solution`
 
@@ -242,17 +279,25 @@ axiom-graphd solution remove --solution <id> (--dry-run|--apply)
   `remove` takes required `--solution <id>`. `register` and `remove` require
   exactly one of `--dry-run` or `--apply`; supplying neither, or both, is a
   rejection.
-- Behaviour: accepts each documented form, then answers `NOT_READY`. The verb
-  performs no registry write in this build, so a `--apply` never mutates the
-  user-owned registry. It is a wired slice (task H-001), not an implemented one.
-- Exit codes: `4` (`NOT_READY`) with the reason that the user-owned registry
-  write path is added by a later work package. With `--json`, stdout is exactly
-  the error envelope; in text mode stdout stays empty and the reason goes to
-  stderr.
-- Failure recovery: registering a solution is owned by a later work package.
-  Until then, edit the solution configuration by hand and re-run `solution list`
-  when the write path lands. Never hand-edit a registry the verb refused to
-  touch; a rejection here is the guard, not a bug.
+- Behaviour: `register` parses the solution configuration, resolves each
+  project's binding (from `--bindings` or `AXIOM_HOME/config/bindings.json`) and,
+  with `--apply`, writes the solution and project rows into the registry in the
+  open store; `--dry-run` prints the same plan without writing. `list` reads the
+  registered solutions; `remove --apply` deletes one. A `--apply` really mutates
+  the user-owned registry, so `--dry-run` is the review step.
+- Example response (captured run, Windows 11 x64, task H-002):
+
+```json
+{"id":"demo-solution","profile":"default","config_hash":"c0abdbf018993355b2d95af93c237cbe1262918391f552e93420ce7261ccdb4d","projects":1}
+```
+
+- Exit codes: `0` when the plan or record is produced. A malformed config,
+  an unresolved binding or a missing `--dry-run`/`--apply` is `2`
+  (`VALIDATION_ERROR` or `CONFIG_INVALID`); an unknown solution on `remove` is
+  `NOT_FOUND` (exit `3`).
+- Failure recovery: a rejected config names the field to fix. Never hand-edit a
+  registry row to work around a rejected plan; re-run `register --apply` after
+  fixing the named field. `--dry-run` first when the change is not obvious.
 
 ## 8. `changed`
 
@@ -291,16 +336,17 @@ axiom-graphd reconcile --solution <id> --scope full
   `--wait` and `--timeout <ms|Ns>` apply only to `--scope dirty`, and the timeout
   is bounded. `--timeout` without `--wait` or an out-of-range timeout is a
   rejection.
-- Behaviour: accepts all three scope forms, then answers `NOT_READY`. The verb
-  builds no plan it cannot enqueue: the reconcile plan has no queue writer in
-  this build. It is a wired slice (task H-001), not an implemented one.
-- Exit codes: `4` (`NOT_READY`) with the reason that the reconcile plan has no
-  queue writer. A malformed scope or timeout is `2` (`VALIDATION_ERROR`). With
-  `--json`, stdout is exactly the error envelope; in text mode stdout stays empty
-  and the reason goes to stderr.
-- Failure recovery: the queue writer is owned by a later work package. Until it
-  lands, run a full analysis pass out of band instead of expecting a partial
-  reconcile. Never raise the timeout past its bound to force progress.
+- Behaviour: records the reconcile plan row in the durable queue, then runs the
+  same bounded pass `serve` runs, for the requested solution (and project, for
+  `--scope project`), under the same instance lock. The report is the same shape
+  `serve` returns, so a `--scope full` request with nothing changed reports
+  `published_generations:0` and leaves the current generation in place.
+- Exit codes: `0` when the pass completes. A malformed scope or timeout is `2`
+  (`VALIDATION_ERROR`); an unknown solution is `NOT_FOUND` (exit `3`); another
+  owner holding the instance lock is `WRITER_ALREADY_RUNNING` (exit `10`).
+- Failure recovery: if another daemon holds the lock, coordinate with it rather
+  than deleting `run/daemon.lock`; the next `serve` pass will do the work. Never
+  raise the timeout past its bound to force progress.
 
 ## 10. `queue`
 
@@ -313,18 +359,22 @@ axiom-graphd queue cancel --job <id>
 - Arguments: `list` takes required `--solution <id>` and optional `--limit <n>`,
   bounded from `1` to the queue maximum (`--limit 0` is rejected); `retry` and
   `cancel` take required `--job <id>`.
-- Behaviour: accepts all three documented forms, then answers `NOT_READY`. The
-  verb never reports or mutates a queue it cannot open: the operational queue has
-  no open store in this build. It is a wired slice (task H-001), not an
-  implemented one.
-- Exit codes: `4` (`NOT_READY`) with the reason that the operational queue has no
-  open store. A missing `--job` or an out-of-range `--limit` is `2`
-  (`VALIDATION_ERROR`). With `--json`, stdout is exactly the error envelope; in
-  text mode stdout stays empty and the reason goes to stderr.
-- Failure recovery: the queue store binding is owned by a later work package.
-  Until it lands, inspect queued work in the store directory directly. Never
-  delete queue rows to clear a stuck job; `queue cancel` is the only sanctioned
-  mutation, and it is not yet implemented.
+- Behaviour: `list` reads the durable queue in the open store - the job id,
+  kind, scope key, state and attempt count - for the named solution; `retry`
+  re-arms a failed job; `cancel` cancels a job. The queue is the same queue the
+  `serve`/`reconcile` pass feeds, so a job enqueued by one is visible here.
+- Example response (captured run, Windows 11 x64, task H-002):
+
+```json
+{"solution_id":"demo-solution","limit":50,"total":0,"jobs":[]}
+```
+
+- Exit codes: `0` when the page or mutation is produced. A missing `--job` or an
+  out-of-range `--limit` is `2` (`VALIDATION_ERROR`); an unknown job is
+  `NOT_FOUND` (exit `3`).
+- Failure recovery: `retry` is the sanctioned way to re-arm a failed job;
+  `cancel` the only sanctioned way to stop one. Never delete queue rows to clear
+  a stuck job.
 
 ## 11. `query`
 
@@ -337,18 +387,25 @@ axiom-graphd query impact --solution <id> (--symbol <name>|--node-id <id>) [--ma
   `--node-id <id>`; optional `--max-bytes <n>`, `--max-nodes <n>` and
   `--depth <n>`, each bounded by its own range (`--max-nodes 0` and `--depth 99`
   are rejected). Supplying both subject forms, or neither, is a rejection.
-- Behaviour: accepts both `context` and `impact` forms, then answers
-  `NOT_READY`. The verb never returns rows it cannot pin: bounded context and
-  impact have no pinned snapshot source in this build. It is a wired slice (task
-  H-001), not an implemented one.
-- Exit codes: `4` (`NOT_READY`) with the reason that bounded context and impact
-  have no pinned snapshot source. A malformed subject or out-of-range bound is
-  `2` (`VALIDATION_ERROR`). With `--json`, stdout is exactly the error envelope;
-  in text mode stdout stays empty and the reason goes to stderr.
-- Failure recovery: the pinned-snapshot source is owned by a later work package.
-  Until it lands, read the published generation through the frozen reader. Never
-  widen `--max-nodes` or `--depth` past their bounds to force an answer; the
-  bounds are contract.
+- Behaviour: loads the project's published generation (the pinned snapshot) and
+  answers `context` (the node and its in-file containment neighbours) or
+  `impact` (the edges that reach the node) from it. Every answer names the
+  `generation_id` it was pinned to, so a later publish cannot silently change a
+  past answer.
+- Example response (captured run, Windows 11 x64, task H-002):
+
+```json
+{"solution_id":"demo-solution","generation_id":"3e1996028b0ee400673115f6fadb8881c8daa024a74fc2d4a38a1617be618f34","kind":"context","target":"Demo.Auth.TokenSource","limits":{"max_bytes":8192,"max_nodes":64,"depth":1},"records":[{"key":"0b60c4cc994c7478","kind":"class","body":{"id":"0b60c4cc994c7478","kind":"class","name":"TokenSource","qualified_name":"Demo.Auth.TokenSource","span":{"end":142,"start":131}}}],"omitted":0,"truncated":false,"reasons":[],"bytes":182}
+```
+
+- Exit codes: `0` when the projection is produced. A subject not present in the
+  pinned snapshot is `NOT_FOUND` (exit `3`); a malformed subject or out-of-range
+  bound is `2` (`VALIDATION_ERROR`); a solution with no published generation is
+  reported honestly rather than answered from an empty graph.
+- Failure recovery: a `NOT_FOUND` means the subject is not in the pinned
+  generation - run `serve` or `reconcile` to publish the current tree, or widen
+  the selector to a qualified name. Never widen `--max-nodes` or `--depth` past
+  their bounds to force an answer; the bounds are contract.
 
 ## 12. `update`
 
@@ -400,7 +457,7 @@ a rejection, and so a future implementation has a documented target.
 
 Do not treat a module existing in `crates/` as a command: availability is decided
 by `parse` in `crates/axiom-graphd/src/cli.rs`, and the tables in sections 1 and
-6 to 12 mirror exactly that.
+4 to 12 mirror exactly that.
 
 ## 14. Exit-code and envelope rules
 

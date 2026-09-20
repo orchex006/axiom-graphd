@@ -15,6 +15,10 @@
 //!   registry (task B-084), doctor/status (task B-085), reconcile (task
 //!   B-086), bounded query (task B-087) and update delegation (task B-092),
 //! * [`control`] - loopback control authentication (task B-083),
+//! * [`runtime`] - the shared store/registry/bindings opening that every
+//!   operator command and the foreground daemon reuse (task H-002),
+//! * [`serve`] - the foreground reconcile worker loop: inventory, analyse,
+//!   stage and publish a generation under the publication barrier (task H-002),
 //! * [`checkpoint`] - staged, worktree, export and CI verification of a
 //!   checkpoint (tasks B-088 - B-091),
 //! * [`release`] - the release artifact publication gate (task B-093),
@@ -28,6 +32,8 @@ pub mod control;
 pub mod instance_lock;
 pub mod lifecycle;
 pub mod release;
+pub mod runtime;
+pub mod serve;
 pub mod telemetry;
 pub mod update_guard;
 pub mod version;

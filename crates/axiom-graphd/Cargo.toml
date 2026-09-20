@@ -19,6 +19,7 @@ workspace = true
 graph-core.workspace = true
 graph-store.workspace = true
 graph-watch.workspace = true
+graph-analyze.workspace = true
 graph-queue.workspace = true
 graph-export.workspace = true
 rusqlite.workspace = true

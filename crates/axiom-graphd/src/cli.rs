@@ -7,25 +7,28 @@
 //! interpolated shell string), and exit codes are the frozen table from
 //! section 6.
 //!
-//! Task H-001 wires the operator slices that own a module under
-//! [`crate::commands`] into this surface. Each wired verb parses its own
-//! options strictly, is listed by `--help`, and answers [`ErrorCode::NotReady`]
-//! with a stated reason while its production behaviour is still unbuilt, so an
-//! unbuilt slice is never reported as an empty success. `serve` still takes the
-//! single-owner instance lock first, so the lock contract is exercised end to
-//! end before the reconcile loop exists.
+//! Task H-001 wired the operator slices that own a module under
+//! [`crate::commands`] into this surface. Each verb parses its own options
+//! strictly and is listed by `--help`. Task H-002 binds the ones that name a
+//! real production path: `serve` runs the bounded reconcile worker loop, and
+//! `solution`, `queue`, `reconcile`, `status`, `doctor` and `query` open the
+//! shared instance store through [`crate::runtime`]. A verb that is still
+//! unwired (`changed`, `update`) answers [`ErrorCode::NotReady`] with its stated
+//! reason, so an unbuilt slice is never reported as an empty success.
 
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use graph_core::config::ServiceConfig;
 use graph_core::error::{AxiomError, ErrorCode};
 use graph_core::paths::{AxiomHome, PathEnvironment};
+use graph_store::open::Store;
 
 pub use graph_core::error::ExitCode;
 
 use crate::commands::{changed, doctor, query, queue, reconcile, solution, update};
-use crate::instance_lock::DaemonLock;
+use crate::runtime;
+use crate::serve;
 use crate::telemetry::Telemetry;
 use crate::version::VersionOutput;
 
@@ -45,7 +48,7 @@ pub struct OperatorSlice {
     pub verb: &'static str,
     /// The argv forms the verb accepts, as printed by `--help`.
     pub forms: &'static [&'static str],
-    /// Why the slice cannot complete production work in this build.
+    /// Why the slice cannot complete production work, empty once it is wired.
     pub not_ready: &'static str,
 }
 
@@ -68,7 +71,7 @@ pub const OPERATOR_SLICES: &[OperatorSlice] = &[
             "queue retry --job <id> [--json]",
             "queue cancel --job <id> [--json]",
         ],
-        not_ready: "the operational queue has no open store in this build; the queue reader is implemented by a later work package",
+        not_ready: "",
     },
     OperatorSlice {
         module: "solution",
@@ -78,13 +81,13 @@ pub const OPERATOR_SLICES: &[OperatorSlice] = &[
             "solution list [--solution <id>] [--json]",
             "solution remove --solution <id> (--dry-run|--apply) [--json]",
         ],
-        not_ready: "solution administration needs the user-owned registry write path that a later work package adds; this build writes no registry",
+        not_ready: "",
     },
     OperatorSlice {
         module: "doctor",
         verb: "doctor",
         forms: &["doctor [--solution <id>] [--json]"],
-        not_ready: "doctor has no status sources in this build; the diagnostic inventory is implemented by a later work package",
+        not_ready: "",
     },
     OperatorSlice {
         module: "reconcile",
@@ -94,7 +97,7 @@ pub const OPERATOR_SLICES: &[OperatorSlice] = &[
             "reconcile --solution <id> --scope project --project <project> [--json]",
             "reconcile --solution <id> --scope full [--json]",
         ],
-        not_ready: "the reconcile plan has no queue writer in this build; the queue writer is implemented by a later work package",
+        not_ready: "",
     },
     OperatorSlice {
         module: "query",
@@ -103,7 +106,7 @@ pub const OPERATOR_SLICES: &[OperatorSlice] = &[
             "query context --solution <id> (--symbol <name>|--node-id <id>) [--max-bytes <n>] [--max-nodes <n>] [--depth <n>] [--json]",
             "query impact --solution <id> (--symbol <name>|--node-id <id>) [--max-bytes <n>] [--max-nodes <n>] [--depth <n>] [--json]",
         ],
-        not_ready: "bounded context and impact have no pinned snapshot source in this build; the snapshot binding is implemented by a later work package",
+        not_ready: "",
     },
     OperatorSlice {
         module: "update",
@@ -154,10 +157,6 @@ pub fn slice_links() -> Vec<(&'static str, String)> {
         ("update", String::from(update::AXIOM_PROGRAM)),
     ]
 }
-
-/// Why `status` is not ready: it is a verb of this surface with no owning module.
-const REASON_STATUS_NOT_READY: &str =
-    "status has no open store in this build; the status reader is implemented by a later work package";
 
 /// Usage text without the operator-slice forms and the exit-code table.
 pub const USAGE: &str = "\
@@ -1124,19 +1123,316 @@ pub fn report_failure(
     error.exit_code()
 }
 
-/// The stated reason a wired slice cannot finish production work yet.
-fn slice_reason(module: &str) -> &'static str {
-    for slice in OPERATOR_SLICES {
-        if slice.module == module {
-            return slice.not_ready;
-        }
-    }
-    "this command has no production wiring in this build"
+/// The stated reason a slice that is still unwired cannot finish production work.
+///
+/// A wired slice has an empty reason, because it no longer has a not-ready path.
+fn slice_reason(module: &str) -> Option<&'static str> {
+    OPERATOR_SLICES
+        .iter()
+        .find(|slice| slice.module == module && !slice.not_ready.is_empty())
+        .map(|slice| slice.not_ready)
 }
 
-/// Build the `NotReady` error for a wired slice.
+/// Build the `NotReady` error for a slice that is still unwired.
 fn not_ready(module: &str) -> AxiomError {
-    AxiomError::new(ErrorCode::NotReady, slice_reason(module))
+    AxiomError::new(
+        ErrorCode::NotReady,
+        slice_reason(module).unwrap_or("this command has no production wiring in this build"),
+    )
+}
+
+/// The shared operator opening: the home plus the instance store it names.
+struct OperatorContext {
+    home: AxiomHome,
+    store: Store,
+}
+
+/// Open the instance store the foreground daemon and the operator verbs share.
+///
+/// The home is resolved and verified, the service config is loaded from the
+/// documented default source, the store is opened at the one instance database
+/// path and the shipped migrations are applied. No verb invents a second
+/// database path.
+fn open_operator() -> Result<OperatorContext, AxiomError> {
+    let home = AxiomHome::resolve(&PathEnvironment::for_current_process())?;
+    home.verify_destination()?;
+    let config = ServiceConfig::load(None)?;
+    let mut store = runtime::open_store(&config, &home)?;
+    graph_store::migrations::apply(store.connection_mut())?;
+    Ok(OperatorContext { home, store })
+}
+
+/// Serialise one operator report as exactly one JSON object.
+fn report_json<T: serde::Serialize>(value: &T) -> Result<String, AxiomError> {
+    serde_json::to_string(value).map_err(|error| {
+        AxiomError::new(
+            ErrorCode::Internal,
+            format!("the operator report is not serialisable: {error}"),
+        )
+    })
+}
+
+/// Read one JSON document from an argv-named path.
+fn read_document(path: &Path, label: &str) -> Result<serde_json::Value, AxiomError> {
+    let text = std::fs::read_to_string(path).map_err(|error| {
+        AxiomError::new(ErrorCode::NotFound, format!("{label} could not be read"))
+            .with_detail("path", path.to_string_lossy())
+            .with_detail("io", error.to_string())
+    })?;
+    serde_json::from_str(&text).map_err(|error| {
+        AxiomError::new(
+            ErrorCode::ConfigInvalid,
+            format!("{label} is not valid JSON"),
+        )
+        .with_detail("path", path.to_string_lossy())
+        .with_detail("parse", error.to_string())
+    })
+}
+
+/// Run one bounded foreground reconcile pass over every registered solution.
+fn serve_command(registry: Option<&Path>, telemetry: &mut Telemetry) -> Result<String, AxiomError> {
+    let config = ServiceConfig::load(registry)?;
+    let report = serve::serve(&config, telemetry)?;
+    report_json(&report)
+}
+
+/// Read the status report of one registered solution.
+fn status_command(solution: &str) -> Result<String, AxiomError> {
+    let context = open_operator()?;
+    let report = doctor::status(context.store.connection(), solution)?;
+    report_json(&report)
+}
+
+/// Read the doctor report for one solution, or one report per registered solution.
+fn doctor_command(solution: Option<&str>) -> Result<String, AxiomError> {
+    let context = open_operator()?;
+    // This build plans a stat-based inventory on every pass; it binds no
+    // continuous filesystem watcher, and reporting `native` would overstate it.
+    let watcher = doctor::WatcherHealth::degraded(
+        doctor::WatcherMode::Polling,
+        "no continuous filesystem watcher is bound in this build; each pass plans a stat-based inventory",
+    );
+    match solution {
+        Some(solution_id) => {
+            let report = doctor::report(context.store.connection(), solution_id, watcher)?;
+            report_json(&report)
+        }
+        None => {
+            let solutions = runtime::solutions(context.store.connection())?;
+            let mut reports = Vec::with_capacity(solutions.len());
+            for row in &solutions {
+                reports.push(doctor::report(
+                    context.store.connection(),
+                    &row.id,
+                    watcher.clone(),
+                )?);
+            }
+            report_json(&reports)
+        }
+    }
+}
+
+/// Administer the solution registry.
+fn solution_command(command: &SolutionCommand) -> Result<String, AxiomError> {
+    let mut context = open_operator()?;
+    match command {
+        SolutionCommand::Register {
+            config,
+            bindings,
+            mode,
+        } => {
+            let document = read_document(config, "the solution configuration")?;
+            let declaration = solution::parse_config(&document)?;
+            let table = match bindings {
+                Some(path) => {
+                    let text = std::fs::read_to_string(path).map_err(|error| {
+                        AxiomError::new(
+                            ErrorCode::NotFound,
+                            "the bindings document could not be read",
+                        )
+                        .with_detail("rule", "bindings-document-missing")
+                        .with_detail("path", path.to_string_lossy())
+                        .with_detail("io", error.to_string())
+                    })?;
+                    changed::BindingsDocument::parse(&text)?
+                }
+                None => runtime::load_bindings(&context.home)?,
+            };
+            let dry_run = matches!(mode, PlanMode::DryRun);
+            let plan =
+                solution::plan_register(context.store.connection(), &declaration, &table, dry_run)?;
+            if dry_run {
+                report_json(&plan)
+            } else {
+                let record =
+                    solution::apply_register(context.store.connection_mut(), &plan, &declaration)?;
+                report_json(&record)
+            }
+        }
+        SolutionCommand::List { solution: only } => {
+            let authorized: Option<Vec<String>> = only.as_ref().map(|id| vec![id.clone()]);
+            let records = solution::list(context.store.connection(), authorized.as_deref())?;
+            report_json(&records)
+        }
+        SolutionCommand::Remove {
+            solution: solution_id,
+            mode,
+        } => {
+            let dry_run = matches!(mode, PlanMode::DryRun);
+            let plan = solution::plan_remove(context.store.connection(), solution_id, dry_run)?;
+            if dry_run {
+                report_json(&plan)
+            } else {
+                let report = solution::apply_remove(context.store.connection_mut(), &plan)?;
+                report_json(&report)
+            }
+        }
+    }
+}
+
+/// Inspect and steer the operational queue.
+fn queue_command(command: &QueueCommand) -> Result<String, AxiomError> {
+    let context = open_operator()?;
+    let gate = queue::RegistrationGate::registered(context.store.connection());
+    match command {
+        QueueCommand::List { solution, limit } => {
+            let page = queue::list(
+                context.store.connection(),
+                &gate,
+                solution,
+                limit.unwrap_or(queue::DEFAULT_LIST_LIMIT),
+            )?;
+            report_json(&page)
+        }
+        QueueCommand::Retry { job } => {
+            let mutation = queue::retry(
+                context.store.connection(),
+                &gate,
+                job,
+                &graph_store::migrations::utc_timestamp(),
+            )?;
+            report_json(&mutation)
+        }
+        QueueCommand::Cancel { job } => {
+            let mutation = queue::cancel(context.store.connection(), &gate, job)?;
+            report_json(&mutation)
+        }
+    }
+}
+
+/// Record a bounded reconcile request and run the same bounded pass the daemon runs.
+fn reconcile_command(
+    command: &ReconcileCommand,
+    telemetry: &mut Telemetry,
+) -> Result<String, AxiomError> {
+    let ReconcileCommand::Request {
+        solution,
+        scope,
+        project,
+        wait,
+        timeout_ms,
+    } = command;
+    let scope = match scope {
+        Scope::Dirty => reconcile::ReconcileScope::Dirty,
+        Scope::Project => reconcile::ReconcileScope::Project,
+        Scope::Full => reconcile::ReconcileScope::Full,
+    };
+    let mut request = reconcile::ReconcileRequest::new(scope);
+    if let Some(project) = project {
+        request = request.with_project(project.clone());
+    }
+    request = request.with_wait(*wait);
+    if let Some(timeout_ms) = timeout_ms {
+        request = request.with_timeout_ms(*timeout_ms);
+    }
+    request.validate()?;
+
+    let context = open_operator()?;
+    let row = runtime::solution(context.store.connection(), solution)?;
+    let plan = reconcile::plan(context.store.connection(), solution, &request)?;
+    runtime::enqueue_job(
+        context.store.connection(),
+        &plan.job_id,
+        solution,
+        &plan.kind,
+        &plan.scope_key,
+        row.event_seq,
+    )?;
+
+    // The one-shot worker runs the same bounded pass the daemon runs, under the
+    // same instance lock, so a `--wait` request is satisfied by the pass itself
+    // rather than by polling a queue the caller cannot observe.
+    let config = ServiceConfig::load(None)?;
+    let report = serve::reconcile(&config, solution, project.as_deref(), telemetry)?;
+    let budget = reconcile::WaitBudget::for_request(&request);
+    reconcile::enforce_wait(&budget, true)?;
+    report_json(&report)
+}
+
+/// Read a bounded context or impact projection from a pinned snapshot.
+fn query_command(command: &QueryCommand) -> Result<String, AxiomError> {
+    let context = open_operator()?;
+    let (solution, selector, parsed) = match command {
+        QueryCommand::Context {
+            solution,
+            selector,
+            limits,
+        }
+        | QueryCommand::Impact {
+            solution,
+            selector,
+            limits,
+        } => (solution, selector, limits),
+    };
+    let limits = query::QueryLimits::new(
+        parsed.max_bytes.unwrap_or(query::DEFAULT_MAX_BYTES),
+        parsed.max_nodes.unwrap_or(query::DEFAULT_MAX_NODES),
+        parsed.depth.unwrap_or(query::DEFAULT_DEPTH),
+    );
+    let subject = match selector {
+        Selector::Symbol(name) => name,
+        Selector::NodeId(node_id) => node_id,
+    };
+    let projects = runtime::projects(context.store.connection(), solution)?;
+    if projects.is_empty() {
+        return Err(AxiomError::new(
+            ErrorCode::NotFound,
+            "this solution has no registered project",
+        )
+        .with_detail("rule", solution::REASON_SOLUTION_NOT_FOUND)
+        .with_detail("solution_id", solution));
+    }
+    // Each project pins its own published generation. The answer comes from the
+    // first project, in id order, that can answer the subject; the last error is
+    // reported when no project can, so a miss never becomes an empty success.
+    let mut last_error = None;
+    for project in &projects {
+        let root = match serve::resolve_one_project(&context.home, project) {
+            Ok(root) => root,
+            Err(error) => {
+                last_error = Some(error);
+                continue;
+            }
+        };
+        let snapshot = match serve::load_snapshot(solution, project, &root) {
+            Ok(snapshot) => snapshot,
+            Err(error) => {
+                last_error = Some(error);
+                continue;
+            }
+        };
+        let projection = match command {
+            QueryCommand::Context { .. } => query::context(solution, &snapshot, subject, limits),
+            QueryCommand::Impact { .. } => query::impact(solution, &snapshot, subject, limits),
+        };
+        match projection {
+            Ok(projection) => return projection.render_json(),
+            Err(error) => last_error = Some(error),
+        }
+    }
+    Err(last_error.unwrap_or_else(|| {
+        AxiomError::new(ErrorCode::NotFound, "no registered project could be read")
+    }))
 }
 
 fn execute(command: &Command, telemetry: &mut Telemetry) -> Result<String, AxiomError> {
@@ -1152,33 +1448,16 @@ fn execute(command: &Command, telemetry: &mut Telemetry) -> Result<String, Axiom
                 )
             })
         }
-        Command::Doctor { .. } => Err(not_ready("doctor")),
-        Command::Status { .. } => Err(AxiomError::new(
-            ErrorCode::NotReady,
-            REASON_STATUS_NOT_READY,
-        )),
-        Command::Solution(_) => Err(not_ready("solution")),
+        Command::Serve { registry } => serve_command(registry.as_deref(), telemetry),
+        Command::Doctor { solution } => doctor_command(solution.as_deref()),
+        Command::Status { solution } => status_command(solution),
+        Command::Solution(command) => solution_command(command),
+        Command::Reconcile(command) => reconcile_command(command, telemetry),
+        Command::Queue(command) => queue_command(command),
+        Command::Query(command) => query_command(command),
+        // Still unwired: no production binding reaches these from argv yet.
         Command::Changed(_) => Err(not_ready("changed")),
-        Command::Reconcile(_) => Err(not_ready("reconcile")),
-        Command::Queue(_) => Err(not_ready("queue")),
-        Command::Query(_) => Err(not_ready("query")),
         Command::Update(_) => Err(not_ready("update")),
-        Command::Serve { registry } => {
-            let home = AxiomHome::resolve(&PathEnvironment::for_current_process())?;
-            home.verify_destination()?;
-            let config = ServiceConfig::load(registry.as_deref())?;
-            let lock = DaemonLock::acquire(&home, config.daemon().instance_id())?;
-            let _ = telemetry.record(
-                graph_core::config::LogLevel::Info,
-                "daemon",
-                "instance lock acquired; the reconcile worker loop is not part of this work package",
-            );
-            drop(lock);
-            Err(AxiomError::new(
-                ErrorCode::NotReady,
-                "the reconcile worker loop is not part of this work package; the foreground daemon cannot serve yet",
-            ))
-        }
     }
 }
 
@@ -1200,29 +1479,9 @@ mod tests {
         arguments.iter().map(|value| String::from(*value)).collect()
     }
 
-    /// One representative, valid argv per wired slice.
+    /// One representative, valid argv per slice H-002 wired to a real binding.
     fn wired_argv() -> Vec<Vec<String>> {
         vec![
-            argv(&[
-                "changed",
-                "--solution",
-                "demo-solution",
-                "--project",
-                "auth-api",
-                "--path",
-                "src/Auth.Api/AuthController.cs",
-                "--reason",
-                "manual",
-                "--json",
-            ]),
-            argv(&[
-                "changed",
-                "--solution",
-                "demo-solution",
-                "--from-json",
-                "changes.json",
-                "--json",
-            ]),
             argv(&[
                 "queue",
                 "list",
@@ -1296,6 +1555,33 @@ mod tests {
                 "node-1",
                 "--depth",
                 "2",
+                "--json",
+            ]),
+        ]
+    }
+
+    /// One representative, valid argv per slice that is still unwired, in slice
+    /// order. These keep answering the reason their slice declares.
+    fn unwired_argv() -> Vec<Vec<String>> {
+        vec![
+            argv(&[
+                "changed",
+                "--solution",
+                "demo-solution",
+                "--project",
+                "auth-api",
+                "--path",
+                "src/Auth.Api/AuthController.cs",
+                "--reason",
+                "manual",
+                "--json",
+            ]),
+            argv(&[
+                "changed",
+                "--solution",
+                "demo-solution",
+                "--from-json",
+                "changes.json",
                 "--json",
             ]),
             argv(&["update", "check", "--json"]),
@@ -1765,8 +2051,8 @@ mod tests {
     }
 
     #[test]
-    fn text_mode_wired_slices_keep_stdout_empty() {
-        for arguments in wired_argv() {
+    fn text_mode_unwired_slices_keep_stdout_empty() {
+        for arguments in unwired_argv() {
             let text_arguments: Vec<String> = arguments
                 .iter()
                 .filter(|argument| argument.as_str() != "--json")
@@ -1927,10 +2213,65 @@ mod tests {
         );
     }
 
+    /// H-002 wired `serve`, `solution`, `queue`, `reconcile`, `status`, `doctor`
+    /// and `query` to real bindings, so none of them may still answer the stub:
+    /// every slice whose reason is empty is wired, and the unwired slices are
+    /// exactly the ones that still declare a reason.
     #[test]
-    fn wired_slices_answer_not_ready_instead_of_empty_success() {
-        let expected = ErrorCode::NotReady.as_str();
+    fn wired_slices_declare_no_reason_and_unwired_slices_still_do() {
+        let declared: Vec<&str> = OPERATOR_SLICES
+            .iter()
+            .filter(|slice| !slice.not_ready.is_empty())
+            .map(|slice| slice.module)
+            .collect();
+        assert_eq!(
+            declared,
+            vec!["changed", "update"],
+            "only the slices with no production binding may declare a reason"
+        );
+        for slice in OPERATOR_SLICES
+            .iter()
+            .filter(|slice| slice.not_ready.is_empty())
+        {
+            assert_eq!(
+                slice_reason(slice.module),
+                None,
+                "{} is wired and must have no not-ready path",
+                slice.module
+            );
+        }
+    }
+
+    /// The two argv fixtures must agree with the declaration above, so a slice
+    /// cannot be listed as wired in one place and left answering a stub in the
+    /// other. The live behaviour of a wired verb needs an instance home, so this
+    /// test stops at parsing and dispatch classification; the end-to-end run is
+    /// the H-002 manual evidence rather than a unit test that would write into
+    /// the developer's own `AXIOM_HOME`.
+    #[test]
+    fn wired_and_unwired_argv_match_the_declared_wiring() {
         for arguments in wired_argv() {
+            let verb = arguments.first().expect("a verb");
+            assert_eq!(slice_reason(verb), None, "{verb} must be wired");
+            assert!(
+                !matches!(parse(&arguments).command(), Command::Rejected { .. }),
+                "{} must parse",
+                arguments.join(" ")
+            );
+        }
+        for arguments in unwired_argv() {
+            let verb = arguments.first().expect("a verb");
+            assert!(
+                slice_reason(verb).is_some(),
+                "{verb} must still declare why it cannot finish"
+            );
+        }
+    }
+
+    #[test]
+    fn unwired_slices_answer_not_ready_instead_of_empty_success() {
+        let expected = ErrorCode::NotReady.as_str();
+        for arguments in unwired_argv() {
             let invocation = parse(&arguments);
             assert!(
                 !matches!(invocation.command(), Command::Rejected { .. }),
@@ -1959,7 +2300,7 @@ mod tests {
             assert_eq!(value["code"], serde_json::Value::from(expected));
             let message = value["message"].as_str().unwrap_or_default();
             assert!(
-                message.contains("later work package"),
+                message.contains("later work package") || message.contains("no production wiring"),
                 "{} must state why it is unbuilt, got `{message}`",
                 arguments.join(" ")
             );
