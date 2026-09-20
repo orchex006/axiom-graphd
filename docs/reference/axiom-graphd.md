@@ -32,7 +32,7 @@ rejects or cannot complete it.
 | queue | available | `queue list\|retry\|cancel` executes against the operational queue in the open store. |
 | reconcile | available | Runs the same bounded pass as `serve` for one solution (or one project) and returns its report. |
 | query | available | `query context\|impact` executes against a pinned published generation. |
-| render | available | `render --solution <id> [--project <id>]... --out <dir>` writes a deterministic `result.html` and `summary.json` for a published generation (task H-005). |
+| render | available | `render --solution <id> [--project <id>]... --out <dir>` writes a deterministic `result.html`, `summary.json` and `graph.mmd` for a published generation (task H-005). |
 | update | available | Wired in task H-001: accepts `update check\|apply` and answers `NOT_READY`. |
 | install | proposed | Not accepted by `parse`; belongs to the installation work package. |
 | service | proposed | Not accepted by `parse`; belongs to the native lifecycle work package. |
@@ -451,18 +451,29 @@ axiom-graphd render --solution <id> [--project <id>]... --out <dir>
   be a non-empty directory path (`--out ""` is rejected).
 - Behaviour: reads every selected project's published generation through the
   frozen reader and concatenates **every** node shard and **every** edge shard the
-  generation's manifest names - never only the first - then writes two artifacts
+  generation's manifest names - never only the first - then writes three artifacts
   into `--out`: a self-contained `result.html` that draws the relationship graph,
-  and a machine-readable `summary.json` that carries the same inventory.
+  a machine-readable `summary.json` that carries the same inventory, and a bounded
+  Mermaid flowchart `graph.mmd` that draws the same graph in any Mermaid renderer.
   `result.html` draws each node and edge with its frozen `kind`, draws the four
   resolution classes (`exact_static`, `inferred_static`, `annotated`,
   `unresolved`) distinctly, and draws an edge whose target is unresolved or absent
-  as a placeholder rather than as a resolved node. Both artifacts carry an
-  always-present coverage-and-freshness banner taken from the generation's
-  coverage document and manifest, so a partially analysed graph is never
-  presented as complete. Two renders of the same generation are byte-identical,
-  and neither artifact carries a machine-local absolute path.
-- Exit codes: `0` when both artifacts are written. A solution or project that is
+  as a placeholder rather than as a resolved node. `result.html` lays the nodes out
+  in one lane per kind, in the frozen legend order, so the graph is read one kind at
+  a time instead of as one undifferentiated cloud, and it embeds the Mermaid
+  flowchart twice: once as a live `<pre class="mermaid">` block and once as a
+  copyable source block. `result.html` and `summary.json` carry an always-present
+  coverage-and-freshness banner taken from the generation's coverage document and
+  manifest, so a partially analysed graph is never presented as complete. The
+  Mermaid projection is bounded on purpose: it keeps the frozen kind order as its
+  priority order, stops at 160 nodes, draws only the edges whose two ends survived,
+  draws an unresolved node as a hexagon, and its own `%% projection:` header states
+  exactly how many nodes and edges of the generation it left out, so a partial view
+  is never presented as the whole graph. The renderer is loaded from a CDN only as
+  a convenience and only when the page is online, so a reviewer who is offline
+  still reads and copies the source. Two renders of the same generation are
+  byte-identical, and no artifact carries a machine-local absolute path.
+- Exit codes: `0` when every artifact is written. A solution or project that is
   not registered is `NOT_FOUND` (exit `3`), and so is a solution that has no
   registered project; a missing or malformed argument is `2`
   (`VALIDATION_ERROR`). A manifest that disagrees with the shards it names, or a

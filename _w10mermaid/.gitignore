@@ -1,0 +1,4 @@
+# transient AXIOM_HOME scratch rebuilt by run_render.ps1 - not evidence
+home/
+# node scratch for the mermaid parse probe
+node_modules/

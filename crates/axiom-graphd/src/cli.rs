@@ -397,7 +397,8 @@ pub struct RenderCommand {
     pub solution: String,
     /// Projects to render; empty means every registered project.
     pub projects: Vec<String>,
-    /// Directory the `result.html` and `summary.json` artifacts are written to.
+    /// Directory the `result.html`, `summary.json` and `graph.mmd` artifacts are
+    /// written to.
     pub out: PathBuf,
 }
 

@@ -6,7 +6,8 @@
 //! emit a self-contained diagram document ([`RESULT_HTML`]) plus a
 //! machine-readable summary ([`SUMMARY_JSON`]) so a reviewer can see the shape of
 //! a solution and tell a resolved cross-service edge from an unresolved
-//! placeholder.
+//! placeholder, and a bounded Mermaid flowchart ([`MERMAID_SOURCE`]) that draws
+//! the same graph in any Mermaid renderer.
 //!
 //! Four properties are deliberate and unit tested:
 //!
@@ -45,6 +46,8 @@ pub const SCHEMA_VERSION: u32 = 1;
 pub const RESULT_HTML: &str = "result.html";
 /// File name of the machine-readable summary.
 pub const SUMMARY_JSON: &str = "summary.json";
+/// File name of the bounded Mermaid flowchart of the same graph.
+pub const MERMAID_SOURCE: &str = "graph.mmd";
 /// Shard name that carries the generation's coverage document.
 pub const COVERAGE_DOCUMENT: &str = "coverage.json";
 /// Shard prefix of the symbol and edge indexes, which hold no graph records.
@@ -154,6 +157,19 @@ pub const DASH_ANNOTATED: &str = "2 2";
 pub const DASH_UNRESOLVED: &str = "8 3 2 3";
 /// Dash pattern drawn for a resolution outside the frozen vocabulary.
 pub const DASH_UNKNOWN: &str = "1 3";
+/// Most nodes the Mermaid projection draws before it reports the rest.
+///
+/// A published generation can carry thousands of nodes and a diagram that
+/// draws every one of them is not reviewable. The projection keeps the frozen
+/// kind order as its priority order, stops here, and states exactly how many
+/// nodes and edges it left out.
+pub const MERMAID_NODE_LIMIT: usize = 160;
+/// Character budget for one Mermaid label, so no label can grow the view.
+const MERMAID_LABEL_CHARS: usize = 48;
+/// Alternate lane shade behind every second kind lane on the canvas.
+const BAND_SHADE: &str = "#f4f7fb";
+/// Fill of the lane that catches a node whose kind carries no legend row.
+const ORPHAN_BAND_COLOR: &str = "#a9a9a9";
 
 /// Fixed, integer-only fills so two renders can never disagree on a colour.
 ///
@@ -519,6 +535,8 @@ pub struct Diagram {
     pub summary: DiagramSummary,
     /// The self-contained diagram document.
     pub result_html: String,
+    /// The bounded Mermaid flowchart of the same graph.
+    pub graph_mmd: String,
 }
 
 /// One emitted artifact.
@@ -1151,9 +1169,11 @@ pub fn build_diagram(
         unresolved_targets,
     };
     let result_html = render_html(&summary);
+    let graph_mmd = mermaid_projection(&summary).source;
     Ok(Diagram {
         summary,
         result_html,
+        graph_mmd,
     })
 }
 
@@ -1191,7 +1211,8 @@ fn artifact(name: &str, bytes: &[u8]) -> Artifact {
     }
 }
 
-/// Write `result.html` and `summary.json` into `out_dir` and report their hashes.
+/// Write `result.html`, `summary.json` and `graph.mmd` into `out_dir` and report
+/// their hashes.
 ///
 /// # Errors
 ///
@@ -1202,12 +1223,16 @@ fn artifact(name: &str, bytes: &[u8]) -> Artifact {
 pub fn write_diagram(diagram: &Diagram, out_dir: &Path) -> Result<RenderReport, AxiomError> {
     let summary_bytes = summary_json_bytes(&diagram.summary)?;
     let html_bytes = diagram.result_html.as_bytes().to_vec();
+    let mermaid_bytes = diagram.graph_mmd.as_bytes().to_vec();
     let summary_text = String::from_utf8_lossy(&summary_bytes).into_owned();
     assert_no_absolute_path(SUMMARY_JSON, &summary_text)?;
     assert_no_absolute_path(RESULT_HTML, &diagram.result_html)?;
+    assert_no_absolute_path(MERMAID_SOURCE, &diagram.graph_mmd)?;
     std::fs::create_dir_all(out_dir).map_err(|error| write_failed(&error))?;
     std::fs::write(out_dir.join(RESULT_HTML), &html_bytes).map_err(|error| write_failed(&error))?;
     std::fs::write(out_dir.join(SUMMARY_JSON), &summary_bytes)
+        .map_err(|error| write_failed(&error))?;
+    std::fs::write(out_dir.join(MERMAID_SOURCE), &mermaid_bytes)
         .map_err(|error| write_failed(&error))?;
     Ok(RenderReport {
         schema_version: SCHEMA_VERSION,
@@ -1217,6 +1242,7 @@ pub fn write_diagram(diagram: &Diagram, out_dir: &Path) -> Result<RenderReport, 
         artifacts: vec![
             artifact(RESULT_HTML, &html_bytes),
             artifact(SUMMARY_JSON, &summary_bytes),
+            artifact(MERMAID_SOURCE, &mermaid_bytes),
         ],
     })
 }
@@ -1319,32 +1345,136 @@ fn short(value: &str, limit: usize) -> String {
 const NODE_WIDTH: i64 = 200;
 /// Drawn node height, in diagram units.
 const NODE_HEIGHT: i64 = 56;
-/// Nodes per row on the canvas.
+/// Nodes per row inside one kind lane.
 const COLUMNS: usize = 4;
 /// Horizontal distance between column origins.
 const COLUMN_PITCH: i64 = 300;
 /// Vertical distance between row origins.
 const ROW_PITCH: i64 = 140;
-/// Canvas margin around the node grid.
+/// Canvas margin around the lanes.
 const MARGIN: i64 = 40;
+/// Height reserved above the first row of a lane for its title.
+const BAND_TITLE_HEIGHT: i64 = 30;
+/// Padding below the last row of a lane.
+const BAND_PAD: i64 = 24;
+/// Width of the node grid inside a lane.
+const GRID_WIDTH: i64 = COLUMNS as i64 * COLUMN_PITCH;
 
-/// The centre of the node at `index`, in diagram units.
-fn node_centre(index: usize) -> (i64, i64) {
-    let column = (index % COLUMNS) as i64;
-    let row = (index / COLUMNS) as i64;
+/// One kind's lane on the canvas: the nodes it holds and the box it draws.
+///
+/// Grouping nodes by kind is what makes a large graph readable. The legend
+/// order - the frozen kind order first, extension kinds after it - becomes the
+/// top-to-bottom order of the lanes, so a reviewer reads one kind at a time
+/// instead of one undifferentiated grid.
+struct CanvasBand {
+    /// Canonical kind this lane draws.
+    kind: String,
+    /// The kind's fill, reused for the lane's accent bar.
+    color: String,
+    /// Index into the summary's node list of each node in this lane.
+    members: Vec<usize>,
+    /// Top edge of the lane box, in diagram units.
+    top: i64,
+    /// Height of the lane box, in diagram units.
+    height: i64,
+}
+
+/// Append one lane for `members` and advance the cursor past it.
+fn push_band(
+    bands: &mut Vec<CanvasBand>,
+    cursor: &mut i64,
+    kind: String,
+    color: String,
+    members: Vec<usize>,
+) {
+    let rows = members.len().div_ceil(COLUMNS) as i64;
+    let height = BAND_TITLE_HEIGHT + rows * ROW_PITCH + BAND_PAD;
+    bands.push(CanvasBand {
+        kind,
+        color,
+        members,
+        top: *cursor,
+        height,
+    });
+    *cursor += height;
+}
+
+/// The lane of every kind the summary draws, in legend order.
+fn canvas_bands(summary: &DiagramSummary) -> Vec<CanvasBand> {
+    let mut bands: Vec<CanvasBand> = Vec::new();
+    let mut cursor = MARGIN;
+    for entry in &summary.node_legend {
+        let members: Vec<usize> = summary
+            .nodes
+            .iter()
+            .enumerate()
+            .filter(|(_, node)| node.kind == entry.kind)
+            .map(|(index, _)| index)
+            .collect();
+        if members.is_empty() {
+            continue;
+        }
+        push_band(
+            &mut bands,
+            &mut cursor,
+            entry.kind.clone(),
+            entry.color.clone(),
+            members,
+        );
+    }
+    // The legend always covers every drawn kind, so this only guards the shape:
+    // a node the legend somehow missed is still drawn instead of vanishing.
+    let placed: BTreeSet<usize> = bands
+        .iter()
+        .flat_map(|band| band.members.iter().copied())
+        .collect();
+    let orphans: Vec<usize> = (0..summary.nodes.len())
+        .filter(|index| !placed.contains(index))
+        .collect();
+    if !orphans.is_empty() {
+        push_band(
+            &mut bands,
+            &mut cursor,
+            KIND_UNKNOWN.to_owned(),
+            ORPHAN_BAND_COLOR.to_owned(),
+            orphans,
+        );
+    }
+    bands
+}
+
+/// The canvas size that holds every lane.
+fn canvas_size(bands: &[CanvasBand]) -> (i64, i64) {
+    let height = bands
+        .last()
+        .map_or(MARGIN * 2, |band| band.top + band.height + MARGIN);
+    (MARGIN * 2 + GRID_WIDTH, height)
+}
+
+/// The centre of the `slot`-th node of `band`, in diagram units.
+fn band_node_centre(band: &CanvasBand, slot: usize) -> (i64, i64) {
+    let column = (slot % COLUMNS) as i64;
+    let row = (slot / COLUMNS) as i64;
     (
         MARGIN + column * COLUMN_PITCH + NODE_WIDTH / 2,
-        MARGIN + row * ROW_PITCH + NODE_HEIGHT / 2,
+        band.top + BAND_TITLE_HEIGHT + row * ROW_PITCH + NODE_HEIGHT / 2,
     )
 }
 
-/// The canvas size that holds `nodes` node boxes.
-fn canvas_size(nodes: usize) -> (i64, i64) {
-    let rows = nodes.div_ceil(COLUMNS).max(1) as i64;
-    (
-        MARGIN * 2 + COLUMNS as i64 * COLUMN_PITCH,
-        MARGIN * 2 + rows * ROW_PITCH,
-    )
+/// Blend a `#rrggbb` fill toward white so black text stays readable on it.
+///
+/// Integer arithmetic only, so the tint of a kind is the same in every render.
+fn tint(hex: &str) -> String {
+    if hex.len() != 7 || !hex.starts_with('#') {
+        return hex.to_owned();
+    }
+    let channel = |start: usize| -> u8 {
+        let value = u16::from(
+            u8::from_str_radix(hex.get(start..start + 2).unwrap_or("00"), 16).unwrap_or(0),
+        );
+        (value * 22 / 100 + 255 * 78 / 100) as u8
+    };
+    format!("#{:02x}{:02x}{:02x}", channel(1), channel(3), channel(5))
 }
 
 /// The offset from the centre of a node box to its border along a direction.
@@ -1522,18 +1652,248 @@ fn render_banner(summary: &DiagramSummary) -> String {
     html
 }
 
+/// One Mermaid projection: the source a reviewer can paste, and what it drew.
+struct MermaidProjection {
+    /// The complete Mermaid flowchart source.
+    source: String,
+    /// Nodes the projection drew.
+    nodes: usize,
+    /// Edges whose two ends both survived the projection.
+    edges: usize,
+}
+
+/// Make a value safe inside one quoted Mermaid label.
+///
+/// A Mermaid label is markup, so a less-than, a greater-than or an ampersand is
+/// either markup or an entity there; a bracket or a brace opens a shape, a pipe
+/// delimits a link, a hash opens an entity, and a quote or a newline would end
+/// the label early. Each one is replaced rather than escaped, so the emitted
+/// source keeps exactly one token per line and a name taken from analysed code
+/// can never change the shape of the graph.
+fn mermaid_text(value: &str) -> String {
+    let mut mapped = String::with_capacity(value.len());
+    for character in value.chars() {
+        match character {
+            '&' => mapped.push_str("&amp;"),
+            '<' | '[' | '{' => mapped.push('('),
+            '>' | ']' | '}' => mapped.push(')'),
+            '"' | '`' => mapped.push('\''),
+            '|' => mapped.push('/'),
+            '#' => mapped.push('-'),
+            ';' => mapped.push(','),
+            _ => mapped.push(character),
+        }
+    }
+    let collapsed = mapped.split_whitespace().collect::<Vec<_>>().join(" ");
+    short(&collapsed, MERMAID_LABEL_CHARS)
+}
+
+/// The label drawn for one node: its short name and its frozen kind.
+fn mermaid_label(node: &DiagramNode) -> String {
+    let name = node.name.clone().unwrap_or_else(|| node.id.clone());
+    mermaid_text(&format!("{name} \u{00b7} {}", node.kind))
+}
+
+/// The bounded Mermaid projection of the summary.
+///
+/// The projection is bounded on purpose: it keeps the frozen kind order as its
+/// priority order - structure before leaves - stops at the node limit, and
+/// draws only the edges whose two ends survived. The source then states exactly
+/// how many nodes and edges of the generation it left out, so a partial view is
+/// never presented as the whole graph.
+fn mermaid_projection(summary: &DiagramSummary) -> MermaidProjection {
+    let rank: BTreeMap<&str, usize> = summary
+        .node_legend
+        .iter()
+        .enumerate()
+        .map(|(index, entry)| (entry.kind.as_str(), index))
+        .collect();
+    let mut ranked: Vec<&DiagramNode> = summary.nodes.iter().collect();
+    ranked.sort_by(|left, right| {
+        let left_rank = rank.get(left.kind.as_str()).copied().unwrap_or(usize::MAX);
+        let right_rank = rank.get(right.kind.as_str()).copied().unwrap_or(usize::MAX);
+        left_rank
+            .cmp(&right_rank)
+            .then_with(|| left.kind.cmp(&right.kind))
+            .then_with(|| left.id.cmp(&right.id))
+    });
+    ranked.truncate(MERMAID_NODE_LIMIT);
+    let kept: BTreeSet<&str> = ranked.iter().map(|node| node.id.as_str()).collect();
+    let drawn: Vec<&DiagramNode> = summary
+        .nodes
+        .iter()
+        .filter(|node| kept.contains(node.id.as_str()))
+        .collect();
+    let slot_of: BTreeMap<&str, usize> = drawn
+        .iter()
+        .enumerate()
+        .map(|(index, node)| (node.id.as_str(), index))
+        .collect();
+
+    // One subgraph per project, in project order, so the source reads the way
+    // the banner reads.
+    let mut groups: BTreeMap<&str, Vec<&DiagramNode>> = BTreeMap::new();
+    for node in &drawn {
+        let project = node
+            .project_ids
+            .first()
+            .map_or("unassigned", String::as_str);
+        groups.entry(project).or_default().push(node);
+    }
+
+    let mut edge_lines: Vec<String> = Vec::new();
+    for edge in &summary.edges {
+        let (Some(source), Some(target)) = (
+            slot_of.get(edge.source_id.as_str()),
+            slot_of.get(edge.target.as_str()),
+        ) else {
+            continue;
+        };
+        edge_lines.push(format!(
+            "  n{source} -->|\"{} \u{00b7} {}\"| n{target}\n",
+            mermaid_text(&edge.kind),
+            mermaid_text(&edge.resolution)
+        ));
+    }
+
+    let mut source = String::new();
+    source.push_str("%% axiom relationship graph (Mermaid flowchart)\n");
+    source.push_str(&format!(
+        "%% solution: {}\n",
+        mermaid_text(&summary.solution_id)
+    ));
+    source.push_str(&format!(
+        "%% projection: {} of {} node(s) and {} of {} edge(s); kind order is the priority order and the projection stops at {} node(s)\n",
+        drawn.len(),
+        summary.nodes.len(),
+        edge_lines.len(),
+        summary.edges.len(),
+        MERMAID_NODE_LIMIT
+    ));
+    source.push_str("flowchart LR\n");
+    for (index, entry) in summary.node_legend.iter().enumerate() {
+        source.push_str(&format!(
+            "  classDef k{index} fill:{},stroke:{},stroke-width:1.5px,color:#1b1b1b\n",
+            tint(&entry.color),
+            entry.color
+        ));
+    }
+    source.push_str(
+        "  classDef ph fill:#ffffff,stroke:#1b1b1b,stroke-width:1.5px,stroke-dasharray:4 4\n",
+    );
+    for (index, (project, members)) in groups.iter().enumerate() {
+        source.push_str(&format!(
+            "  subgraph g{index}[\"{}\"]\n",
+            mermaid_text(project)
+        ));
+        source.push_str("    direction TB\n");
+        for node in members {
+            let slot = slot_of[node.id.as_str()];
+            let label = mermaid_label(node);
+            let mut line = format!("    n{slot}");
+            if node.placeholder {
+                // A hexagon reads as "this end did not resolve", the way the
+                // dashed box and the question mark do on the canvas.
+                line.push_str("{{\"");
+                line.push_str(&label);
+                line.push_str("\"}}");
+            } else {
+                line.push_str("[\"");
+                line.push_str(&label);
+                line.push_str("\"]");
+            }
+            line.push('\n');
+            source.push_str(&line);
+        }
+        source.push_str("  end\n");
+    }
+    for line in &edge_lines {
+        source.push_str(line);
+    }
+    let mut per_class: BTreeMap<usize, Vec<usize>> = BTreeMap::new();
+    let mut placeholders: Vec<usize> = Vec::new();
+    for node in &drawn {
+        let slot = slot_of[node.id.as_str()];
+        if node.placeholder {
+            placeholders.push(slot);
+        }
+        per_class
+            .entry(rank.get(node.kind.as_str()).copied().unwrap_or(usize::MAX))
+            .or_default()
+            .push(slot);
+    }
+    for (class, slots) in &per_class {
+        let members: Vec<String> = slots.iter().map(|slot| format!("n{slot}")).collect();
+        source.push_str(&format!("  class {} k{class}\n", members.join(",")));
+    }
+    if !placeholders.is_empty() {
+        let members: Vec<String> = placeholders.iter().map(|slot| format!("n{slot}")).collect();
+        source.push_str(&format!("  class {} ph\n", members.join(",")));
+    }
+    MermaidProjection {
+        source,
+        nodes: drawn.len(),
+        edges: edge_lines.len(),
+    }
+}
+
+/// The Mermaid section: the bounded projection, its paste-anywhere source and
+/// the sentence that keeps it useful when no Mermaid renderer is reachable.
+fn render_mermaid(summary: &DiagramSummary) -> String {
+    let projection = mermaid_projection(summary);
+    let left_out =
+        if projection.nodes == summary.nodes.len() && projection.edges == summary.edges.len() {
+            "nothing was left out".to_owned()
+        } else {
+            format!(
+                "{} node(s) and {} edge(s) are left out",
+                summary.nodes.len().saturating_sub(projection.nodes),
+                summary.edges.len().saturating_sub(projection.edges)
+            )
+        };
+    let mut html = String::new();
+    html.push_str("<figure id=\"axiom-mermaid\">\n");
+    html.push_str(&format!(
+        "<figcaption><strong>Bounded Mermaid overview.</strong> {} of {} node(s) and {} of {} edge(s) are drawn: the projection keeps the frozen kind order, stops at {} node(s), and draws only the edges whose two ends survived, so {}.</figcaption>\n",
+        projection.nodes,
+        summary.nodes.len(),
+        projection.edges,
+        summary.edges.len(),
+        MERMAID_NODE_LIMIT,
+        escape_html(&left_out)
+    ));
+    html.push_str(&format!(
+        "<pre class=\"mermaid\" id=\"axiom-mermaid-live\">{}</pre>\n",
+        escape_html(&projection.source)
+    ));
+    html.push_str("<p class=\"hint\">The block above is a Mermaid flowchart. Paste it into any Mermaid renderer - the Mermaid Live Editor, a Markdown preview in an editor, or a GitHub issue - and it draws this same graph. The renderer is loaded from a CDN only as a convenience, so a reviewer who is offline still sees the source and can copy it.</p>\n");
+    html.push_str(
+        "<details id=\"axiom-mermaid-source\"><summary>Mermaid source (copy from here)</summary>\n",
+    );
+    html.push_str(&format!("<pre>{}</pre>\n", escape_html(&projection.source)));
+    html.push_str("</details>\n</figure>\n");
+    html
+}
+
 /// The placeholder outline dash pattern, distinct from every resolution dash.
 const PLACEHOLDER_DASH: &str = "4 3";
 
-/// The deterministic node and edge canvas.
+/// The deterministic node and edge canvas, laid out in one lane per kind.
+///
+/// Every node is drawn inside the lane of its kind, so a reviewer reads the
+/// graph one kind at a time. Lanes, edges, arrows and labels are all placed by
+/// integer arithmetic over the summary alone, so two renders of one generation
+/// stay byte-identical.
 fn render_canvas(summary: &DiagramSummary) -> String {
     let nodes = &summary.nodes;
-    let (width, height) = canvas_size(nodes.len());
-    let centres: BTreeMap<&str, (i64, i64)> = nodes
-        .iter()
-        .enumerate()
-        .map(|(index, node)| (node.id.as_str(), node_centre(index)))
-        .collect();
+    let bands = canvas_bands(summary);
+    let (width, height) = canvas_size(&bands);
+    let mut centres: BTreeMap<&str, (i64, i64)> = BTreeMap::new();
+    for band in &bands {
+        for (slot, index) in band.members.iter().enumerate() {
+            centres.insert(nodes[*index].id.as_str(), band_node_centre(band, slot));
+        }
+    }
     let marker_for: BTreeMap<&str, usize> = summary
         .edge_legend
         .iter()
@@ -1559,6 +1919,38 @@ fn render_canvas(summary: &DiagramSummary) -> String {
         ));
     }
     html.push_str("</defs>\n");
+
+    // The lanes are drawn first so the edges and the node boxes sit on top.
+    html.push_str("<g id=\"axiom-bands\">\n");
+    for (index, band) in bands.iter().enumerate() {
+        let shade = if index % 2 == 0 {
+            BAND_SHADE
+        } else {
+            "#ffffff"
+        };
+        html.push_str(&format!(
+            "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" fill=\"{shade}\" stroke=\"#dfe3e8\"></rect>",
+            MARGIN / 2,
+            band.top,
+            width - MARGIN,
+            band.height
+        ));
+        html.push_str(&format!(
+            "<rect x=\"{}\" y=\"{}\" width=\"6\" height=\"{}\" fill=\"{}\"></rect>",
+            MARGIN / 2,
+            band.top,
+            band.height,
+            escape_html(&band.color)
+        ));
+        html.push_str(&format!(
+            "<text x=\"{}\" y=\"{}\" font-size=\"13\" font-weight=\"700\" fill=\"#1b1b1b\">{} \u{00b7} {}</text>\n",
+            MARGIN / 2 + 16,
+            band.top + 20,
+            escape_html(&band.kind),
+            band.members.len()
+        ));
+    }
+    html.push_str("</g>\n");
 
     html.push_str("<g id=\"axiom-edges\">\n");
     for edge in &summary.edges {
@@ -1595,36 +1987,41 @@ fn render_canvas(summary: &DiagramSummary) -> String {
         ));
     }
     html.push_str("<g id=\"axiom-nodes\">\n");
-    for (index, node) in nodes.iter().enumerate() {
-        let (cx, cy) = node_centre(index);
-        let (x, y) = (cx - NODE_WIDTH / 2, cy - NODE_HEIGHT / 2);
-        let label = node.name.clone().unwrap_or_else(|| node.id.clone());
-        let outline = if node.placeholder {
-            dash_attribute(PLACEHOLDER_DASH)
-        } else {
-            String::new()
-        };
-        let (label_y, kind_y) = (cy - 2, cy + 16);
-        let hover = format!("{} {} {}", node.id, node.kind, node.vocabulary);
-        html.push_str(&format!(
-            "<g><title>{}</title><rect x=\"{x}\" y=\"{y}\" width=\"{NODE_WIDTH}\" height=\"{NODE_HEIGHT}\" rx=\"6\" fill=\"{}\" stroke=\"#1b1b1b\" stroke-width=\"2\"{outline}></rect><text x=\"{cx}\" y=\"{label_y}\" text-anchor=\"middle\" font-size=\"13\" fill=\"#1b1b1b\">{}</text><text x=\"{cx}\" y=\"{kind_y}\" text-anchor=\"middle\" font-size=\"11\" fill=\"#1b1b1b\">{}</text>",
-            escape_html(&hover),
-            escape_html(&node.color),
-            escape_html(&short(&label, 24)),
-            escape_html(&short(&node.kind, 24))
-        ));
-        if node.placeholder {
-            let mark_x = cx + NODE_WIDTH / 2 - 12;
-            let mark_y = y + 16;
+    for band in &bands {
+        for (slot, index) in band.members.iter().enumerate() {
+            let node = &nodes[*index];
+            let (cx, cy) = band_node_centre(band, slot);
+            let (x, y) = (cx - NODE_WIDTH / 2, cy - NODE_HEIGHT / 2);
+            let label = node.name.clone().unwrap_or_else(|| node.id.clone());
+            let outline = if node.placeholder {
+                dash_attribute(PLACEHOLDER_DASH)
+            } else {
+                String::new()
+            };
+            let (label_y, kind_y) = (cy - 2, cy + 16);
+            let hover = format!("{} {} {}", node.id, node.kind, node.vocabulary);
             html.push_str(&format!(
-                "<text x=\"{mark_x}\" y=\"{mark_y}\" text-anchor=\"middle\" font-size=\"16\" fill=\"#1b1b1b\">?</text>"
+                "<g><title>{}</title><rect x=\"{x}\" y=\"{y}\" width=\"{NODE_WIDTH}\" height=\"{NODE_HEIGHT}\" rx=\"8\" fill=\"{}\" stroke=\"{}\" stroke-width=\"2\"{outline}></rect><text x=\"{cx}\" y=\"{label_y}\" text-anchor=\"middle\" font-size=\"13\" fill=\"#1b1b1b\">{}</text><text x=\"{cx}\" y=\"{kind_y}\" text-anchor=\"middle\" font-size=\"11\" fill=\"#1b1b1b\">{}</text>",
+                escape_html(&hover),
+                escape_html(&tint(&node.color)),
+                escape_html(&node.color),
+                escape_html(&short(&label, 24)),
+                escape_html(&short(&node.kind, 24))
             ));
+            if node.placeholder {
+                let mark_x = cx + NODE_WIDTH / 2 - 12;
+                let mark_y = y + 16;
+                html.push_str(&format!(
+                    "<text x=\"{mark_x}\" y=\"{mark_y}\" text-anchor=\"middle\" font-size=\"16\" fill=\"#1b1b1b\">?</text>"
+                ));
+            }
+            html.push_str("</g>\n");
         }
-        html.push_str("</g>\n");
     }
     html.push_str("</g>\n</svg>\n");
     html
 }
+
 /// The node-kind, edge-kind and resolution legends.
 fn render_legends(summary: &DiagramSummary) -> String {
     let empty = |values: usize| values == 0;
@@ -1738,6 +2135,11 @@ ul{margin:4px 0 0 0;padding-left:20px;font-size:13px;}
 .hex{font-family:monospace;}
 .legend{font-size:13px;}
 svg.chart{border:1px solid #cccccc;background:#fcfcfc;width:100%;height:auto;}
+figure{margin:8px 0 16px 0;}
+figcaption{font-size:13px;margin:0 0 6px 0;}
+pre{background:#f4f7fb;border:1px solid #cccccc;border-radius:6px;padding:12px;overflow:auto;font-size:12px;}
+details{margin:0 0 8px 0;}
+.hint{font-size:12px;color:#444444;margin:6px 0 0 0;}
 "#;
 
 /// Render the deterministic, self-contained diagram document.
@@ -1759,15 +2161,40 @@ fn render_html(summary: &DiagramSummary) -> String {
         escape_html(&summary.solution_id)
     ));
     html.push_str(&render_banner(summary));
-    html.push_str("<h2>relationship graph</h2>\n");
+    html.push_str("<h2>mermaid overview</h2>\n");
+    html.push_str(&render_mermaid(summary));
+    html.push_str("<h2>relationship graph (every drawn node, one lane per kind)</h2>\n");
     html.push_str(&render_canvas(summary));
     html.push_str("<h2>legend</h2>\n");
     html.push_str(&render_legends(summary));
     html.push_str("<h2>inventory</h2>\n");
     html.push_str(&render_counts(&summary.counts));
+    html.push_str(MERMAID_SCRIPT);
     html.push_str("</body>\n</html>\n");
     html
 }
+
+/// The optional Mermaid renderer loader.
+///
+/// The document stays usable without it: the source is in the document as text,
+/// so a reviewer who is offline can still read it and paste it into any Mermaid
+/// renderer. The script is a constant string and the document carries no
+/// timestamp, so two renders of one generation stay byte-identical.
+const MERMAID_SCRIPT: &str = r#"<script type="module">
+const live = document.getElementById("axiom-mermaid-live");
+if (live && navigator.onLine) {
+  import("https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs")
+    .then((module) => {
+      module.default.initialize({ startOnLoad: false, securityLevel: "strict", theme: "base", flowchart: { htmlLabels: false } });
+      return module.default.render("axiom-mermaid-svg", live.textContent);
+    })
+    .then((rendered) => {
+      live.innerHTML = rendered.svg;
+    })
+    .catch(() => {});
+}
+</script>
+"#;
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2235,6 +2662,7 @@ mod tests {
         let second = render("fixture-solution", &projects, &freshness);
         assert_eq!(first.summary, second.summary);
         assert_eq!(first.result_html, second.result_html);
+        assert_eq!(first.graph_mmd, second.graph_mmd);
         assert_eq!(
             summary_json_bytes(&first.summary).expect("summary"),
             summary_json_bytes(&second.summary).expect("summary")
@@ -2243,11 +2671,13 @@ mod tests {
         let (_dir_a, out_a, report_a) = write_out(&first);
         let (_dir_b, out_b, report_b) = write_out(&second);
         assert_eq!(report_a, report_b);
-        assert_eq!(report_a.artifacts.len(), 2);
+        assert_eq!(report_a.artifacts.len(), 3);
         assert_eq!(report_a.artifacts[0].name, RESULT_HTML);
         assert_eq!(report_a.artifacts[1].name, SUMMARY_JSON);
+        assert_eq!(report_a.artifacts[2].name, MERMAID_SOURCE);
         assert_ne!(report_a.artifacts[0].sha256, report_a.artifacts[1].sha256);
-        for name in [RESULT_HTML, SUMMARY_JSON] {
+        assert_ne!(report_a.artifacts[1].sha256, report_a.artifacts[2].sha256);
+        for name in [RESULT_HTML, SUMMARY_JSON, MERMAID_SOURCE] {
             assert_eq!(
                 std::fs::read(out_a.join(name)).expect("first bytes"),
                 std::fs::read(out_b.join(name)).expect("second bytes"),
@@ -2267,11 +2697,17 @@ mod tests {
         let (_out_dir, out, _report) = write_out(&diagram);
         let html = std::fs::read_to_string(out.join(RESULT_HTML)).expect("html");
         let summary = std::fs::read_to_string(out.join(SUMMARY_JSON)).expect("summary");
+        let mermaid = std::fs::read_to_string(out.join(MERMAID_SOURCE)).expect("mermaid");
         let host = dir.path().to_string_lossy().into_owned();
         assert!(!html.contains(&host), "the document leaked a host path");
         assert!(!summary.contains(&host), "the summary leaked a host path");
+        assert!(
+            !mermaid.contains(&host),
+            "the projection leaked a host path"
+        );
         assert_no_absolute_path(RESULT_HTML, &html).expect("document is path free");
         assert_no_absolute_path(SUMMARY_JSON, &summary).expect("summary is path free");
+        assert_no_absolute_path(MERMAID_SOURCE, &mermaid).expect("projection is path free");
 
         let secret = dir.path().join("secret.rs").display().to_string();
         // Markup-wrapped, so the path is not separated from its markup by a
@@ -2688,5 +3124,212 @@ mod tests {
         assert_eq!(short("abcdefghij", 4), "abc\u{2026}");
         assert_eq!(escape_html("<a & \"b\">"), "&lt;a &amp; &quot;b&quot;&gt;");
         assert_eq!(escape_html("it's"), "it&#39;s");
+    }
+
+    /// A generation of `count` classes chained by CALLS edges, for the bounds.
+    fn chain_fixture(count: usize) -> (tempfile::TempDir, Snapshot) {
+        let dir = fixture_dir();
+        let nodes: Vec<Value> = (0..count)
+            .map(|index| {
+                node(
+                    &format!("n-{index:04}"),
+                    "Class",
+                    &format!("Type{index:04}"),
+                )
+            })
+            .collect();
+        let edges: Vec<Value> = (0..count.saturating_sub(1))
+            .map(|index| {
+                edge(
+                    &format!("e-{index:04}"),
+                    "calls",
+                    &format!("n-{index:04}"),
+                    &format!("n-{:04}", index + 1),
+                    "exact_static",
+                )
+            })
+            .collect();
+        let snapshot = publish(
+            dir.path(),
+            &[
+                canonical_shard("nodes/000000.json", &nodes),
+                canonical_shard("edges/000000.json", &edges),
+                raw_shard(
+                    "coverage.json",
+                    coverage_bytes("complete_for_profile", false),
+                ),
+            ],
+        );
+        (dir, snapshot)
+    }
+
+    #[test]
+    fn the_mermaid_projection_is_bounded_and_states_what_it_left_out() {
+        let (_dir, snapshot) = chain_fixture(MERMAID_NODE_LIMIT + 25);
+        let diagram = render(
+            "fixture-solution",
+            &[graph("auth-api", snapshot)],
+            &fresh(0, &[]),
+        );
+        let summary = &diagram.summary;
+        let projection = mermaid_projection(summary);
+        assert_eq!(projection.nodes, MERMAID_NODE_LIMIT);
+        assert!(projection.nodes < summary.nodes.len());
+        assert!(projection.edges > 0);
+        assert!(projection.edges < summary.edges.len());
+        let bounds = projection
+            .source
+            .lines()
+            .find(|line| line.starts_with("%% projection:"))
+            .expect("the source states its own bounds");
+        assert!(bounds.contains(&format!(
+            "{} of {} node(s)",
+            projection.nodes,
+            summary.nodes.len()
+        )));
+        assert!(bounds.contains(&format!(
+            "{} of {} edge(s)",
+            projection.edges,
+            summary.edges.len()
+        )));
+        assert!(bounds.contains(&MERMAID_NODE_LIMIT.to_string()));
+        // The document, not just the in-memory source, carries the same bound.
+        assert!(diagram.result_html.contains(&format!(
+            "{} of {} node(s)",
+            projection.nodes,
+            summary.nodes.len()
+        )));
+        assert!(diagram.result_html.contains("class=\"mermaid\""));
+        assert!(diagram.result_html.contains("axiom-mermaid-live"));
+        assert!(diagram.result_html.contains("axiom-mermaid-source"));
+        // Every drawn node declares itself exactly once, so the bound cannot
+        // silently drop one of the nodes it claims to draw.
+        let declared = projection
+            .source
+            .lines()
+            .filter(|line| line.starts_with("    n") && (line.contains('[') || line.contains('{')))
+            .count();
+        assert_eq!(declared, projection.nodes);
+    }
+
+    #[test]
+    fn the_mermaid_projection_names_every_node_and_edge_of_a_small_graph() {
+        let (_dir, snapshot) = basic_fixture();
+        let diagram = render(
+            "fixture-solution",
+            &[graph("auth-api", snapshot)],
+            &fresh(0, &[]),
+        );
+        let summary = &diagram.summary;
+        let projection = mermaid_projection(summary);
+        assert_eq!(projection.nodes, summary.nodes.len());
+        assert_eq!(projection.edges, summary.edges.len());
+        assert!(projection.source.starts_with("%% axiom relationship graph"));
+        assert!(projection.source.contains("flowchart LR\n"));
+        assert!(projection.source.contains("subgraph g0[\"auth-api\"]"));
+        assert!(projection.source.contains("n0[\"Alpha \u{00b7} Class\"]"));
+        assert!(projection.source.contains("exact_static"));
+        assert!(projection.source.contains("classDef k0"));
+        assert!(projection.source.contains("class n0,n1 k0"));
+        // The source is in the document twice: once to render, once to copy.
+        assert!(diagram.result_html.contains("axiom-mermaid-live"));
+        assert!(diagram.result_html.contains("axiom-mermaid-source"));
+    }
+
+    #[test]
+    fn a_placeholder_is_a_hexagon_in_the_mermaid_projection() {
+        let dir = fixture_dir();
+        let snapshot = publish(
+            dir.path(),
+            &[
+                canonical_shard("nodes/000000.json", &[node("n-a", "Class", "Alpha")]),
+                canonical_shard(
+                    "edges/000000.json",
+                    &[unresolved_edge("e-1", "n-a", "Demo.Missing")],
+                ),
+                raw_shard("coverage.json", coverage_bytes("partial", false)),
+            ],
+        );
+        let diagram = render(
+            "fixture-solution",
+            &[graph("auth-api", snapshot)],
+            &fresh(0, &[]),
+        );
+        let summary = &diagram.summary;
+        let placeholders = summary.nodes.iter().filter(|node| node.placeholder).count();
+        assert!(placeholders > 0, "the fixture must draw a placeholder");
+        let projection = mermaid_projection(summary);
+        assert_eq!(projection.source.matches("{{\"").count(), placeholders);
+        assert!(projection.source.contains("classDef ph"));
+        assert!(projection.source.contains("ph\n"));
+    }
+
+    #[test]
+    fn a_mermaid_label_cannot_break_the_projection_syntax() {
+        let dir = fixture_dir();
+        let snapshot = publish(
+            dir.path(),
+            &[
+                canonical_shard(
+                    "nodes/000000.json",
+                    &[
+                        node(
+                            "n-1",
+                            "Class",
+                            "Quoted \"name\" [bracket] {brace} |pipe| #hash; semi",
+                        ),
+                        node("n-2", "Class", "<script>alert(1)</script>"),
+                        node("n-3", "Class", "line\nbreak\t tabbed & ampersand"),
+                    ],
+                ),
+                canonical_shard(
+                    "edges/000000.json",
+                    &[edge("e-1", "calls", "n-1", "n-2", "exact_static")],
+                ),
+                raw_shard(
+                    "coverage.json",
+                    coverage_bytes("complete_for_profile", false),
+                ),
+            ],
+        );
+        let diagram = render(
+            "fixture-solution",
+            &[graph("auth-api", snapshot)],
+            &fresh(0, &[]),
+        );
+        let projection = mermaid_projection(&diagram.summary);
+        // A name can never open markup, close a label or span a line.
+        assert!(!projection.source.contains("<script>"));
+        assert!(!projection.source.contains("</script>"));
+        assert!(projection.source.contains("&amp;"));
+        for line in projection.source.lines() {
+            assert_eq!(
+                line.matches('"').count() % 2,
+                0,
+                "unbalanced quotes on: {line}"
+            );
+        }
+        // The document escapes the source once, so the browser shows the source
+        // byte for byte and Mermaid then reads the entity.
+        assert!(diagram.result_html.contains("&amp;amp;"));
+    }
+
+    #[test]
+    fn the_canvas_draws_one_lane_per_kind_in_legend_order() {
+        let (_dir, snapshot) = basic_fixture();
+        let diagram = render(
+            "fixture-solution",
+            &[graph("auth-api", snapshot)],
+            &fresh(0, &[]),
+        );
+        let html = &diagram.result_html;
+        assert!(html.contains("id=\"axiom-bands\""));
+        let class_lane = html.find(">Class \u{00b7} 2</text>").expect("class lane");
+        let interface_lane = html
+            .find(">Interface \u{00b7} 1</text>")
+            .expect("interface lane");
+        // The frozen kind order is the lane order: Class is drawn above Interface.
+        assert!(class_lane < interface_lane);
+        assert!(canvas_covers(&diagram.summary, html));
     }
 }
