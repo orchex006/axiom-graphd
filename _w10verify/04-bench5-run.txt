@@ -1,0 +1,123 @@
+rep 1/8: scan=46.0 ms/q  graphd=155.6 ms/q  delta=-109.6
+rep 2/8: scan=79.1 ms/q  graphd=63.4 ms/q  delta=15.7
+rep 3/8: scan=69.4 ms/q  graphd=104.5 ms/q  delta=-35.1
+rep 4/8: scan=59.2 ms/q  graphd=87.9 ms/q  delta=-28.7
+rep 5/8: scan=29.2 ms/q  graphd=68.7 ms/q  delta=-39.5
+rep 6/8: scan=23.5 ms/q  graphd=75.8 ms/q  delta=-52.3
+rep 7/8: scan=29.2 ms/q  graphd=62.6 ms/q  delta=-33.4
+rep 8/8: scan=19.4 ms/q  graphd=72.7 ms/q  delta=-53.3
+{
+  "questions_n": 20,
+  "repetitions_r": 8,
+  "files_scanned_per_question": 156,
+  "delta_per_question_ms": {
+    "values": [
+      -109.6,
+      15.7,
+      -35.1,
+      -28.7,
+      -39.5,
+      -52.3,
+      -33.4,
+      -53.3
+    ],
+    "mean": -42.0,
+    "stdev": 34.7,
+    "min": -109.6,
+    "max": 15.7,
+    "positive": 1,
+    "negative": 7,
+    "sign_flips": true
+  },
+  "scan_per_question_ms": {
+    "mean_of_means": 44.4,
+    "stdev_of_means": 22.6,
+    "min": 19.4,
+    "max": 79.1
+  },
+  "graphd_per_question_ms": {
+    "mean_of_means": 86.4,
+    "stdev_of_means": 31.2,
+    "min": 62.6,
+    "max": 155.6
+  },
+  "graphd_per_call_quantisation": {
+    "note": "MCP client polls stdout with time.sleep(0.02); each per-call elapsed_ms lands in a ~20 ms bucket.",
+    "n_calls": 160,
+    "min": 60.7,
+    "median": 81.2,
+    "max": 223.6,
+    "distinct_values": [
+      60.7,
+      60.8,
+      60.9,
+      61.0,
+      61.1,
+      61.2,
+      61.3,
+      61.4,
+      61.5,
+      61.6,
+      61.7,
+      61.8,
+      61.9,
+      62.0,
+      62.1,
+      62.2,
+      62.3,
+      62.5,
+      62.7,
+      63.8,
+      81.2,
+      81.3,
+      81.4,
+      81.5,
+      81.6,
+      81.7,
+      81.8,
+      81.9,
+      82.0,
+      82.1,
+      82.2,
+      82.3,
+      82.4,
+      82.5,
+      82.6,
+      82.7,
+      82.8,
+      84.1,
+      101.7,
+      102.0,
+      102.1,
+      102.2,
+      102.9,
+      103.1,
+      103.5,
+      121.8,
+      122.2,
+      122.6,
+      123.2,
+      123.4,
+      123.6,
+      124.6,
+      143.0,
+      143.2,
+      143.4,
+      143.9,
+      162.7,
+      163.3,
+      163.4,
+      163.6,
+      163.9,
+      164.0,
+      164.5,
+      179.1,
+      186.9,
+      203.6,
+      205.1,
+      205.5,
+      205.7,
+      223.6
+    ]
+  }
+}

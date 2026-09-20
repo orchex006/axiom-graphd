@@ -1,0 +1,3764 @@
+=== MCP session: verify5-rep4 ===
+
+server: {"name": "axiom-mcp-w10-deliverables", "version": "1.28.1"}
+protocol: "2025-11-25"
+
+tools advertised by the server:
+  - graph_status: Solution/project freshness, coverage, generations and capabilities
+      annotations={"readOnlyHint": true, "destructiveHint": false, "openWorldHint": false}
+  - graph_query: One bounded graph operation: search, context, neighbors, dependencies, callers, impact, path or changes
+      annotations={"readOnlyHint": true, "destructiveHint": false, "openWorldHint": false}
+
+--- call: q0 (179.1 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseRegistryRequestDto"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "00413b1bbefd6a98b9a2759d32d661bbd236c8387e285e4554b1ba2d6db8edcc",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "LicenseRegistryRequestDto",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseRegistryRequestDto",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportQueryRequestDtos.cs",
+        "start_line": 48,
+        "end_line": 48
+      }
+    },
+    {
+      "id": "014f74ce66ac1e8ccfc4276e7e9826e93a10ef1de911064e317ee248163bef2b",
+      "project_id": "agmws-web-service",
+      "kind": "Namespace",
+      "name": "AgriMap.Web.Service.Presentation.DTOs.Requests",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Requests#3",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportQueryRequestDtos.cs",
+        "start_line": 1,
+        "end_line": 1
+      }
+    },
+    {
+      "id": "322ca83ff40e8e0ba0234452977378e355904eed582fa228bd3d0f29907cc648",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "LicenseImportFileListRequestDto",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseImportFileListRequestDto",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportQueryRequestDtos.cs",
+        "start_line": 25,
+        "end_line": 25
+      }
+    },
+    {
+      "id": "5c4cf6af64ad55e2cfa8ee4fe9de2d72718260232d2e57f0b2e57e477df3400e",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "LicenseImportTemplateRequestDto",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseImportTemplateRequestDto",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportQueryRequestDtos.cs",
+        "start_line": 80,
+        "end_line": 80
+      }
+    },
+    {
+      "id": "a72618f40c2619d3e7ad765f9b2f0d9f36403b180d1e77fbcfcad9ee254626a3",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "LicenseImportFileItemRequestDto",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseImportFileItemRequestDto",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportQueryRequestDtos.cs",
+        "start_line": 35,
+        "end_line": 35
+      }
+    },
+    {
+      "id": "e3943a3509e6a2e04320b8fc4db24c86c53a3b3a7160341fd05093b4aa5956b7",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "LicenseImportHistoryRequestDto",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseImportHistoryRequestDto",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportQueryRequestDtos.cs",
+        "start_line": 6,
+        "end_line": 6
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "4e1341d6254fbf63651afcde8d5c9c738080b549e098c3a446cab4400811f298",
+      "source_id": "014f74ce66ac1e8ccfc4276e7e9826e93a10ef1de911064e317ee248163bef2b",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 25,
+            "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportQueryRequestDtos.cs",
+            "start_line": 25
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "322ca83ff40e8e0ba0234452977378e355904eed582fa228bd3d0f29907cc648"
+    },
+    {
+      "id": "63ba5fab67983366a191453633a6a545bff2f5851d5eb6f0a2f62c695be4d5d4",
+      "source_id": "014f74ce66ac1e8ccfc4276e7e9826e93a10ef1de911064e317ee248163bef2b",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 80,
+            "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportQueryRequestDtos.cs",
+            "start_line": 80
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "5c4cf6af64ad55e2cfa8ee4fe9de2d72718260232d2e57f0b2e57e477df3400e"
+    },
+    {
+      "id": "74256c7797804f9a78fbccf7ebbd36adde1c11bed6bb68f1a7556e943f6aca2c",
+      "source_id": "014f74ce66ac1e8ccfc4276e7e9826e93a10ef1de911064e317ee248163bef2b",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 48,
+            "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportQueryRequestDtos.cs",
+            "start_line": 48
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "00413b1bbefd6a98b9a2759d32d661bbd236c8387e285e4554b1ba2d6db8edcc"
+    },
+    {
+      "id": "98f56d8a920d57cd3f312e8cbbafa78547635f26cdc4556f84d665177e73c11f",
+      "source_id": "014f74ce66ac1e8ccfc4276e7e9826e93a10ef1de911064e317ee248163bef2b",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 6,
+            "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportQueryRequestDtos.cs",
+            "start_line": 6
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "e3943a3509e6a2e04320b8fc4db24c86c53a3b3a7160341fd05093b4aa5956b7"
+    },
+    {
+      "id": "f07fa31df039179b7f8ccc580036d2696a48345dadf5499f47b6bdca03aa06d9",
+      "source_id": "014f74ce66ac1e8ccfc4276e7e9826e93a10ef1de911064e317ee248163bef2b",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 35,
+            "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportQueryRequestDtos.cs",
+            "start_line": 35
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "a72618f40c2619d3e7ad765f9b2f0d9f36403b180d1e77fbcfcad9ee254626a3"
+    }
+  ],
+  "truncated": false,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh"
+  ]
+}
+
+--- call: q1 (124.6 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Infrastructure.InfrastructureDependencyInjection"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "008b79a1268119667f50e90ae359916fffee1d72a86138c78e9d52547cb2728b",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "ImportRepository",
+      "qualified_name": "AgriMap.Web.Service.Infrastructure.InfrastructureDependencyInjection.ImportRepository",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+        "start_line": 20,
+        "end_line": 20
+      }
+    },
+    {
+      "id": "019e5688bc3a15d986bdb1a8842751a25c3fa076be74d09c4e950f9c3e41ab98",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "InfrastructureDependencyInjection",
+      "qualified_name": "AgriMap.Web.Service.Infrastructure.InfrastructureDependencyInjection",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+        "start_line": 8,
+        "end_line": 8
+      }
+    },
+    {
+      "id": "2d60a44a26a4c5e5e1bcaf39e3e4ce57e9d6a2354d7d1d3a7cfff271196cce4c",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "CsvImportFileParser",
+      "qualified_name": "AgriMap.Web.Service.Infrastructure.InfrastructureDependencyInjection.CsvImportFileParser",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+        "start_line": 17,
+        "end_line": 17
+      }
+    },
+    {
+      "id": "43b354890491b35201cc2e5bc9c1ff35715e86c1a785486a187105d2ef468250",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "AuthRepository",
+      "qualified_name": "AgriMap.Web.Service.Infrastructure.InfrastructureDependencyInjection.AuthRepository",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+        "start_line": 12,
+        "end_line": 12
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "0fa5728d77adbed109dc1d04e2715417e896a6943df52ce3e944d00b7c425cf6",
+      "source_id": "019e5688bc3a15d986bdb1a8842751a25c3fa076be74d09c4e950f9c3e41ab98",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 15,
+            "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+            "start_line": 15
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "9b11e2484489125937e4b14d9db53133818b9cb16275c27e5ec15aa8c85e352b"
+    },
+    {
+      "id": "6eecfa302260a23adae272408f4aa6c58eee051c5c6b5343a34b1721f89fac2d",
+      "source_id": "019e5688bc3a15d986bdb1a8842751a25c3fa076be74d09c4e950f9c3e41ab98",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 13,
+            "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+            "start_line": 13
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "ec3c2547ca00ad42b51e3ecbd9114c4f29a7c69ea6c6f87d52afdd529fb28bbb"
+    },
+    {
+      "id": "7b8c5e4ee2474037ef6f45c0526df583eb98649fde7b6e455c5370ed8047a4fd",
+      "source_id": "019e5688bc3a15d986bdb1a8842751a25c3fa076be74d09c4e950f9c3e41ab98",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 12,
+            "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+            "start_line": 12
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "43b354890491b35201cc2e5bc9c1ff35715e86c1a785486a187105d2ef468250"
+    },
+    {
+      "id": "7cfff11375cd270f975ac718cd3f340820f96ddee9237862d98e5c65dea46990",
+      "source_id": "019e5688bc3a15d986bdb1a8842751a25c3fa076be74d09c4e950f9c3e41ab98",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 17,
+            "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+            "start_line": 17
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "2d60a44a26a4c5e5e1bcaf39e3e4ce57e9d6a2354d7d1d3a7cfff271196cce4c"
+    },
+    {
+      "id": "95ee6fceca06d5b94d576253408af85d472fe59dfd74b3a5cb7c7100b9cf6c76",
+      "source_id": "019e5688bc3a15d986bdb1a8842751a25c3fa076be74d09c4e950f9c3e41ab98",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 16,
+            "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+            "start_line": 16
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "6fa36eefe6af56e4a5dc72ed49d00941dd3cab572076f3142a4f5ce6eddde7ad"
+    },
+    {
+      "id": "c8aa11273ff97cfed0c96a060c9a00077c58439fe48e120fe11e18a632ce3bc4",
+      "source_id": "019e5688bc3a15d986bdb1a8842751a25c3fa076be74d09c4e950f9c3e41ab98",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 14,
+            "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+            "start_line": 14
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "50be5dc121699ea9153cfeb6835b65c42d7f59adf64d12beaf2f518fade33a2e"
+    },
+    {
+      "id": "debe3c5e95836e9911cc38404d62e27b0809e496fad8c0772ba1d8a575c1e36f",
+      "source_id": "019e5688bc3a15d986bdb1a8842751a25c3fa076be74d09c4e950f9c3e41ab98",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 18,
+            "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+            "start_line": 18
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "f08ded9e9a977805d7b72b5f4cc1ab39d4e59e4ed15c9c988ca637ee5366b0f6"
+    },
+    {
+      "id": "e27860f1631e65abffb7def32f5c6e46a4e056dd6d24512867b05ebc641f6638",
+      "source_id": "e7d1fd67064cb9818178eeec04c20f64872aa5500a2157a0cafb879d109ffd49",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 8,
+            "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+            "start_line": 8
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "019e5688bc3a15d986bdb1a8842751a25c3fa076be74d09c4e950f9c3e41ab98"
+    },
+    {
+      "id": "e381da13651f5b16a29fb429ed4e036aba38c1a3b052bedb817a6c45e6b99ed0",
+      "source_id": "019e5688bc3a15d986bdb1a8842751a25c3fa076be74d09c4e950f9c3e41ab98",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 20,
+            "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+            "start_line": 20
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "008b79a1268119667f50e90ae359916fffee1d72a86138c78e9d52547cb2728b"
+    },
+    {
+      "id": "f67f294370e1e78b13bbe7f4665a13c5e2db38968d0700f499c4c0310c11ede8",
+      "source_id": "019e5688bc3a15d986bdb1a8842751a25c3fa076be74d09c4e950f9c3e41ab98",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 21,
+            "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+            "start_line": 21
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "9189a53e1c0f79761bf242f6a0af89b90d41e577592e337a5d6b1528af21bb4f"
+    },
+    {
+      "id": "fca2727dbe438554a715bc14639b26eb38d6d4e17fde164b6b4b5a15ca01b29d",
+      "source_id": "019e5688bc3a15d986bdb1a8842751a25c3fa076be74d09c4e950f9c3e41ab98",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 10,
+            "file": "Src/Infrastructure/InfrastructureDependencyInjection.cs",
+            "start_line": 10
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "81f1b703e77ab17b6d8cb99f4632c3b156a86ba53cec40adf3685d5c123678dd"
+    }
+  ],
+  "truncated": true,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh",
+    "max_bytes: 8 item(s) dropped from nodes to stay inside 8192 bytes"
+  ]
+}
+
+--- call: q2 (81.7 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.XlsxImportFileParser.XlsxCell"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [],
+  "edges": [
+    {
+      "id": "059801bac3c558794a678ffeeb3bfc437fce4092a5610e237303ac6b918f6cac",
+      "source_id": "e24713c240c6d0472799ca2750452d5b03db5afca40031a3a56997ad12f7d0a0",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 171,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/XlsxImportFileParser.cs",
+            "start_line": 171
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "4e514e263ed6670410fc852520ec97286be18add883a1be28dbebc4ba3779ab4"
+    },
+    {
+      "id": "16294b1dc836924b0aa248ddf3a9a7cbb2560445ea94b3f247c1a09415819d31",
+      "source_id": "e24713c240c6d0472799ca2750452d5b03db5afca40031a3a56997ad12f7d0a0",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 53,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/XlsxImportFileParser.cs",
+            "start_line": 53
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "419893f20dd3fcdd8dcc152ba05e7e8993c68f64a2e0818069719507120d8dc1"
+    },
+    {
+      "id": "26fe0d2624897ed4f01bdc78aa7fdf32170b5368edef1123c1a15e5c9a051888",
+      "source_id": "e24713c240c6d0472799ca2750452d5b03db5afca40031a3a56997ad12f7d0a0",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 321,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/XlsxImportFileParser.cs",
+            "start_line": 321
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "0f658c969886e2854f8b83c2ed9edad34c6f80617c1921872a2473aeecf84770"
+    },
+    {
+      "id": "31a56a2a3861b2c3d70046fc83722bc9e8e152d81c51fa9637242bae6b4b6788",
+      "source_id": "e24713c240c6d0472799ca2750452d5b03db5afca40031a3a56997ad12f7d0a0",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 165,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/XlsxImportFileParser.cs",
+            "start_line": 165
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "ca9e9a68f17925688da8de5aa400c6b2118d7d92995de4ff18e5c1a7efdf7741"
+    },
+    {
+      "id": "33c0b1b344816a9cd6fbc35da5f8f50f3401f1a18730ab33bfa0d6f3040f35e6",
+      "source_id": "e24713c240c6d0472799ca2750452d5b03db5afca40031a3a56997ad12f7d0a0",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 208,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/XlsxImportFileParser.cs",
+            "start_line": 208
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "4244ea0457e4ad5ba81a0acfda27e72b1e10355bd5d47898aca0b647a254fb92"
+    },
+    {
+      "id": "341281177faa2c35a79b9939c6b8280deb1e3214166398b1e8d6ad9191028ef0",
+      "source_id": "e24713c240c6d0472799ca2750452d5b03db5afca40031a3a56997ad12f7d0a0",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 326,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/XlsxImportFileParser.cs",
+            "start_line": 326
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "824f9f55e301bf0f690a5a0b9984564f03d062a2f9393b7beb4421840199f836"
+    },
+    {
+      "id": "3af8eadf4a297a1647c5241baa2e5c36ad26b6570c37dd3825875e7ea5603b49",
+      "source_id": "e24713c240c6d0472799ca2750452d5b03db5afca40031a3a56997ad12f7d0a0",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 364,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/XlsxImportFileParser.cs",
+            "start_line": 364
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "f490032536513db53730bbfcbd97055a303222d6b48b6c0c4ee2a507bed7d94b"
+    },
+    {
+      "id": "3c4c1bf454afb5a60c21e717e848cee6fdeea9fdcd76d6540560699fe99fc71e",
+      "source_id": "e24713c240c6d0472799ca2750452d5b03db5afca40031a3a56997ad12f7d0a0",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 214,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/XlsxImportFileParser.cs",
+            "start_line": 214
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "a2a4e63077739a7e0c5f91a766e4de69ed64816894a8042799bd6de99ed7982c"
+    },
+    {
+      "id": "3e57d26eb21756296fc28e77099d7e88ed919f9f29866f9d7cc933cc2642138f",
+      "source_id": "e24713c240c6d0472799ca2750452d5b03db5afca40031a3a56997ad12f7d0a0",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 202,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/XlsxImportFileParser.cs",
+            "start_line": 202
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "0b586085ff4df4ef43f6780bfddd45529168cb564fd029db3f8307e96ee2b735"
+    },
+    {
+      "id": "441399c615db17a54c329e981b914857f773f24663c44b02ae0d32ea33b8fafc",
+      "source_id": "e24713c240c6d0472799ca2750452d5b03db5afca40031a3a56997ad12f7d0a0",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 393,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/XlsxImportFileParser.cs",
+            "start_line": 393
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "4093ae6e1e1e5238a186bb736be76d49ef94fe22e1381de512b719bdf817853d"
+    },
+    {
+      "id": "44ab5088c81a89cf40d87fc85e64ae1570126627fdb14a7ce75ac02a47731d77",
+      "source_id": "e24713c240c6d0472799ca2750452d5b03db5afca40031a3a56997ad12f7d0a0",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 389,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/XlsxImportFileParser.cs",
+            "start_line": 389
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "060375773db54936dcb577c9ff2072d44be5058a8e80c4e9085d2b8b756ab492"
+    },
+    {
+      "id": "4afed9a5febb148832af0aa150f7e1be955b330bdba57aac8d012d96a353fa39",
+      "source_id": "e24713c240c6d0472799ca2750452d5b03db5afca40031a3a56997ad12f7d0a0",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 256,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/XlsxImportFileParser.cs",
+            "start_line": 256
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "959de4c41b96b0e4c8e7920df51d50100ce534df87e6dce17772bdec4b59f200"
+    },
+    {
+      "id": "4c895c2d535b81e9b1b8b53018eef7e9de1c3b43d9f0c80c01fbe9e539fa26f4",
+      "source_id": "e24713c240c6d0472799ca2750452d5b03db5afca40031a3a56997ad12f7d0a0",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 331,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/XlsxImportFileParser.cs",
+            "start_line": 331
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "c2f09d7de88067b3c3fb3fc49636cfa586b455c18d86a81e6f29a53dbdb3d1a3"
+    },
+    {
+      "id": "50bdd8a79289db011bc39b27fe3593ad7253687d385131450113c0c930df27b7",
+      "source_id": "e24713c240c6d0472799ca2750452d5b03db5afca40031a3a56997ad12f7d0a0",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 144,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/XlsxImportFileParser.cs",
+            "start_line": 144
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "0062f2517b6c9f713ac9236f4006447a8c32e66d090287084a1391ecb0eece23"
+    }
+  ],
+  "truncated": true,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh",
+    "max_bytes: 75 item(s) dropped from edges, nodes to stay inside 8192 bytes"
+  ]
+}
+
+--- call: q3 (81.6 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Tests.Infrastructure.Security.LoginThrottleServiceTests.FakeCacheService"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [],
+  "edges": [
+    {
+      "id": "0431a322d6c995496748f2b538b042dd092210594a62a23e49216a9c15c063b7",
+      "source_id": "02eedd8d4db90872dcbb6439dfea58a94306d012c68363dad8eb527d28bbbe3d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 207,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 207
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "8d5d1fca36a4848d942c2dc62b40c1a10042acec4c1178eb47e83d7f03d101cc"
+    },
+    {
+      "id": "0e603a8a3e0fd0eff7626edf6e50eb082a2ca7fd7546a1041e6a189a6212b7f0",
+      "source_id": "02eedd8d4db90872dcbb6439dfea58a94306d012c68363dad8eb527d28bbbe3d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 190,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 190
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "236b9c3a4b627e0f5034b2ccaad68e629c070f7a5b8ae9cbf2aeeb5d597e1eea"
+    },
+    {
+      "id": "24780b6d259ea4ffa106a20bc72fd32a669b4602535a8d4f3d7b4322ccb66579",
+      "source_id": "0989071b09e89771107b9a2d499116196c57ace6d16d13ebfb38ad6aab1b52de",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 97,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 97
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "792edae9c79e244761c67d6a2c240b801f9eceda4c346389b68693d03c16ae02"
+    },
+    {
+      "id": "26d3ca57c76e298e1c06e2a6cc2514899e969dabd61e85142313e04ccbbbeab4",
+      "source_id": "0989071b09e89771107b9a2d499116196c57ace6d16d13ebfb38ad6aab1b52de",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 118,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 118
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "6dce8a74e7ee4800c316c0ea37fbf470a372c10f9b7982729218f90f5b869c14"
+    },
+    {
+      "id": "29baf74c184447a2d75864c655a3391c6c4605b6139f1b2b573511ce07088dca",
+      "source_id": "a9c225f8de684858381547c3d26ca4c951fb3f82bb211c7b513febc1412b1b21",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 17,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 17
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "0989071b09e89771107b9a2d499116196c57ace6d16d13ebfb38ad6aab1b52de"
+    },
+    {
+      "id": "37cb1d4b4154936260fde71e1f1943b27104c61f86c54d368609c57c80054417",
+      "source_id": "02eedd8d4db90872dcbb6439dfea58a94306d012c68363dad8eb527d28bbbe3d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 194,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 194
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "477ea652bf6f20fa62ae08f32111aaa2542f4d6334b69cf948e59891516b7a2f"
+    },
+    {
+      "id": "4592682410e91f033a9621e09b00a760d2bc2859cff8f144d640c0016fb8aa1b",
+      "source_id": "02eedd8d4db90872dcbb6439dfea58a94306d012c68363dad8eb527d28bbbe3d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 202,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 202
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "893d2d1b57025dcbadf2db4f2fb1650e3e9548a0104cf3aa6965853c811817af"
+    },
+    {
+      "id": "503a38ad0033180b8985a33f4818847354e3357b05636ed010b35f5bf4b2ff00",
+      "source_id": "02eedd8d4db90872dcbb6439dfea58a94306d012c68363dad8eb527d28bbbe3d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 195,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 195
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "2367c19a4541af1225b10b0ac030966f204156f85303c2014e8a1e11d7f66725"
+    },
+    {
+      "id": "530430c8dcfe52fbf4aaf407242756fb2e0874fb6793ce130742a6d38bcf9e8e",
+      "source_id": "0989071b09e89771107b9a2d499116196c57ace6d16d13ebfb38ad6aab1b52de",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 42,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 42
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "346d7c5a5792238d5ef10b23e64745ecac4e2c11c4a60465676b1378de5ffe12"
+    },
+    {
+      "id": "5fc410ce895e915a7bfb055df01a0a02e782d99c3952b27b975e48ac8176a850",
+      "source_id": "0989071b09e89771107b9a2d499116196c57ace6d16d13ebfb38ad6aab1b52de",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 105,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 105
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "2c5bdeb6457ff6be82eb4b98cccc235fbbdbb6edb6615870e33ece03c9e7e3b0"
+    },
+    {
+      "id": "6488a6df16aff499a1403db95265ac883ae68dc6595ddd19ee869382bb8e6607",
+      "source_id": "0989071b09e89771107b9a2d499116196c57ace6d16d13ebfb38ad6aab1b52de",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 88,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 88
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "6999b509bb814fcd0e891499c93958f2929909d39fe3ba081ab47df80f8a3a61"
+    },
+    {
+      "id": "67cc51fd54dda4d93e7490593119d3ad31026a66a6cca20337f014cbd3809f44",
+      "source_id": "0989071b09e89771107b9a2d499116196c57ace6d16d13ebfb38ad6aab1b52de",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 227,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 227
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "69820287595a64c85cb3ce950da1341b74f9d917e47e15c724b9e3c0c9b4f258"
+    },
+    {
+      "id": "6b01ad144f1596c508a35961d0a17a919b6f08d3f31ec83c83803fc628850720",
+      "source_id": "0989071b09e89771107b9a2d499116196c57ace6d16d13ebfb38ad6aab1b52de",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 65,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 65
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "c87a31a83cbc3d8e2687fab5a478342a490207cecc3c8bc048f2dd4d4ad58aaa"
+    },
+    {
+      "id": "6ef0dc85b142e44d27140e90996eb3cb27b77acf3061e1ac05930ea0db947e7a",
+      "source_id": "02eedd8d4db90872dcbb6439dfea58a94306d012c68363dad8eb527d28bbbe3d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 188,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 188
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "2a3b8e43ac3ec81c7c4f17f278a90144e0aef31ec9b5eea80dcd3aff86a25867"
+    }
+  ],
+  "truncated": true,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh",
+    "max_bytes: 51 item(s) dropped from edges, nodes to stay inside 8192 bytes"
+  ]
+}
+
+--- call: q4 (61.8 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Infrastructure.Persistence.Interfaces.IImportFileParser"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "0427eb374ff67432f830e5b4a67d437e26b08496fb2c0c11cee5bea4115a5058",
+      "project_id": "agmws-web-service",
+      "kind": "Interface",
+      "name": "IImportFileParser",
+      "qualified_name": "AgriMap.Web.Service.Infrastructure.Persistence.Interfaces.IImportFileParser",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Infrastructure/Persistence/Interfaces/IImportFileParser.cs",
+        "start_line": 11,
+        "end_line": 11
+      }
+    },
+    {
+      "id": "7bcfd46cc540e55bfc9746646cd9cc8a93c849df0398f2c66e3339979d600ea8",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "ParseAsync",
+      "qualified_name": "AgriMap.Web.Service.Infrastructure.Persistence.Interfaces.IImportFileParser.ParseAsync",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Infrastructure/Persistence/Interfaces/IImportFileParser.cs",
+        "start_line": 21,
+        "end_line": 21
+      }
+    },
+    {
+      "id": "8b1e42c4bceea4f0e8535934405c67046d24a7f922a2bb9cbedab1fd818a8718",
+      "project_id": "agmws-web-service",
+      "kind": "Namespace",
+      "name": "AgriMap.Web.Service.Infrastructure.Persistence.Interfaces",
+      "qualified_name": "AgriMap.Web.Service.Infrastructure.Persistence.Interfaces#2",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Infrastructure/Persistence/Interfaces/IImportFileParser.cs",
+        "start_line": 1,
+        "end_line": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "7607e450233028b2e6c612303cd7055583fb117b22dfb8242622b3224f765957",
+      "source_id": "8b1e42c4bceea4f0e8535934405c67046d24a7f922a2bb9cbedab1fd818a8718",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 11,
+            "file": "Src/Infrastructure/Persistence/Interfaces/IImportFileParser.cs",
+            "start_line": 11
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "0427eb374ff67432f830e5b4a67d437e26b08496fb2c0c11cee5bea4115a5058"
+    },
+    {
+      "id": "fd8e9b8121b632d7ac82c8af1b3871e7b0832e78dbd136b4744df075660beb67",
+      "source_id": "0427eb374ff67432f830e5b4a67d437e26b08496fb2c0c11cee5bea4115a5058",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 21,
+            "file": "Src/Infrastructure/Persistence/Interfaces/IImportFileParser.cs",
+            "start_line": 21
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "7bcfd46cc540e55bfc9746646cd9cc8a93c849df0398f2c66e3339979d600ea8"
+    }
+  ],
+  "truncated": false,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh"
+  ]
+}
+
+--- call: q5 (61.8 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Application.Interfaces.IImportUseCase"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "043b01d6a0eb3b47ec983a34be999022266f1aafcc6d5b3bf7fb9a2b25bc4fba",
+      "project_id": "agmws-web-service",
+      "kind": "Interface",
+      "name": "IImportUseCase",
+      "qualified_name": "AgriMap.Web.Service.Application.Interfaces.IImportUseCase",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Application/Interfaces/IImportUseCase.cs",
+        "start_line": 11,
+        "end_line": 11
+      }
+    },
+    {
+      "id": "0cbb39ccda11ef7d61118c80f7fc4ad5fad423e62001b576bfc917ebf84064de",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "ListRegistryAsync",
+      "qualified_name": "AgriMap.Web.Service.Application.Interfaces.IImportUseCase.ListRegistryAsync",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Application/Interfaces/IImportUseCase.cs",
+        "start_line": 27,
+        "end_line": 27
+      }
+    },
+    {
+      "id": "25d80d190a36ba484c07d10fdb52379906c6048bb5447e528601f36e1d989509",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "ListFilesAsync",
+      "qualified_name": "AgriMap.Web.Service.Application.Interfaces.IImportUseCase.ListFilesAsync",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Application/Interfaces/IImportUseCase.cs",
+        "start_line": 23,
+        "end_line": 23
+      }
+    },
+    {
+      "id": "2cf066353455ad217e6d2c96162a6f76947deac163e13675cb08c6f13d2c8535",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "CreatePreviewAsync",
+      "qualified_name": "AgriMap.Web.Service.Application.Interfaces.IImportUseCase.CreatePreviewAsync",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Application/Interfaces/IImportUseCase.cs",
+        "start_line": 13,
+        "end_line": 13
+      }
+    },
+    {
+      "id": "7676e2971ac90d0871acccb892aafd5e64d452eacaa2509a939eb36b5812af21",
+      "project_id": "agmws-web-service",
+      "kind": "Namespace",
+      "name": "AgriMap.Web.Service.Application.Interfaces",
+      "qualified_name": "AgriMap.Web.Service.Application.Interfaces#2",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Application/Interfaces/IImportUseCase.cs",
+        "start_line": 1,
+        "end_line": 1
+      }
+    },
+    {
+      "id": "af6ebaead7eedcd407eb2f3e19689b1f4270adb25712b3363ddabbda634682cc",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "CreateTemplateAsync",
+      "qualified_name": "AgriMap.Web.Service.Application.Interfaces.IImportUseCase.CreateTemplateAsync",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Application/Interfaces/IImportUseCase.cs",
+        "start_line": 29,
+        "end_line": 29
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "1401d458d31a21dacab84d23d04ccfc48c7e193a950479332148876f23d243c8",
+      "source_id": "043b01d6a0eb3b47ec983a34be999022266f1aafcc6d5b3bf7fb9a2b25bc4fba",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 25,
+            "file": "Src/Application/Interfaces/IImportUseCase.cs",
+            "start_line": 25
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "b74346768127ce1952b9ed71b2cd2a0c5fca564117a405da0cb60f75e236cef1"
+    },
+    {
+      "id": "2e095c0965e8f18d3cd5c69fd9835a71f453d5109089709de2b2571e38d2a975",
+      "source_id": "043b01d6a0eb3b47ec983a34be999022266f1aafcc6d5b3bf7fb9a2b25bc4fba",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 27,
+            "file": "Src/Application/Interfaces/IImportUseCase.cs",
+            "start_line": 27
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "0cbb39ccda11ef7d61118c80f7fc4ad5fad423e62001b576bfc917ebf84064de"
+    },
+    {
+      "id": "5060bc260404f1b4760bbfb9c31aa9d26116193d41290a7b4ab0106756ff48c2",
+      "source_id": "043b01d6a0eb3b47ec983a34be999022266f1aafcc6d5b3bf7fb9a2b25bc4fba",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 17,
+            "file": "Src/Application/Interfaces/IImportUseCase.cs",
+            "start_line": 17
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "db578a0984191c0e374ff72b7d0bc19abe304b6d66bb6c8d2e57085c1e0df514"
+    },
+    {
+      "id": "5afbc00d9601e2d8dbe31d112bcbbc6cc2df9c230d88e06066a463cd613f903e",
+      "source_id": "043b01d6a0eb3b47ec983a34be999022266f1aafcc6d5b3bf7fb9a2b25bc4fba",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 23,
+            "file": "Src/Application/Interfaces/IImportUseCase.cs",
+            "start_line": 23
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "25d80d190a36ba484c07d10fdb52379906c6048bb5447e528601f36e1d989509"
+    },
+    {
+      "id": "794ed0bb791a68fd0ffdce0b0c4260fe5c5d2b99f562cde93696d4e72635364e",
+      "source_id": "043b01d6a0eb3b47ec983a34be999022266f1aafcc6d5b3bf7fb9a2b25bc4fba",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 21,
+            "file": "Src/Application/Interfaces/IImportUseCase.cs",
+            "start_line": 21
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "c607001b93d210e405e0f09831e2c4dfb5dd1e575c2516174a623e6d76d67464"
+    },
+    {
+      "id": "9a4c55b69e53a5578614e968c08b94a5e2c7841205728600d1019c1dec1adf2e",
+      "source_id": "043b01d6a0eb3b47ec983a34be999022266f1aafcc6d5b3bf7fb9a2b25bc4fba",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 29,
+            "file": "Src/Application/Interfaces/IImportUseCase.cs",
+            "start_line": 29
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "af6ebaead7eedcd407eb2f3e19689b1f4270adb25712b3363ddabbda634682cc"
+    },
+    {
+      "id": "a66f2906d7ec42a4d2138b5461dc43eaf6233d2a31ef991d290c88a9583de3e3",
+      "source_id": "043b01d6a0eb3b47ec983a34be999022266f1aafcc6d5b3bf7fb9a2b25bc4fba",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 19,
+            "file": "Src/Application/Interfaces/IImportUseCase.cs",
+            "start_line": 19
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "f8a39f27c35d393fd52377de2c243f78e83dc9f5227c2d0b54608d2d969b7141"
+    },
+    {
+      "id": "d590cde13243e37a86c711bd468346b4e81919ca6ac6a7e040655827ac3382e4",
+      "source_id": "043b01d6a0eb3b47ec983a34be999022266f1aafcc6d5b3bf7fb9a2b25bc4fba",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 13,
+            "file": "Src/Application/Interfaces/IImportUseCase.cs",
+            "start_line": 13
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "2cf066353455ad217e6d2c96162a6f76947deac163e13675cb08c6f13d2c8535"
+    },
+    {
+      "id": "e0a5616cb957235012a4acc5a11112bf2c69672a7eb4107654074e15d53dfb10",
+      "source_id": "043b01d6a0eb3b47ec983a34be999022266f1aafcc6d5b3bf7fb9a2b25bc4fba",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 15,
+            "file": "Src/Application/Interfaces/IImportUseCase.cs",
+            "start_line": 15
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "e4fbb2a0c3e9c0444f3f014c8880cb7ca5af5b8a98ed5f347faf3339224f6151"
+    },
+    {
+      "id": "f9c9175ebe5bf8f0475a6048be60cb327e429015ec9392b9287c3da01b6dc7e4",
+      "source_id": "7676e2971ac90d0871acccb892aafd5e64d452eacaa2509a939eb36b5812af21",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 11,
+            "file": "Src/Application/Interfaces/IImportUseCase.cs",
+            "start_line": 11
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "043b01d6a0eb3b47ec983a34be999022266f1aafcc6d5b3bf7fb9a2b25bc4fba"
+    }
+  ],
+  "truncated": true,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh",
+    "max_bytes: 5 item(s) dropped from nodes to stay inside 8192 bytes"
+  ]
+}
+
+--- call: q6 (61.5 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Presentation.DTOs.Responses.LicenseImportCommitResponseDto"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "043d5022b73984b6d5f20f995344477fade7cb46baeca3a7ae473253e3d04bde",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "LicenseImportCommitResponseDto",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Responses.LicenseImportCommitResponseDto",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Responses/LicenseImports/LicenseImportCommitResponseDtos.cs",
+        "start_line": 35,
+        "end_line": 35
+      }
+    },
+    {
+      "id": "28c67cbef661342536b3f0567f03f44d8588c338ddc8016005296f21c3178789",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "ImportReceiptDto",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Responses.ImportReceiptDto",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Responses/LicenseImports/LicenseImportCommitResponseDtos.cs",
+        "start_line": 24,
+        "end_line": 24
+      }
+    },
+    {
+      "id": "38a66a80ec6630fe9be4229d17e9a5f958bd30eb8490f1a28d289c27f557bf9d",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "ImportReceiptRowDto",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Responses.ImportReceiptRowDto",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Responses/LicenseImports/LicenseImportCommitResponseDtos.cs",
+        "start_line": 7,
+        "end_line": 7
+      }
+    },
+    {
+      "id": "cf29e4d006b376509c83563ec6bc5c2470d02ec5228f069af76c86541406b04b",
+      "project_id": "agmws-web-service",
+      "kind": "Namespace",
+      "name": "AgriMap.Web.Service.Presentation.DTOs.Responses",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Responses#6",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Responses/LicenseImports/LicenseImportCommitResponseDtos.cs",
+        "start_line": 1,
+        "end_line": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "7b6b32976be597ad082d54c0fbcc7ddcd9a2f1fa9078ce0c83a3c3b849e1b95a",
+      "source_id": "cf29e4d006b376509c83563ec6bc5c2470d02ec5228f069af76c86541406b04b",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 7,
+            "file": "Src/Presentation/DTOs/Responses/LicenseImports/LicenseImportCommitResponseDtos.cs",
+            "start_line": 7
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "38a66a80ec6630fe9be4229d17e9a5f958bd30eb8490f1a28d289c27f557bf9d"
+    },
+    {
+      "id": "7da94b57b70fcfc329945d134ccdc776888851010a1c54eab10b1dc90d67f2ae",
+      "source_id": "cf29e4d006b376509c83563ec6bc5c2470d02ec5228f069af76c86541406b04b",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 24,
+            "file": "Src/Presentation/DTOs/Responses/LicenseImports/LicenseImportCommitResponseDtos.cs",
+            "start_line": 24
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "28c67cbef661342536b3f0567f03f44d8588c338ddc8016005296f21c3178789"
+    },
+    {
+      "id": "d6c1c44c08c092dea8d7cc6de43569d6f885de5a8beec4a6c3807a01b0d70820",
+      "source_id": "cf29e4d006b376509c83563ec6bc5c2470d02ec5228f069af76c86541406b04b",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 35,
+            "file": "Src/Presentation/DTOs/Responses/LicenseImports/LicenseImportCommitResponseDtos.cs",
+            "start_line": 35
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "043d5022b73984b6d5f20f995344477fade7cb46baeca3a7ae473253e3d04bde"
+    }
+  ],
+  "truncated": false,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh"
+  ]
+}
+
+--- call: q7 (61.0 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseImportCommitRequestDto"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "0722c5bfecf5fc6fa9b4a73302a97373b35089f33daed69b9fee574abe783be7",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "LicenseImportCommitRequestDto",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseImportCommitRequestDto",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportPreviewRequestDtos.cs",
+        "start_line": 26,
+        "end_line": 26
+      }
+    },
+    {
+      "id": "222eb4f662924d3d17cad75e0036c48f89037e1fefe5c303711ae55bc3302029",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "LicenseImportDeletionPreviewRequestDto",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseImportDeletionPreviewRequestDto",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportPreviewRequestDtos.cs",
+        "start_line": 35,
+        "end_line": 35
+      }
+    },
+    {
+      "id": "ad2edcfb72f4a34dbf60cca8154df10dd7870bc3a26f3f79d94d1ba9512160ea",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "LicenseImportPreviewRequestDto",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseImportPreviewRequestDto",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportPreviewRequestDtos.cs",
+        "start_line": 10,
+        "end_line": 10
+      }
+    },
+    {
+      "id": "fda4782a7d9ac6f4086a4087319de3590f04c6c540313456c72372fbd5e16d9c",
+      "project_id": "agmws-web-service",
+      "kind": "Namespace",
+      "name": "AgriMap.Web.Service.Presentation.DTOs.Requests",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Requests#2",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportPreviewRequestDtos.cs",
+        "start_line": 1,
+        "end_line": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "1e2473f28fdc7f91ca40858644e8d131ed3339550dc13a03ff10fb7cbf374d3a",
+      "source_id": "fda4782a7d9ac6f4086a4087319de3590f04c6c540313456c72372fbd5e16d9c",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 10,
+            "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportPreviewRequestDtos.cs",
+            "start_line": 10
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "ad2edcfb72f4a34dbf60cca8154df10dd7870bc3a26f3f79d94d1ba9512160ea"
+    },
+    {
+      "id": "72e06a1cff0151220cba784f15e760c8ec75392dec9f635c1309ef7f67e3ed0d",
+      "source_id": "fda4782a7d9ac6f4086a4087319de3590f04c6c540313456c72372fbd5e16d9c",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 35,
+            "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportPreviewRequestDtos.cs",
+            "start_line": 35
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "222eb4f662924d3d17cad75e0036c48f89037e1fefe5c303711ae55bc3302029"
+    },
+    {
+      "id": "c6cd32d00fdf854f8723b13c3a244b509fb9028d8d0868c5e08530e032bdcbbf",
+      "source_id": "fda4782a7d9ac6f4086a4087319de3590f04c6c540313456c72372fbd5e16d9c",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 26,
+            "file": "Src/Presentation/DTOs/Requests/LicenseImports/LicenseImportPreviewRequestDtos.cs",
+            "start_line": 26
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "0722c5bfecf5fc6fa9b4a73302a97373b35089f33daed69b9fee574abe783be7"
+    }
+  ],
+  "truncated": false,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh"
+  ]
+}
+
+--- call: q8 (103.5 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Domain.Entities.ImportPreviewRowInfo"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "087ba36941e174be37320339c9a93860051524df4ff0c6a1fe912406ec1d58d4",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "ImportPreviewRowInfo",
+      "qualified_name": "AgriMap.Web.Service.Domain.Entities.ImportPreviewRowInfo",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Domain/Entities/LicenseImports/ImportPreviewRowInfo.cs",
+        "start_line": 10,
+        "end_line": 10
+      }
+    },
+    {
+      "id": "a2c4ec841bc378a372ef942e77bfc15cefad063fa4361e2fd5f4939471de71e1",
+      "project_id": "agmws-web-service",
+      "kind": "Namespace",
+      "name": "AgriMap.Web.Service.Domain.Entities",
+      "qualified_name": "AgriMap.Web.Service.Domain.Entities#17",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Domain/Entities/LicenseImports/ImportPreviewRowInfo.cs",
+        "start_line": 1,
+        "end_line": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "6a525ab8071a53d4555437b2ae6c0a792b4a0e2710609ae5eab11c711c573a67",
+      "source_id": "a2c4ec841bc378a372ef942e77bfc15cefad063fa4361e2fd5f4939471de71e1",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 10,
+            "file": "Src/Domain/Entities/LicenseImports/ImportPreviewRowInfo.cs",
+            "start_line": 10
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "087ba36941e174be37320339c9a93860051524df4ff0c6a1fe912406ec1d58d4"
+    }
+  ],
+  "truncated": false,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh"
+  ]
+}
+
+--- call: q9 (81.8 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Presentation.DTOs.Responses.ErrorResponseDto"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "08be5d4ef2baceec00aebdafcbc845ea83ba2751e4af12db9c31f961fa6e68cd",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "ErrorResponseDto",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Responses.ErrorResponseDto",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Responses/ErrorResponseDto.cs",
+        "start_line": 5,
+        "end_line": 5
+      }
+    },
+    {
+      "id": "b2213c92bbae76cb68b90591133dfc85929f5bdc6cbc8e0c6193857a46b6eaf2",
+      "project_id": "agmws-web-service",
+      "kind": "Namespace",
+      "name": "AgriMap.Web.Service.Presentation.DTOs.Responses",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Responses#3",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Responses/ErrorResponseDto.cs",
+        "start_line": 1,
+        "end_line": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "71e3dbeffe18fdb51406c64e6f23485685b501973634c73692196323949e7f1d",
+      "source_id": "b2213c92bbae76cb68b90591133dfc85929f5bdc6cbc8e0c6193857a46b6eaf2",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 5,
+            "file": "Src/Presentation/DTOs/Responses/ErrorResponseDto.cs",
+            "start_line": 5
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "08be5d4ef2baceec00aebdafcbc845ea83ba2751e4af12db9c31f961fa6e68cd"
+    }
+  ],
+  "truncated": false,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh"
+  ]
+}
+
+--- call: q10 (101.7 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvImportFileParser..IsBlank"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [],
+  "edges": [
+    {
+      "id": "0297303c23c0dc0db85d530c243380a2ea64659c05003e38311678a63f4ce944",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 105,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 105
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "b44819fdeb942ef69d5f7aac662098a01eb9a3359b98ae6d4baca35a1e02f71a"
+    },
+    {
+      "id": "0768d7476b18ce3ceae395a10790d2d88eab5910b6890a9c28e26538f43e5fae",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 109,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 109
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "060f4031d4fb0c3836e2de19df2facc74943860bd23b6bce0c2b861148c3deae"
+    },
+    {
+      "id": "1569622d46a8a1575aead9138041e38f28f441742c7b9fc9f05929d4716d1d49",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 97,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 97
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "660bbbb842c29576ab232960225223b12fb1b6d502402f7082063e678bc23705"
+    },
+    {
+      "id": "33bf8095c98e6d3fc9e2fe15f059ce0c6a2509844fb530d8ff068f740f772498",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 23,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 23
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "0fc7a0b040dfd46aa1ac37a9274a644788cee50eb6ba9ec5070553ced0e86d0d"
+    },
+    {
+      "id": "55c2fd2a53a0898143b3c58e987e7cd3f0e15b2c40364b88494ba6f0178ae889",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 32,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 32
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "68027bf298d9b774f60519a6e0659361283905dec2b72cbad2c70ba827025903"
+    },
+    {
+      "id": "7afeb866f16d4b68b3f25275e0713206cb3a71161f987a8098c3d395dcb5ac82",
+      "source_id": "6e0d104268a57245d9c86e5b71e5ce33e001686ca3b59167c6cb730d14240b23",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 14,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 14
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773"
+    },
+    {
+      "id": "83d5399abd1047601d47b6264393d2ad58e0009c2f6dc4b1fbf8c46908331975",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 83,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 83
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "6dbae7e08f8485a87e79d3c61d833ea85c86ef038abe8f658726432eb976e08b"
+    },
+    {
+      "id": "8e71b62f287a116407894f9268382f794dc759014d6a2a7008e7ac8d25d51bfb",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 53,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 53
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "93a4fe0ace7de919a6d32186574d57e9941389abca79a614ffa81159231a00d0"
+    },
+    {
+      "id": "9fa7d47261840784a2a92110358542f3453c1884472061adef2d571598200ff0",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 100,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 100
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "bbe43a78408562542d105f06ecd73719457cc8c19e3bc653bfaa937e55595381"
+    },
+    {
+      "id": "ab6c7ae7a53551dfd2c069a76f169b8ac7486c1dd54b46ef8e4473cc6bce5675",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 91,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 91
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "f6162cd5008b7e09b918474c5416c8cedb2fe5835327a3abdf86464d76e894f0"
+    },
+    {
+      "id": "b9fb91125f1933fef2188df03eab07c65258aced868619fe8901ee944e7d3e17",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 113,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 113
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "d2b57f00bf79597fa9a74522df5b3da2c7be689caf0424efc79ec2128f98c8b3"
+    },
+    {
+      "id": "c7fa0347f74f8633df62ceeefbe7184c31c806b83dc5ba37880eb3d48d3b4739",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 49,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 49
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "b984f2e30664ab2531ee659112261267cf94a8603964c5a12dbe01d82e57bb69"
+    },
+    {
+      "id": "cb2b04bca2db47704bd8288ca5c1187b58aff5085acbd1f9fb2d2378f8600af4",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 70,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 70
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "0a7325dcf20c65727cdd55707bc35dceb02ff372f30585f66c0c1300bf125707"
+    },
+    {
+      "id": "ecf7d2afcef46ba0862d7f562d4be7f1e324e8d16958e3f876f1ad31a78207fa",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 48,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 48
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "162db605c61071ab0748d052809f73a15f65bbd2a88e6148e6e6df602004f0e6"
+    }
+  ],
+  "truncated": true,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh",
+    "max_bytes: 19 item(s) dropped from edges, nodes to stay inside 8192 bytes"
+  ]
+}
+
+--- call: q11 (102.2 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Tests.Infrastructure.Security.LoginThrottleServiceTests"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [],
+  "edges": [
+    {
+      "id": "0431a322d6c995496748f2b538b042dd092210594a62a23e49216a9c15c063b7",
+      "source_id": "02eedd8d4db90872dcbb6439dfea58a94306d012c68363dad8eb527d28bbbe3d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 207,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 207
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "8d5d1fca36a4848d942c2dc62b40c1a10042acec4c1178eb47e83d7f03d101cc"
+    },
+    {
+      "id": "0e603a8a3e0fd0eff7626edf6e50eb082a2ca7fd7546a1041e6a189a6212b7f0",
+      "source_id": "02eedd8d4db90872dcbb6439dfea58a94306d012c68363dad8eb527d28bbbe3d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 190,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 190
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "236b9c3a4b627e0f5034b2ccaad68e629c070f7a5b8ae9cbf2aeeb5d597e1eea"
+    },
+    {
+      "id": "183836516e94e917bd6db97f663ddb067192b6747f882a7b1677963f3b0b01ec",
+      "source_id": "69820287595a64c85cb3ce950da1341b74f9d917e47e15c724b9e3c0c9b4f258",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 233,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 233
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "7d393cc43920904a9752792404ab3f4d72ab731b3f195f84f34d4385e21a19d3"
+    },
+    {
+      "id": "1af7ee42aafbb292de4d6788600e8f01ca38fecdd7b59903997ce19497214cd9",
+      "source_id": "a957be41cfdda457dc68acd934dd66ec343fa68e7c47046d4559751cedce7a00",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 224,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 224
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "bce3d0f31b3678953501d6b5aeb978476d1f966030e861086a34e173050e639c"
+    },
+    {
+      "id": "24780b6d259ea4ffa106a20bc72fd32a669b4602535a8d4f3d7b4322ccb66579",
+      "source_id": "0989071b09e89771107b9a2d499116196c57ace6d16d13ebfb38ad6aab1b52de",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 97,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 97
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "792edae9c79e244761c67d6a2c240b801f9eceda4c346389b68693d03c16ae02"
+    },
+    {
+      "id": "26d3ca57c76e298e1c06e2a6cc2514899e969dabd61e85142313e04ccbbbeab4",
+      "source_id": "0989071b09e89771107b9a2d499116196c57ace6d16d13ebfb38ad6aab1b52de",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 118,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 118
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "6dce8a74e7ee4800c316c0ea37fbf470a372c10f9b7982729218f90f5b869c14"
+    },
+    {
+      "id": "29baf74c184447a2d75864c655a3391c6c4605b6139f1b2b573511ce07088dca",
+      "source_id": "a9c225f8de684858381547c3d26ca4c951fb3f82bb211c7b513febc1412b1b21",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 17,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 17
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "0989071b09e89771107b9a2d499116196c57ace6d16d13ebfb38ad6aab1b52de"
+    },
+    {
+      "id": "37cb1d4b4154936260fde71e1f1943b27104c61f86c54d368609c57c80054417",
+      "source_id": "02eedd8d4db90872dcbb6439dfea58a94306d012c68363dad8eb527d28bbbe3d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 194,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 194
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "477ea652bf6f20fa62ae08f32111aaa2542f4d6334b69cf948e59891516b7a2f"
+    },
+    {
+      "id": "3c4769552c0e861192e8cbd5f8c07dbda33c5c34903313637a58ea9ce5d042b5",
+      "source_id": "a957be41cfdda457dc68acd934dd66ec343fa68e7c47046d4559751cedce7a00",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 221,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 221
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "08aa57c1b560a33e6857acf99608562c14771bc0eb439338410330a8bfa60059"
+    },
+    {
+      "id": "4592682410e91f033a9621e09b00a760d2bc2859cff8f144d640c0016fb8aa1b",
+      "source_id": "02eedd8d4db90872dcbb6439dfea58a94306d012c68363dad8eb527d28bbbe3d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 202,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 202
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "893d2d1b57025dcbadf2db4f2fb1650e3e9548a0104cf3aa6965853c811817af"
+    },
+    {
+      "id": "503a38ad0033180b8985a33f4818847354e3357b05636ed010b35f5bf4b2ff00",
+      "source_id": "02eedd8d4db90872dcbb6439dfea58a94306d012c68363dad8eb527d28bbbe3d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 195,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 195
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "2367c19a4541af1225b10b0ac030966f204156f85303c2014e8a1e11d7f66725"
+    },
+    {
+      "id": "5057ab8886f4800f6c12a4634ed077b6902a86615ac0c90a777ce76366db6f70",
+      "source_id": "a957be41cfdda457dc68acd934dd66ec343fa68e7c47046d4559751cedce7a00",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 216,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 216
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "2d278e4ad54b4742f9fc6619d905fece7e04312b7a47410281345afab7021b89"
+    },
+    {
+      "id": "530430c8dcfe52fbf4aaf407242756fb2e0874fb6793ce130742a6d38bcf9e8e",
+      "source_id": "0989071b09e89771107b9a2d499116196c57ace6d16d13ebfb38ad6aab1b52de",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 42,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 42
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "346d7c5a5792238d5ef10b23e64745ecac4e2c11c4a60465676b1378de5ffe12"
+    },
+    {
+      "id": "5fc410ce895e915a7bfb055df01a0a02e782d99c3952b27b975e48ac8176a850",
+      "source_id": "0989071b09e89771107b9a2d499116196c57ace6d16d13ebfb38ad6aab1b52de",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 105,
+            "file": "Tests/Infrastructure/Security/LoginThrottleServiceTests.cs",
+            "start_line": 105
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "2c5bdeb6457ff6be82eb4b98cccc235fbbdbb6edb6615870e33ece03c9e7e3b0"
+    }
+  ],
+  "truncated": true,
+  "warnings": [
+    "truncated: the answer stopped at max_nodes and is not a complete closure",
+    "freshness was not reported, so it is unknown rather than fresh",
+    "max_bytes: 86 item(s) dropped from edges, nodes to stay inside 8192 bytes"
+  ]
+}
+
+--- call: q12 (82.6 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.AuthRepository"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [],
+  "edges": [
+    {
+      "id": "01ea488ade10c5b9c200f52ef26c5c9b683fdaeccedc33cc1304a6022f8b1c14",
+      "source_id": "0cec024b8b1678e6fbed87e6ab68e41223f648e206f7c89f5d8573c0d2d56c42",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 91,
+            "file": "Src/Infrastructure/Persistence/Repositories/AuthRepository.cs",
+            "start_line": 91
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "8b439e2182e93cd84cd8cc492b4c0176996cacfccd626aada510cf26a7fce6db"
+    },
+    {
+      "id": "0ce9daa96924ebfd9fe614c4631e0c6c97cc469269205d66526750fd49c78967",
+      "source_id": "0cec024b8b1678e6fbed87e6ab68e41223f648e206f7c89f5d8573c0d2d56c42",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 64,
+            "file": "Src/Infrastructure/Persistence/Repositories/AuthRepository.cs",
+            "start_line": 64
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "8b1bb561c20bb79d4a5cc5f5c3c841c991de96c07f7c2072c7833ec6785ee353"
+    },
+    {
+      "id": "0db985557559d946535cb275692abd9a19a9cc9a4aefa8f16c9e8b3b2f66a9ad",
+      "source_id": "0cec024b8b1678e6fbed87e6ab68e41223f648e206f7c89f5d8573c0d2d56c42",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 176,
+            "file": "Src/Infrastructure/Persistence/Repositories/AuthRepository.cs",
+            "start_line": 176
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "a1316970509a72f0126e566f39fe125439314c5a0377bbf8ac3aae5a1bbb6114"
+    },
+    {
+      "id": "0de0ddda244c38a6b42e015a2a2b35cc128d222f0c02a65727a254375d5a4ac8",
+      "source_id": "b9ef0f2b31cfbecaa86af643eb5aa7a4f5febb7cdd9680f630ab503d5c31de3d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 15,
+            "file": "Src/Infrastructure/Persistence/Repositories/AuthRepository.cs",
+            "start_line": 15
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "0cec024b8b1678e6fbed87e6ab68e41223f648e206f7c89f5d8573c0d2d56c42"
+    },
+    {
+      "id": "128384ef2c6c53bc66e4531c136253f9bb40b7a0d5cf3c3159eb93de70adb198",
+      "source_id": "0cec024b8b1678e6fbed87e6ab68e41223f648e206f7c89f5d8573c0d2d56c42",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 144,
+            "file": "Src/Infrastructure/Persistence/Repositories/AuthRepository.cs",
+            "start_line": 144
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "74d9aa2ea605486a80a8924ebfbf36dc33d8ade4dfcf42b6e309add17800ee1c"
+    },
+    {
+      "id": "2db0ecea15a8bddecbeba582729d3607b73ee54897ce8f88b3027985779a55a6",
+      "source_id": "0cec024b8b1678e6fbed87e6ab68e41223f648e206f7c89f5d8573c0d2d56c42",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 197,
+            "file": "Src/Infrastructure/Persistence/Repositories/AuthRepository.cs",
+            "start_line": 197
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "336e7aa7d1e65967b82d4ad59bba103aa7b9d19a3a3d94c502c1d6b1ff40817f"
+    },
+    {
+      "id": "2f2d7121ee2621bff1a3b9bf338b0f034395d8030ce7946579ebd0cde9690310",
+      "source_id": "0cec024b8b1678e6fbed87e6ab68e41223f648e206f7c89f5d8573c0d2d56c42",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 34,
+            "file": "Src/Infrastructure/Persistence/Repositories/AuthRepository.cs",
+            "start_line": 34
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "31b85b32a276cfa3da7447930241c805a753fc4843c2840b2e3b66766209ba40"
+    },
+    {
+      "id": "436aff2e8eee56837c01affac1a55861c98e7088c3f4cdfd109488dd3187aae0",
+      "source_id": "0cec024b8b1678e6fbed87e6ab68e41223f648e206f7c89f5d8573c0d2d56c42",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 206,
+            "file": "Src/Infrastructure/Persistence/Repositories/AuthRepository.cs",
+            "start_line": 206
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "da802e91791b1541c585c75da494a883dac30039520a45341455eb6e54e80bda"
+    },
+    {
+      "id": "5623f4b7db2dcffa1140ae37939fa778cce23cfb14d0db7cfc1b3493f1b6227a",
+      "source_id": "0cec024b8b1678e6fbed87e6ab68e41223f648e206f7c89f5d8573c0d2d56c42",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 183,
+            "file": "Src/Infrastructure/Persistence/Repositories/AuthRepository.cs",
+            "start_line": 183
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "414b2de90ac66892ce06612455c0ea9a4ee5e21bca0386d8bbc2efc0ea756ff9"
+    },
+    {
+      "id": "6042aeb9ca8b4e535fc13a8465641ea7e5e1724238c172ce57a674079a7c22e9",
+      "source_id": "0cec024b8b1678e6fbed87e6ab68e41223f648e206f7c89f5d8573c0d2d56c42",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 88,
+            "file": "Src/Infrastructure/Persistence/Repositories/AuthRepository.cs",
+            "start_line": 88
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "f5fd4bab8c27c74491218f04a6f86e6bf3416e8f926b06995f71d2cb2ce2968c"
+    },
+    {
+      "id": "68739a53169a3905ce1754ceb56e0b785c10ba49027a7447d4a99370d4b9d499",
+      "source_id": "0cec024b8b1678e6fbed87e6ab68e41223f648e206f7c89f5d8573c0d2d56c42",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 192,
+            "file": "Src/Infrastructure/Persistence/Repositories/AuthRepository.cs",
+            "start_line": 192
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "59ca28da7ab6087c47d9aa4317875d0c940ede8805f734bad169f340a653fad7"
+    },
+    {
+      "id": "83402aa9dc42ddc67f45a08bd6590cbb3fc4b7843cb8009e5a9e966888a6405b",
+      "source_id": "0cec024b8b1678e6fbed87e6ab68e41223f648e206f7c89f5d8573c0d2d56c42",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 201,
+            "file": "Src/Infrastructure/Persistence/Repositories/AuthRepository.cs",
+            "start_line": 201
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "20f45fa21a31dcb15d971e86d9552a354935bdb75a1ae04c5f9566b4b1cf2c28"
+    },
+    {
+      "id": "8af4600f6263c3c917da4a336fd8b889455d255ce98ebe83c944cab705dcdf18",
+      "source_id": "0cec024b8b1678e6fbed87e6ab68e41223f648e206f7c89f5d8573c0d2d56c42",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 196,
+            "file": "Src/Infrastructure/Persistence/Repositories/AuthRepository.cs",
+            "start_line": 196
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "917b92d110e065493e1e8a49a16ac505df1a3a6f19686e2087bcce2903d1e43c"
+    },
+    {
+      "id": "c46d27adbc2a825111b6035f6d03ba18487681a7c34cf9c6acf78b3bca5a9351",
+      "source_id": "0cec024b8b1678e6fbed87e6ab68e41223f648e206f7c89f5d8573c0d2d56c42",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 121,
+            "file": "Src/Infrastructure/Persistence/Repositories/AuthRepository.cs",
+            "start_line": 121
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "03b076cb91c13d84eeb31ee504c847edbe56ed3b571f4c64542022577c47cdfd"
+    }
+  ],
+  "truncated": true,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh",
+    "max_bytes: 21 item(s) dropped from edges, nodes to stay inside 8192 bytes"
+  ]
+}
+
+--- call: q13 (81.8 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Domain.Entities.LicenseRegistryBindingInfo"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "0f4a7cda9873d2eaf718dfdb4bda70b3767a05ab395ab7d414aecc333cddd89f",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "LicenseRegistryBindingInfo",
+      "qualified_name": "AgriMap.Web.Service.Domain.Entities.LicenseRegistryBindingInfo",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Domain/Entities/LicenseImports/LicenseRegistryBindingInfo.cs",
+        "start_line": 10,
+        "end_line": 10
+      }
+    },
+    {
+      "id": "a6639dd0251e135e0375a57db0c816504f2db5e6a882039e72e0bfc64e147146",
+      "project_id": "agmws-web-service",
+      "kind": "Namespace",
+      "name": "AgriMap.Web.Service.Domain.Entities",
+      "qualified_name": "AgriMap.Web.Service.Domain.Entities#21",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Domain/Entities/LicenseImports/LicenseRegistryBindingInfo.cs",
+        "start_line": 1,
+        "end_line": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "a4de24dd6206743ac47b8a711ad47c1a58dede26bbc63232a6d01b928b190dd7",
+      "source_id": "a6639dd0251e135e0375a57db0c816504f2db5e6a882039e72e0bfc64e147146",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 10,
+            "file": "Src/Domain/Entities/LicenseImports/LicenseRegistryBindingInfo.cs",
+            "start_line": 10
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "0f4a7cda9873d2eaf718dfdb4bda70b3767a05ab395ab7d414aecc333cddd89f"
+    }
+  ],
+  "truncated": false,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh"
+  ]
+}
+
+--- call: q14 (81.7 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Domain.Entities.ImportBatchDetailInfo"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "128a6945d9114bafae841013b395793e4e5fac9ccd6ef5786e26e94d707682bb",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "ImportBatchDetailInfo",
+      "qualified_name": "AgriMap.Web.Service.Domain.Entities.ImportBatchDetailInfo",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Domain/Entities/LicenseImports/ImportBatchDetailInfo.cs",
+        "start_line": 7,
+        "end_line": 7
+      }
+    },
+    {
+      "id": "8dd15a5fa27ce2ddb20ca5a794b62a763a09ceec221aa3febf1ed3d1e3a06765",
+      "project_id": "agmws-web-service",
+      "kind": "Namespace",
+      "name": "AgriMap.Web.Service.Domain.Entities",
+      "qualified_name": "AgriMap.Web.Service.Domain.Entities#3",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Domain/Entities/LicenseImports/ImportBatchDetailInfo.cs",
+        "start_line": 1,
+        "end_line": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "b22b902b5a5324411cb3b6c9599aca6ff4897dd34038f1f9f80a603b7acfed0f",
+      "source_id": "8dd15a5fa27ce2ddb20ca5a794b62a763a09ceec221aa3febf1ed3d1e3a06765",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 7,
+            "file": "Src/Domain/Entities/LicenseImports/ImportBatchDetailInfo.cs",
+            "start_line": 7
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "128a6945d9114bafae841013b395793e4e5fac9ccd6ef5786e26e94d707682bb"
+    }
+  ],
+  "truncated": false,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh"
+  ]
+}
+
+--- call: q15 (82.6 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Domain.Entities.UserPageInfo"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "13e1161010a7f383fc7a35c1c7ed2768b72db4c7450feedf816e5927e410ae3c",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "UserPageInfo",
+      "qualified_name": "AgriMap.Web.Service.Domain.Entities.UserPageInfo",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Domain/Entities/Users/UserPageInfo.cs",
+        "start_line": 11,
+        "end_line": 11
+      }
+    },
+    {
+      "id": "6102318772129513ee1cf4a3d6d3f86e4b267f2549e0d69ef0a92075e3212936",
+      "project_id": "agmws-web-service",
+      "kind": "Namespace",
+      "name": "AgriMap.Web.Service.Domain.Entities",
+      "qualified_name": "AgriMap.Web.Service.Domain.Entities#27",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Domain/Entities/Users/UserPageInfo.cs",
+        "start_line": 1,
+        "end_line": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e15a177faebc09761932a3ba8c113be7721f0a80bf2eb3e9532536bb844acec0",
+      "source_id": "6102318772129513ee1cf4a3d6d3f86e4b267f2549e0d69ef0a92075e3212936",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 11,
+            "file": "Src/Domain/Entities/Users/UserPageInfo.cs",
+            "start_line": 11
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "13e1161010a7f383fc7a35c1c7ed2768b72db4c7450feedf816e5927e410ae3c"
+    }
+  ],
+  "truncated": false,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh"
+  ]
+}
+
+--- call: q16 (82.3 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvImportFileParser..Fields.Count"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [],
+  "edges": [
+    {
+      "id": "0297303c23c0dc0db85d530c243380a2ea64659c05003e38311678a63f4ce944",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 105,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 105
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "b44819fdeb942ef69d5f7aac662098a01eb9a3359b98ae6d4baca35a1e02f71a"
+    },
+    {
+      "id": "0768d7476b18ce3ceae395a10790d2d88eab5910b6890a9c28e26538f43e5fae",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 109,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 109
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "060f4031d4fb0c3836e2de19df2facc74943860bd23b6bce0c2b861148c3deae"
+    },
+    {
+      "id": "1569622d46a8a1575aead9138041e38f28f441742c7b9fc9f05929d4716d1d49",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 97,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 97
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "660bbbb842c29576ab232960225223b12fb1b6d502402f7082063e678bc23705"
+    },
+    {
+      "id": "33bf8095c98e6d3fc9e2fe15f059ce0c6a2509844fb530d8ff068f740f772498",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 23,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 23
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "0fc7a0b040dfd46aa1ac37a9274a644788cee50eb6ba9ec5070553ced0e86d0d"
+    },
+    {
+      "id": "55c2fd2a53a0898143b3c58e987e7cd3f0e15b2c40364b88494ba6f0178ae889",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 32,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 32
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "68027bf298d9b774f60519a6e0659361283905dec2b72cbad2c70ba827025903"
+    },
+    {
+      "id": "7afeb866f16d4b68b3f25275e0713206cb3a71161f987a8098c3d395dcb5ac82",
+      "source_id": "6e0d104268a57245d9c86e5b71e5ce33e001686ca3b59167c6cb730d14240b23",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 14,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 14
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773"
+    },
+    {
+      "id": "83d5399abd1047601d47b6264393d2ad58e0009c2f6dc4b1fbf8c46908331975",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 83,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 83
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "6dbae7e08f8485a87e79d3c61d833ea85c86ef038abe8f658726432eb976e08b"
+    },
+    {
+      "id": "8e71b62f287a116407894f9268382f794dc759014d6a2a7008e7ac8d25d51bfb",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 53,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 53
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "93a4fe0ace7de919a6d32186574d57e9941389abca79a614ffa81159231a00d0"
+    },
+    {
+      "id": "9fa7d47261840784a2a92110358542f3453c1884472061adef2d571598200ff0",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 100,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 100
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "bbe43a78408562542d105f06ecd73719457cc8c19e3bc653bfaa937e55595381"
+    },
+    {
+      "id": "ab6c7ae7a53551dfd2c069a76f169b8ac7486c1dd54b46ef8e4473cc6bce5675",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 91,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 91
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "f6162cd5008b7e09b918474c5416c8cedb2fe5835327a3abdf86464d76e894f0"
+    },
+    {
+      "id": "b9fb91125f1933fef2188df03eab07c65258aced868619fe8901ee944e7d3e17",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 113,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 113
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "d2b57f00bf79597fa9a74522df5b3da2c7be689caf0424efc79ec2128f98c8b3"
+    },
+    {
+      "id": "c7fa0347f74f8633df62ceeefbe7184c31c806b83dc5ba37880eb3d48d3b4739",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 49,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 49
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "b984f2e30664ab2531ee659112261267cf94a8603964c5a12dbe01d82e57bb69"
+    },
+    {
+      "id": "cb2b04bca2db47704bd8288ca5c1187b58aff5085acbd1f9fb2d2378f8600af4",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 70,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 70
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "0a7325dcf20c65727cdd55707bc35dceb02ff372f30585f66c0c1300bf125707"
+    },
+    {
+      "id": "ecf7d2afcef46ba0862d7f562d4be7f1e324e8d16958e3f876f1ad31a78207fa",
+      "source_id": "4a90308b10fab7a09dc26817900bfe8998780efb41eeee65637d62666dc28773",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 48,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvImportFileParser.cs",
+            "start_line": 48
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "162db605c61071ab0748d052809f73a15f65bbd2a88e6148e6e6df602004f0e6"
+    }
+  ],
+  "truncated": true,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh",
+    "max_bytes: 19 item(s) dropped from edges, nodes to stay inside 8192 bytes"
+  ]
+}
+
+--- call: q17 (61.2 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvRecordReader"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "1701a8c0fadf35d8cf8ef75b868ada8b9aab4a74e199f84da319c239b107fa8d",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "CsvRecordReader",
+      "qualified_name": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvRecordReader",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+        "start_line": 22,
+        "end_line": 22
+      }
+    },
+    {
+      "id": "3b0f7ea74a0b97d21c59f863055c7dd6cf84d2a8ea45397c0f1a7d0e4f90a4d6",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "mixes",
+      "qualified_name": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvRecordReader.mixes",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+        "start_line": 34,
+        "end_line": 34
+      }
+    },
+    {
+      "id": "3bdab50ad5d5ca22c8b0d4492bf03565ffea803ebae20253aaeb3644ce9ef7dd",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "CsvRecord",
+      "qualified_name": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvRecord",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+        "start_line": 8,
+        "end_line": 8
+      }
+    },
+    {
+      "id": "491749ffe867438f8dfffca1093a13055e7d9e79a7922d0c6684e6dc06db5a6b",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "static",
+      "qualified_name": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvRecordReader.static",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+        "start_line": 52,
+        "end_line": 52
+      }
+    },
+    {
+      "id": "5503785b07e3824545cd1b2f8952289875631a8e84ad488b9a52113b8225171f",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "Malformed",
+      "qualified_name": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvRecordReader.Malformed",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+        "start_line": 202,
+        "end_line": 202
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "0de06e29202f72e1f36dc35994f2f4d313dbaa93fb0d73c92bebf9ccafa0ab0b",
+      "source_id": "1701a8c0fadf35d8cf8ef75b868ada8b9aab4a74e199f84da319c239b107fa8d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 202,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+            "start_line": 202
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "5503785b07e3824545cd1b2f8952289875631a8e84ad488b9a52113b8225171f"
+    },
+    {
+      "id": "2302d80740e764d5f97f8f810faa619d70fbd30cef5298fecc7f2197599c9339",
+      "source_id": "1701a8c0fadf35d8cf8ef75b868ada8b9aab4a74e199f84da319c239b107fa8d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 52,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+            "start_line": 52
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "491749ffe867438f8dfffca1093a13055e7d9e79a7922d0c6684e6dc06db5a6b"
+    },
+    {
+      "id": "9adf1fa1262c5f657319bf100e77535083ed592b09600379a90aa100d67725dc",
+      "source_id": "1701a8c0fadf35d8cf8ef75b868ada8b9aab4a74e199f84da319c239b107fa8d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 204,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+            "start_line": 204
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "a71488a61826ab16e277948a373789ca7787d055e64cf1d316f5df1151789a4c"
+    },
+    {
+      "id": "a0ea83ff3ae7bbadd1f416edeba8eeb89f897f3829151f71040e821b906ea33b",
+      "source_id": "1701a8c0fadf35d8cf8ef75b868ada8b9aab4a74e199f84da319c239b107fa8d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 45,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+            "start_line": 45
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "e0fee94e059cc878fbf04c61f9a4af4786887185fa5119bdf5234f4084cc6189"
+    },
+    {
+      "id": "a8f3f88b858467e357dd130763e7d574f4dc4139ea0cb578f0d36e33c3fa2de9",
+      "source_id": "1701a8c0fadf35d8cf8ef75b868ada8b9aab4a74e199f84da319c239b107fa8d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 34,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+            "start_line": 34
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "3b0f7ea74a0b97d21c59f863055c7dd6cf84d2a8ea45397c0f1a7d0e4f90a4d6"
+    },
+    {
+      "id": "c14109ff88fe557e3a2853ceabb39ca39bdded7ebf9032340b3a14514d00bde3",
+      "source_id": "687e078e32648b818ae36e23a80d2fba416315c2a1fd6ea6cd0c4f4dc3125cb4",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 8,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+            "start_line": 8
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "3bdab50ad5d5ca22c8b0d4492bf03565ffea803ebae20253aaeb3644ce9ef7dd"
+    },
+    {
+      "id": "d485c9f0dc4495c0ea8e3c050757af22cb82d1bd04283bc864c684e15e6e35a8",
+      "source_id": "1701a8c0fadf35d8cf8ef75b868ada8b9aab4a74e199f84da319c239b107fa8d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 99,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+            "start_line": 99
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "e0e9ffec44c827463462ba1324c5188bdc8c7b5d7a0684ddd47ad2dce95204e5"
+    },
+    {
+      "id": "d9605bee35023abeda0addf704bf6034d21c1ae6ec2997fba0b2db9c7de7ede2",
+      "source_id": "687e078e32648b818ae36e23a80d2fba416315c2a1fd6ea6cd0c4f4dc3125cb4",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 22,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+            "start_line": 22
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "1701a8c0fadf35d8cf8ef75b868ada8b9aab4a74e199f84da319c239b107fa8d"
+    },
+    {
+      "id": "f322ee73a70439679769ad7977aeaf22be7a9545201bf1450e2d043bc1052422",
+      "source_id": "1701a8c0fadf35d8cf8ef75b868ada8b9aab4a74e199f84da319c239b107fa8d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 185,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+            "start_line": 185
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "8b49f003d374d29950d8c7e6fcf66bf81922589219b477292c382b2f03e3e62c"
+    },
+    {
+      "id": "fe82e0be7d972337980ac8f10d1d2e8f75efd0c44eb9e26b80b1a28d6a79a631",
+      "source_id": "1701a8c0fadf35d8cf8ef75b868ada8b9aab4a74e199f84da319c239b107fa8d",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 28,
+            "file": "Src/Infrastructure/Persistence/Repositories/LicenseImports/CsvRecordReader.cs",
+            "start_line": 28
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "c593865bec28723dde7a1089bd6d0d1c25478062e87c0e124a0066727a028b1b"
+    }
+  ],
+  "truncated": true,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh",
+    "max_bytes: 6 item(s) dropped from nodes to stay inside 8192 bytes"
+  ]
+}
+
+--- call: q18 (82.0 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Presentation.DTOs.Responses.RoleListResponseDto"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "15a2c191ac33856345ded09152c83c791ddec44583693f0447c4227b4413782c",
+      "project_id": "agmws-web-service",
+      "kind": "Namespace",
+      "name": "AgriMap.Web.Service.Presentation.DTOs.Responses",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Responses#13",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Responses/Users/RoleListResponseDto.cs",
+        "start_line": 1,
+        "end_line": 1
+      }
+    },
+    {
+      "id": "170514a786e9f99fae76701c9099eceaa0f2959662dbe6095e519bbe6c22f57e",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "RoleListResponseDto",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Responses.RoleListResponseDto",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Responses/Users/RoleListResponseDto.cs",
+        "start_line": 6,
+        "end_line": 6
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "7566449877739187e27906c27ea2c0a9af14e7c55d68c11c31a5ece77d82e493",
+      "source_id": "15a2c191ac33856345ded09152c83c791ddec44583693f0447c4227b4413782c",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 6,
+            "file": "Src/Presentation/DTOs/Responses/Users/RoleListResponseDto.cs",
+            "start_line": 6
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "170514a786e9f99fae76701c9099eceaa0f2959662dbe6095e519bbe6c22f57e"
+    }
+  ],
+  "truncated": false,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh"
+  ]
+}
+
+--- call: q19 (102.2 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Presentation.DTOs.Responses.UserDeleteResponseDto"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "1a27e88e4f9faf1170c45272d15b91c11b87747f3f5b6b32e9e82b61786b8511",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "UserDeleteResponseDto",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Responses.UserDeleteResponseDto",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Responses/Users/UserDeleteResponseDto.cs",
+        "start_line": 8,
+        "end_line": 8
+      }
+    },
+    {
+      "id": "7c9d98322fbc8430ad81a93ef8d8233255c0a3c73a62c95a3f4e8351267d485b",
+      "project_id": "agmws-web-service",
+      "kind": "Namespace",
+      "name": "AgriMap.Web.Service.Presentation.DTOs.Responses",
+      "qualified_name": "AgriMap.Web.Service.Presentation.DTOs.Responses#15",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Presentation/DTOs/Responses/Users/UserDeleteResponseDto.cs",
+        "start_line": 1,
+        "end_line": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "70578bd3d6e63c49018ea9bd0abf69d6d6f0fe64c52a0e3e56aa4bfa63dc8cda",
+      "source_id": "7c9d98322fbc8430ad81a93ef8d8233255c0a3c73a62c95a3f4e8351267d485b",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 8,
+            "file": "Src/Presentation/DTOs/Responses/Users/UserDeleteResponseDto.cs",
+            "start_line": 8
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "1a27e88e4f9faf1170c45272d15b91c11b87747f3f5b6b32e9e82b61786b8511"
+    }
+  ],
+  "truncated": false,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh"
+  ]
+}
+
