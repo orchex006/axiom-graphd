@@ -22,10 +22,10 @@ no implementation in the pinned revision and cannot be executed at all.
 | 1 Prerequisites | available | Read-only checklist; nothing is executed. |
 | 2 Approved release and trust setup | pending | No signed release archive exists; `axiom install` has no implementation in this build. |
 | 3 Install the core release | pending | No installer, no archive and no `crates/axiom` crate exist in the pinned revision. |
-| 4 Machine-local state and bindings | pending | `AXIOM_HOME` resolution exists in `graph-core`; the registry/binding commands (`status`, `solution`) are wired into argv and answer `NOT_READY` (exit 4) without reading or writing state. |
+| 4 Machine-local state and bindings | pending | `AXIOM_HOME` resolution exists in `graph-core`; the registry/binding commands (`status`, `solution`) execute against a machine-local store in this revision, but no released artifact installs them for a user. |
 | 5 Opt-in user service | pending | No service adapter, registration or native lifecycle evidence exists. |
 | 6 MCP handshake | pending | `axiom-mcp` is a separate repository and no handshake evidence exists for this host. |
-| 7 First-run smoke test | pending | The daemon cannot serve: `serve` reports `NOT_READY`. |
+| 7 First-run smoke test | pending | No released artifact exists to run; `serve` itself runs one bounded reconcile pass and exits `0` (task H-002). |
 | 8 Uninstall and uninstall verification | pending | No service registration or owned-file manifest exists to remove. |
 <!-- END RUNBOOK STATUS -->
 
@@ -108,9 +108,9 @@ axiom install apply --plan install-plan.json
 ## 5. Machine-local state and bindings
 
 Target procedure (Step 4, `pending`). The state home and layout below are
-implemented; the registry/binding commands (`status`, `solution`) are wired into
-argv in this revision, but they answer `NOT_READY` (exit 4) and read or write no
-binding.
+implemented; the registry/binding commands (`status`, `solution`) execute against
+a machine-local store in this revision, but no released artifact installs them
+for a user.
 
 Default state home on Windows:
 
@@ -188,7 +188,7 @@ a different repository; this runbook only records the handshake expectations.
 ## 8. First-run smoke test
 
 Target procedure (Step 7, `pending`). The following invocations are the only CLI
-surface this revision implements, and `serve` cannot yet serve:
+surface this revision implements; no released artifact exists to run them from:
 
 ```powershell
 & "<install-dir>\axiom-graphd.exe" version --json
@@ -198,10 +198,10 @@ surface this revision implements, and `serve` cannot yet serve:
 
 Expected today, from the implemented code path (not a captured run): `version
 --json` prints the frozen version report plus runtime facts and exits `0`;
-`doctor` exits `4` (`NOT_READY`) with the reason that the diagnostic inventory is
-implemented by a later work package; `serve` takes the single-owner instance
-lock, records that the reconcile worker loop is not part of this work package and
-exits `4`. See [reference/axiom-graphd](../reference/axiom-graphd.md) for the exact
+`doctor` opens the instance store and prints a diagnostic report (exit `0`,
+`overall` may be `degraded`); `serve` takes the single-owner instance lock and
+runs one bounded reconcile pass, publishing a generation and exiting `0` (task
+H-002). See [reference/axiom-graphd](../reference/axiom-graphd.md) for the exact
 per-command contract.
 
 ## 9. Uninstall and uninstall verification
@@ -247,7 +247,8 @@ to their pre-uninstall state.
 - The commands in sections 4, 5, 6 and 9 are documentation of an intended
   contract for a later work package; they are not accepted by any binary in this
   revision, except the `axiom-graphd solution` shape, which task H-001 wired into
-  argv so it is accepted and then refused with `NOT_READY` (exit 4).
+  argv and task H-002 bound to the registry, so `solution register|list|remove`
+  now executes against a machine-local store.
 
 ## 12. Related documents
 
