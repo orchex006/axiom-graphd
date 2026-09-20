@@ -1,0 +1,94 @@
+# H-004 negative and boundary evidence (real output)
+# captured: 2026-09-20T14:58:39.5689558+07:00
+# base:     682269338706c8ffc7d81efc0b266b5ac5a66765
+
+## negative: configuration refusals over the real H-003 fixtures
+
+$ cargo test -p axiom-config --locked --test solution -- --exact every_registry_refusal_comes_from_the_registered_document
+test every_registry_refusal_comes_from_the_registered_document ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+# EXIT=0
+
+The test walks the 14 committed fixtures and asserts, per fixture, the contract's
+refusal identifier through AxiomError::details()["rule"]. A misspelling or a
+guessed project fails the test.
+
+## negative: an escaping/escalating claim set writes nothing
+
+$ cargo test -p axiom-config --locked --test solution -- --exact the_binding_coverage_and_containment_boundaries_are_enforced
+test the_binding_coverage_and_containment_boundaries_are_enforced ... ok
+# EXIT=0
+
+$ cargo test -p axiom-config --locked --test solution -- --exact a_claim_set_that_fails_the_rules_returns_no_registered_solution
+test a_claim_set_that_fails_the_rules_returns_no_registered_solution ... ok
+# EXIT=0
+
+read_registered_solution returns Err and no RegisteredSolution on the first
+failing claim, and it writes no row and no file anywhere, so a refused
+registration persists nothing (M1).
+
+## negative: resolution never guesses a project
+
+$ cargo test -p axiom-config --locked --test solution -- --exact resolution_refusals_are_explicit_and_never_guess_a_project
+test resolution_refusals_are_explicit_and_never_guess_a_project ... ok
+# EXIT=0
+
+  alias-ambiguous-host  (Conflict)   one host, two distinct projects -> refused
+  alias-unresolved-host (NotFound)   a host no alias declares       -> explicit unresolved
+
+## boundary: prefix boundary, protocol scoping, repeated declaration, present-but-unusable prefix
+
+$ cargo test -p axiom-config --locked --test solution -- --exact resolution_boundaries_follow_the_contract_order
+test resolution_boundaries_follow_the_contract_order ... ok
+# EXIT=0
+
+$ cargo test -p axiom-config --locked --lib a_present_but_unusable_route_prefix_is_not_silently_ignored
+test solution::tests::a_present_but_unusable_route_prefix_is_not_silently_ignored ... ok
+# EXIT=0
+
+## negative: a hand-built alias table can no longer reach the L3 join
+
+The L3 join is configured only from a registered document. A real scan:
+
+$ rg -n 'SolutionMapping\s*\{|\.aliases\s*\.push|SolutionAlias::new|from_registered_aliases|read_registered_solution' crates fixtures -g '*.rs' -g '*.vector'
+exit=0
+
+  crates\config\...                            the reader and its tests
+  crates\graph-analyze\tests\l3_fixtures.rs:694  read_registered_solution(...)
+  crates\graph-analyze\tests\l3_fixtures.rs:696  SolutionMapping::from_registered_aliases(registered.l3_aliases())
+  crates\graph-analyze\src\l3\http_join.rs:70   pub struct SolutionMapping   <- field is private
+  crates\graph-analyze\src\l3\http_join.rs:98   SolutionAlias::new           <- the only construction, inside
+                                                                                 from_registered_aliases itself
+
+  No `.aliases.push` exists for SolutionMapping anywhere, the `aliases` field is
+  private and has no mutator, so a mapping cannot be assembled entry by entry.
+  The one SolutionAlias::new call is inside the production projection function;
+  no test constructs a SolutionAlias or a hand-written host table any more.
+
+The F-006 vector harness no longer declares aliases by hand either: the vector
+grammar's `alias <host> <project>` directive is gone and the five vectors use
+`link <source-project> <target-project> <protocol> <route-prefix>`, which the
+harness projects into a solution document and reads back with the same reader.
+
+$ cargo test -p graph-analyze --locked --test l3_fixtures http_join_vectors_join_only_through_configured_aliases
+test http_join_vectors_join_only_through_configured_aliases ... ok
+# EXIT=0
+
+$ cargo test -p graph-analyze --locked --lib a_host_claimed_by_two_projects_is_not_joinable
+test l3::http_join::tests::a_host_claimed_by_two_projects_is_not_joinable ... ok
+# EXIT=0
+
+  The ambiguity case is now a registered document that declares
+  //orders.contoso.example for orders-api and for other-api; the join returns no
+  relation and an unresolved-no-configured-alias entry, and the document's pair
+  set (not a test table) is what makes project_for() return None.
+
+## boundary: the negative vector must still refuse, through the document
+
+$ cargo test -p graph-analyze --locked --test l3_fixtures
+running 9 tests ... test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+# EXIT=0
+
+  negative_unconfigured_host.vector declares one link and still produces
+  unresolved-no-configured-alias for other.example.com: reading the document did
+  not make an undeclared host resolve.

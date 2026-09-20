@@ -1,0 +1,447 @@
+$ cargo test --locked --all-targets --workspace --exclude axiom
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+     Running unittests src\lib.rs (target\debug\deps\axiom_bootstrap-a0f8dd215c78b4a9.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\release_boundary.rs (target\debug\deps\release_boundary-52d03311d98f1f10.exe)
+
+running 8 tests
+test the_installer_boundary_check_would_catch_a_regression ... ok
+test read_manifest_reports_version_inheritance_and_binaries ... ok
+test unreadable_manifests_are_reported_instead_of_guessed ... ok
+test the_daemon_and_cli_share_the_release_boundary ... ok
+test no_member_is_a_separately_versioned_installer ... ok
+test bootstrap_engine_lives_inside_the_core_crate ... ok
+test every_member_inherits_the_one_workspace_version ... ok
+test one_workspace_reports_one_core_version ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\main.rs (target\debug\deps\axiom-58452d4dd22b6415.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\cli_integration.rs (target\debug\deps\cli_integration-97df0e98a1b81176.exe)
+
+running 7 tests
+test all_is_rejected_outside_the_version_command ... ok
+test version_all_in_text_mode_prints_one_line_per_component ... ok
+test version_all_reports_both_halves_in_one_object ... ok
+test the_cli_reports_the_frozen_object_for_the_core_release ... ok
+test a_documented_command_of_a_later_package_reports_not_ready ... ok
+test help_prints_the_generated_exit_code_table ... ok
+test an_unknown_command_is_rejected_with_one_error_envelope ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+
+     Running unittests src\lib.rs (target\debug\deps\axiom_config-d79f9566436b2d74.exe)
+
+running 6 tests
+test solution::tests::an_alias_resolution_reports_the_contract_reason ... ok
+test solution::tests::the_l3_host_key_is_authority_only ... ok
+test solution::tests::normalization_matches_the_contract_examples ... ok
+test solution::tests::machine_local_and_credential_shaped_values_are_not_portable_free_text ... ok
+test solution::tests::containment_refuses_a_bound_root_with_a_parent_segment ... ok
+test solution::tests::prefix_matching_requires_a_slash_boundary ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\bindings.rs (target\debug\deps\bindings-093880c2d31ea093.exe)
+
+running 14 tests
+test logical_identity_survives_a_checkout_move ... ok
+test overlapping_output_namespace_is_refused ... ok
+test inactive_bindings_do_not_claim_output ... ok
+test duplicate_active_writer_on_one_root_is_refused ... ok
+test remote_device_and_cloud_roots_are_refused ... ok
+test one_logical_writer_from_two_roots_is_refused ... ok
+test distinct_active_writers_are_accepted ... ok
+test non_portable_logical_ids_are_refused ... ok
+test control_characters_in_a_root_are_refused ... ok
+test portable_view_carries_no_absolute_path ... ok
+test relative_root_is_refused ... ok
+test two_logical_repositories_on_one_root_are_refused ... ok
+test resolve_binding_is_exact_and_reports_not_found ... ok
+test binding_table_bound_is_enforced ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\solution.rs (target\debug\deps\solution-90f337b980683532.exe)
+
+running 9 tests
+test a_bound_two_repository_solution_yields_one_claim_per_project ... ok
+test a_claim_set_that_fails_the_rules_returns_no_registered_solution ... ok
+test a_document_without_a_bindings_companion_keeps_its_logical_claims ... ok
+test the_binding_coverage_and_containment_boundaries_are_enforced ... ok
+test the_l3_alias_map_is_derived_from_the_registered_document ... ok
+test resolution_refusals_are_explicit_and_never_guess_a_project ... ok
+test resolution_boundaries_follow_the_contract_order ... ok
+test names_frozen_by_the_evaluator_keep_their_existing_spelling ... ok
+test every_registry_refusal_comes_from_the_registered_document ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (target\debug\deps\axiom_graphd-ef5cb42ff96fa1f9.exe)
+
+running 113 tests
+test checkpoint::staged::tests::an_absolute_or_traversing_path_is_refused_before_the_index_is_read ... ok
+test checkpoint::export::tests::an_output_outside_the_checkpoint_lane_is_refused ... ok
+test checkpoint::export::tests::generated_outputs_are_excluded_from_the_input_fingerprint ... ok
+test checkpoint::verify::tests::a_clean_textual_merge_with_a_different_graph_is_stale ... ok
+test checkpoint::verify::tests::a_conflicted_merge_is_never_reported_as_usable ... ok
+test checkpoint::staged::tests::a_path_absent_from_the_index_is_refused_and_never_falls_back ... ok
+test checkpoint::staged::tests::a_partially_staged_file_exports_the_index_bytes_not_the_worktree ... ok
+test checkpoint::export::tests::an_explicit_checkpoint_command_writes_only_into_the_checkpoint_lane ... ok
+test checkpoint::verify::tests::a_missing_tracked_checkpoint_is_not_found ... ok
+test checkpoint::export::tests::the_live_lane_and_an_implicit_write_are_both_refused ... ok
+test checkpoint::verify::tests::a_project_only_present_in_the_regeneration_is_a_mismatch ... ok
+test checkpoint::verify::tests::a_differing_payload_digest_or_generation_is_stale_even_with_equal_fingerprints ... ok
+test checkpoint::worktree::tests::a_change_on_the_second_attempt_still_certifies_within_budget ... ok
+test checkpoint::worktree::tests::a_changing_worktree_retries_then_reports_worktree_busy ... ok
+test checkpoint::worktree::tests::an_out_of_range_attempt_budget_is_refused_before_probing ... ok
+test cli::tests::commands_are_parsed_from_argv ... ok
+test checkpoint::verify::tests::a_regenerated_payload_matching_the_checkpoint_is_current ... ok
+test checkpoint::worktree::tests::inventory_differences_and_boundaries_are_explicit ... ok
+test cli::tests::every_wired_verb_accepts_help ... ok
+test cli::tests::slice_wiring_matches_commands_mod ... ok
+test checkpoint::worktree::tests::matching_before_and_after_inventories_produce_a_certificate ... ok
+test cli::tests::help_documents_the_frozen_exit_code_table ... ok
+test cli::tests::json_mode_error_output_has_no_diagnostic_prose ... ok
+test cli::tests::boundary_values_are_accepted ... ok
+test cli::tests::accepted_verbs_match_the_parser_in_both_directions ... ok
+test cli::tests::text_mode_errors_keep_stdout_empty ... ok
+test cli::tests::operator_slices_are_listed_in_help ... ok
+test cli::tests::invalid_arguments_are_rejected_with_the_validation_exit_code ... ok
+test cli::tests::cli_exit_code_doc_matches_the_frozen_contract ... ok
+test cli::tests::machine_readable_stdout_is_exactly_one_json_object ... ok
+test cli::tests::wired_options_land_in_the_parsed_command ... ok
+test commands::changed::tests::a_hint_for_a_missing_file_is_not_reported_as_observed ... ok
+test commands::changed::tests::a_path_outside_the_registered_project_root_is_refused ... ok
+test commands::changed::tests::an_accepted_hint_reports_the_digest_read_from_disk ... ok
+test commands::changed::tests::an_unregistered_solution_or_project_is_never_guessed ... ok
+test commands::changed::tests::the_bindings_document_refuses_relative_roots_and_duplicates ... ok
+test commands::changed::tests::an_unreadable_path_is_reported_apart_from_a_missing_one ... ok
+test commands::changed::tests::a_batch_document_must_agree_with_the_caller_selection ... ok
+test cli::tests::text_mode_wired_slices_keep_stdout_empty ... ok
+test cli::tests::wired_slices_answer_not_ready_instead_of_empty_success ... ok
+test commands::query::tests::an_unknown_symbol_is_not_found_in_the_pinned_snapshot ... ok
+test commands::query::tests::an_out_of_range_limit_is_refused_rather_than_clamped ... ok
+test commands::changed::tests::unknown_reasons_duplicates_roots_and_absolute_paths_are_refused ... ok
+test commands::query::tests::context_returns_the_symbol_and_its_incident_edges_within_budget ... ok
+test commands::query::tests::impact_is_a_bounded_reverse_walk_that_reports_a_depth_cut ... ok
+test commands::changed::tests::the_real_reader_hashes_the_bytes_that_are_there_now ... ok
+test commands::queue::tests::list_refuses_a_limit_outside_the_bounded_range ... ok
+test commands::doctor::tests::an_unregistered_solution_is_a_not_found_with_a_stable_reason ... ok
+test commands::changed::tests::the_store_registry_reads_registration_rows_and_trusted_bindings ... ok
+test commands::doctor::tests::a_healthy_solution_reports_healthy ... ok
+test commands::queue::tests::cancel_is_cooperative_and_preserves_unprocessed_state ... ok
+test commands::reconcile::tests::an_expired_bounded_wait_is_a_retryable_timeout_with_exit_seven ... ok
+test commands::reconcile::tests::an_unsupported_scope_is_a_validation_failure_with_the_documented_exit_code ... ok
+test commands::queue::tests::cancel_refuses_terminal_jobs_and_reports_the_running_state ... ok
+test commands::queue::tests::list_refuses_a_solution_the_caller_is_not_authorized_for ... ok
+test commands::doctor::tests::status_reports_freshness_and_generations ... ok
+test commands::doctor::tests::a_degraded_component_is_never_rendered_as_a_healthy_daemon ... ok
+test commands::doctor::tests::a_missing_catalog_generation_is_reported_as_degraded ... ok
+test commands::solution::tests::a_scoped_list_hides_solutions_outside_the_allowlist ... ok
+test commands::solution::tests::a_duplicate_solution_id_is_a_conflict_not_an_overwrite ... ok
+test commands::update::tests::an_approved_plan_delegates_to_axiom_as_argv_without_a_shell_string ... ok
+test commands::update::tests::an_unconfigured_trust_root_fails_closed ... ok
+test commands::update::tests::approval_must_bind_to_the_exact_plan_digest ... ok
+test commands::update::tests::an_untrusted_component_or_a_shell_metacharacter_is_refused ... ok
+test commands::solution::tests::a_url_or_unbound_repository_id_never_becomes_a_source_path ... ok
+test commands::queue::tests::list_reports_stable_ids_and_states_in_a_deterministic_order ... ok
+test commands::update::tests::check_reports_availability_without_contacting_a_release ... ok
+test control::auth::tests::an_administrator_token_reaches_the_administration_surface ... ok
+test control::auth::tests::a_duplicate_token_id_under_a_new_secret_is_a_conflict ... ok
+test control::auth::tests::a_narrowed_token_is_refused_for_another_solution ... ok
+test control::auth::tests::boundary_unknown_empty_and_oversized_tokens_are_unauthenticated ... ok
+test control::auth::tests::digests_are_stable_and_comparison_never_short_circuits_on_length ... ok
+test control::auth::tests::an_mcp_reader_token_cannot_become_a_daemon_administration_token ... ok
+test commands::reconcile::tests::project_and_timeout_misuse_are_refused_before_anything_is_enqueued ... ok
+test commands::reconcile::tests::the_three_contract_scopes_plan_jobs_with_their_documented_shape ... ok
+test commands::queue::tests::retry_returns_a_failed_job_to_pending_with_a_new_attempt ... ok
+test commands::queue::tests::retry_refuses_states_that_are_not_retryable ... ok
+test commands::solution::tests::register_validates_against_trusted_bindings_then_persists ... ok
+test commands::reconcile::tests::an_oversized_dirty_batch_and_an_unregistered_solution_are_refused ... ok
+test lifecycle::tests::clone_shares_one_state ... ok
+test lifecycle::tests::default_grace_period_is_ninety_seconds ... ok
+test lifecycle::tests::new_claims_are_rejected_after_shutdown ... ok
+test lifecycle::tests::generate_overrides_the_grace_period ... ok
+test lifecycle::tests::shutdown_is_idempotent_and_keeps_the_first_deadline ... ok
+test release::tests::a_signed_artifact_at_a_pinned_commit_publishes ... ok
+test commands::solution::tests::remove_plans_a_drain_and_never_deletes_source ... ok
+test lifecycle::tests::drain_reports_progress_and_deadline_expiry ... ok
+test lifecycle::tests::explicit_release_is_equivalent_to_drop ... ok
+test release::tests::an_unsupported_target_is_outside_the_matrix ... ok
+test release::tests::the_matrix_covers_every_supported_family_at_one_pinned_commit ... ok
+test release::tests::an_unsigned_artifact_cannot_publish ... ok
+test release::tests::placeholder_metadata_and_an_unpinned_commit_cannot_publish ... ok
+test telemetry::tests::secrets_and_paths_never_reach_the_sink ... ok
+test telemetry::tests::the_rate_limit_window_resets_after_one_minute ... ok
+test telemetry::tests::repeated_errors_are_rate_limited_with_one_notice ... ok
+test update_guard::tests::a_plausible_plan_is_admitted_with_an_argv_delegation ... ok
+test instance_lock::tests::the_lock_lives_under_the_home_that_owns_it ... ok
+test telemetry::tests::a_zero_limit_suppresses_everything_but_still_reports_once ... ok
+test telemetry::tests::error_records_carry_the_stable_code ... ok
+test telemetry::tests::level_filter_drops_lower_levels ... ok
+test telemetry::tests::records_are_single_line_json_with_exactly_three_keys ... ok
+test update_guard::tests::every_declared_hazard_is_refused_with_its_own_reason ... ok
+test update_guard::tests::the_declared_reason_vocabulary_is_unique ... ok
+test update_guard::tests::an_unsupported_approval_is_refused_rather_than_admitted ... ok
+test instance_lock::tests::an_abandoned_record_is_recovered_without_killing_anything ... ok
+test instance_lock::tests::a_second_owner_of_the_same_home_is_refused ... ok
+test instance_lock::tests::foreign_or_unreadable_records_are_not_claimed_as_locks ... ok
+test update_guard::tests::the_expiry_boundary_is_not_after_creation ... ok
+test version::tests::an_unconfigured_update_source_never_claims_a_checked_status ... ok
+test version::tests::every_enum_value_matches_the_frozen_schema ... ok
+test version::tests::the_frozen_core_has_exactly_the_schema_properties ... ok
+test version::tests::the_cli_output_adds_exactly_the_runtime_facts ... ok
+test commands::query::tests::a_default_query_never_returns_the_whole_solution ... ok
+
+test result: ok. 113 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running unittests src\main.rs (target\debug\deps\axiom_graphd-b4b6d8a4f11a2f7a.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\bootstrap_fixtures.rs (target\debug\deps\bootstrap_fixtures-6249ca0da931b634.exe)
+
+running 1 test
+test every_bootstrap_vector_is_non_destructive ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+     Running tests\git_input_fixtures.rs (target\debug\deps\git_input_fixtures-0fd8dd65a30171e3.exe)
+
+running 2 tests
+test staged_materialization_follows_the_index_and_refuses_missing_paths ... ok
+test every_git_input_class_is_distinguished_by_real_git_and_real_code ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.65s
+
+     Running tests\human_workflow_guide.rs (target\debug\deps\human_workflow_guide-cddff6f13f52484d.exe)
+
+running 7 tests
+test human_workflow_guide_polling_is_the_declared_fallback ... ok
+test human_workflow_guide_formatter_output_is_ignored_but_source_is_tracked ... ok
+test human_workflow_guide_rename_pairs_both_sides ... ok
+test human_workflow_guide_polling_baseline_then_diff ... ok
+test human_workflow_guide_offline_edits_are_found_by_the_inventory ... ok
+test human_workflow_guide_refuses_non_portable_paths_and_missing_native ... ok
+test human_workflow_guide_saves_coalesce_without_manual_submission ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\solutions_guide.rs (target\debug\deps\solutions_guide-246de5743bed1d74.exe)
+
+running 5 tests
+test solutions_guide_example_is_a_multi_repo_solution_with_local_bindings ... ok
+test solutions_guide_catalog_refuses_a_vanished_member_across_repos ... ok
+test solutions_guide_refuses_a_nested_project_claim_in_one_repository ... ok
+test solutions_guide_rejects_an_absolute_project_path ... ok
+test solutions_guide_membership_is_accepted_and_bindings_stay_local ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\troubleshooting_guide.rs (target\debug\deps\troubleshooting_guide-ddd86027810341b5.exe)
+
+running 6 tests
+test troubleshooting_guide_keeps_the_five_conditions_distinct ... ok
+test troubleshooting_guide_unsupported_host_is_refused_and_not_retried ... ok
+test troubleshooting_guide_stale_graph_is_a_retryable_not_ready ... ok
+test troubleshooting_guide_missing_daemon_is_a_disabled_watcher ... ok
+test troubleshooting_guide_queue_delay_is_a_bounded_retryable_backoff ... ok
+test troubleshooting_guide_corrupt_shard_is_an_integrity_fault ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests\update_fixtures.rs (target\debug\deps\update_fixtures-241ab515bf435ec0.exe)
+
+running 4 tests
+test the_guard_reason_vocabulary_matches_the_manifest ... ok
+test the_real_migration_and_backup_paths_refuse_incompatible_and_missing_state ... ok
+test a_refusal_leaves_the_target_tree_byte_identical_and_creates_nothing ... ok
+test every_update_vector_reaches_its_declared_decision_through_the_real_guard ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+
+     Running tests\workspace_foundation.rs (target\debug\deps\workspace_foundation-172ff8dfd17a0456.exe)
+
+running 2 tests
+test the_shipped_workspace_satisfies_the_foundation_contract ... ok
+test losing_any_single_foundation_rule_is_reported ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src\lib.rs (target\debug\deps\axiom_migration-4093907a6c59406c.exe)
+
+running 14 tests
+test plan::tests::an_empty_plan_is_a_noop_that_applies_to_nothing ... ok
+test plan::tests::duplicate_paths_are_refused_per_section ... ok
+test plan::tests::non_applicable_change_shapes_are_refused ... ok
+test plan::tests::an_unresolved_conflict_blocks_application ... ok
+test plan::tests::approval_shares_the_digest_of_the_reviewed_revision ... ok
+test plan::tests::expiry_is_refused_at_the_boundary ... ok
+test plan::tests::invalid_hashes_and_unsafe_paths_are_refused ... ok
+test plan::tests::legacy_marker_pair_is_recognised ... ok
+test plan::tests::change_before_preserve_is_also_refused ... ok
+test plan::tests::decisions_and_sources_are_visible_in_the_plan ... ok
+test plan::tests::preserved_human_text_is_retained_and_never_overwritten ... ok
+test plan::tests::digest_is_deterministic_and_bound_to_every_input ... ok
+test plan::tests::typed_errors_and_codes_are_stable ... ok
+test plan::tests::stale_sources_are_refused_in_three_directions ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\apply.rs (target\debug\deps\apply-f299bb0459a95797.exe)
+
+running 23 tests
+test a_destination_that_is_also_an_inventoried_source_is_refused ... ok
+test a_destination_rewritten_in_place_from_itself_is_refused ... ok
+test a_backup_that_does_not_read_back_is_refused_before_cutover ... ok
+test a_destination_that_drifted_after_review_refuses_with_a_hash_mismatch ... ok
+test a_destination_deleted_after_cutover_blocks_the_rollback ... ok
+test a_clean_run_fences_backs_up_stages_verifies_and_cuts_over ... ok
+test a_failure_during_cutover_restores_the_pre_cutover_bytes ... ok
+test a_human_edit_after_cutover_blocks_the_rollback_and_is_preserved ... ok
+test a_backup_that_no_longer_matches_blocks_the_rollback ... ok
+test a_completed_cutover_is_rolled_back_to_the_previous_bytes ... ok
+test a_cutover_written_after_the_last_journal_save_is_still_undone ... ok
+test a_rollback_before_the_cutover_is_refused ... ok
+test a_legacy_destination_is_refused_before_a_single_byte_is_written ... ok
+test a_non_quiescent_fence_refuses_before_a_single_byte_is_written ... ok
+test a_journal_for_another_solution_is_refused ... ok
+test a_rollback_refuses_a_journal_for_another_solution ... ok
+test a_rollback_without_a_journal_is_refused ... ok
+test a_human_edit_after_cutover_is_never_overwritten_by_recovery ... ok
+test an_unreviewed_digest_never_reaches_the_fence ... ok
+test a_second_rollback_reports_the_cutover_was_already_undone ... ok
+test an_interrupted_cutover_is_rolled_back_only_where_it_was_cut_over ... ok
+test the_journal_round_trips_and_refuses_a_foreign_document ... ok
+test a_crash_at_every_journal_boundary_resumes_to_the_applied_state ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\discover.rs (target\debug\deps\discover-652199b38f29b9de.exe)
+
+running 14 tests
+test layouts_are_reported_in_canonical_order ... ok
+test content_relation_defaults_to_not_compared ... ok
+test an_existing_v2_target_with_an_identical_leftover_is_already_migrated ... ok
+test an_unhealthy_source_is_refused_even_when_the_other_is_present ... ok
+test each_layout_is_recognized_on_its_own_spelling ... ok
+test a_conflict_maps_to_the_shared_typed_error ... ok
+test a_path_under_a_layout_counts_as_that_layout ... ok
+test no_legacy_folder_means_a_fresh_setup ... ok
+test one_legacy_spelling_proposes_a_read_only_import ... ok
+test the_legacy_marker_template_is_defined ... ok
+test two_conflicting_spellings_are_refused ... ok
+test an_unproven_v2_target_conflicts_instead_of_guessing ... ok
+test two_identical_spellings_are_deduplicated ... ok
+test unsafe_listed_paths_are_refused_before_inspection ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (target\debug\deps\axiom_platform-f4f1c31753f29e40.exe)
+
+running 6 tests
+test filesystem::tests::an_open_handle_is_a_retryable_conflict_and_an_unobservable_host_says_so ... ok
+test filesystem::tests::a_long_path_is_refused_unless_long_path_support_is_in_effect ... ok
+test filesystem::tests::a_whole_replacement_is_approved_or_refused_by_its_first_native_boundary ... ok
+test filesystem::tests::crlf_bytes_are_preserved_exactly_and_a_normalizing_rewrite_is_refused ... ok
+test filesystem::tests::staging_must_share_the_destination_volume_and_refuse_what_it_cannot_classify ... ok
+test filesystem::tests::link_escapes_and_unresolved_targets_are_refused_while_inside_targets_are_allowed ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\guard.rs (target\debug\deps\guard-e6c86eaf5360de7e.exe)
+
+running 17 tests
+test crash_release_and_removal_facts_match_the_frozen_contract ... ok
+test gc_requires_the_exclusive_guard_set_and_refuses_a_partially_exposed_pointer ... ok
+test gc_keeps_the_current_pointer_and_every_reader_pinned_generation ... ok
+test participant_plans_follow_the_one_normative_order_and_never_upgrade ... ok
+test retry_delays_start_at_25ms_double_then_cap_at_250ms ... ok
+test the_bounded_wait_uses_the_frozen_bounds_and_refuses_unbounded_values ... ok
+test the_guard_directory_and_lock_files_match_the_frozen_contract ... ok
+test a_cancelled_wait_stops_without_taking_anything ... ok
+test a_guard_path_that_is_not_a_directory_is_reported_as_a_guard_directory_error ... ok
+test the_lock_paths_are_the_two_frozen_names_inside_the_guard_directory ... ok
+test an_exclusive_holder_still_permits_a_shared_reader_of_the_other_file ... ok
+test dropping_a_guard_releases_it_because_the_os_owns_the_lock ... ok
+test an_expired_bound_reports_the_timeout_and_leaves_nothing_held ... ok
+test a_second_exclusive_holder_is_refused_rather_than_blocking ... ok
+test a_reader_releases_admission_before_the_payload_and_keeps_its_data_guard ... ok
+test the_publisher_set_holds_both_guards_exclusively_and_releases_fully ... ok
+test a_crashed_process_releases_its_guards ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\path_key.rs (target\debug\deps\path_key-895613e120e1c234.exe)
+
+running 18 tests
+test accepts_portable_spellings_and_preserves_them_byte_for_byte ... ok
+test canonical_equivalence_without_case_is_classified_as_normalization ... ok
+test case_only_collision_is_classified_as_case ... ok
+test casefold_equivalence_across_normalization_forms_is_case_only ... ok
+test an_unsafe_spelling_in_a_set_is_reported_as_invalid_not_as_a_collision ... ok
+test collision_detector_accepts_a_set_of_distinct_portable_paths_in_order ... ok
+test distinct_spellings_that_only_look_alike_are_accepted ... ok
+test duplicate_spelling_is_reported_as_a_defect_not_silently_deduplicated ... ok
+test nfd_applies_canonical_ordering_by_combining_class ... ok
+test detection_keys_are_derived_on_demand_and_never_stored_in_place ... ok
+test combining_class_matches_the_unicode_database ... ok
+test byte_budget_boundary_is_checked_per_segment_and_for_the_whole_path ... ok
+test nfd_decomposes_hangul_syllables_algorithmically ... ok
+test nfd_decomposes_precomposed_latin_and_is_idempotent ... ok
+test nfd_spelling_of_cafe_collides_with_the_precomposed_spelling ... ok
+test refusals_map_onto_the_shared_typed_error_without_losing_the_spelling ... ok
+test unicode_tables_report_the_version_they_were_generated_from ... ok
+test refuses_every_unsafe_portable_spelling_and_keeps_the_observed_bytes ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\state_root.rs (target\debug\deps\state_root-909efb363aa75d41.exe)
+
+running 17 tests
+test a_host_that_cannot_observe_ownership_records_none_instead_of_claiming_private ... ok
+test a_destination_that_is_not_a_directory_is_refused ... ok
+test a_relative_override_is_refused_before_any_native_call ... ok
+test a_non_private_override_is_refused_by_the_scripted_host_too ... ok
+test a_missing_platform_fact_or_unknown_platform_is_a_config_error ... ok
+test a_root_that_is_not_private_to_its_owner_is_refused ... ok
+test a_create_failure_is_reported_with_the_host_reason_verbatim ... ok
+test a_link_or_reparse_point_destination_is_refused ... ok
+test a_shared_or_cloud_override_is_refused_and_the_storage_class_is_named ... ok
+test creation_is_verified_by_observation_not_by_the_return_value_of_create ... ok
+test ensure_never_creates_anything_when_the_destination_is_a_link ... ok
+test the_macos_default_is_application_support ... ok
+test an_absolute_override_on_local_storage_resolves_to_that_directory ... ok
+test the_guard_directory_follows_the_frozen_abi_layout ... FAILED
+test the_linux_default_is_xdg_state_home_over_axiom_and_the_home_fallback_matches ... ok
+test the_windows_default_is_local_app_data_and_bootstrap_creates_it ... ok
+test a_missing_override_reports_missing_and_bootstrap_creates_it_exactly_once ... ok
+
+failures:
+
+---- the_guard_directory_follows_the_frozen_abi_layout stdout ----
+
+thread 'the_guard_directory_follows_the_frozen_abi_layout' panicked at crates\platform\tests\state_root.rs:119:5:
+assertion failed: resolved.home().is_ok()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    the_guard_directory_follows_the_frozen_abi_layout
+
+test result: FAILED. 16 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p axiom-platform --test state_root`
+EXIT=101

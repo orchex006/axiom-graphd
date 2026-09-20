@@ -1,0 +1,25 @@
+# H-004 build evidence
+# captured: 2026-09-20T14:57:41.4891484+07:00
+# base:     682269338706c8ffc7d81efc0b266b5ac5a66765
+# worktree: D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004
+# branch:   feature/h-004-solution-config-membership-alias
+
+$ cargo build --locked --all-targets
+exit=0
+   Compiling graph-analyze v0.0.0-dev (...)
+   Compiling axiom-graphd v0.0.0-dev (...)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 9.07s
+
+$ cargo fmt-check          (cargo fmt --all -- --check)
+exit=0   no diff
+
+$ cargo lint               (cargo clippy --locked --all-targets -- -D warnings)
+exit=0
+    Checking graph-analyze v0.0.0-dev (...)
+    Checking axiom-graphd v0.0.0-dev (...)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.53s
+
+`.cargo/config.toml` carries rustflags = ["-D","warnings"] and the workspace lints table
+denies warnings and unsafe_code, so `cargo lint` failing on any warning is a real gate.
+
+Raw captures: h004-raw-build.txt, h004-raw-lint.txt, h004-raw-fmt-check.txt

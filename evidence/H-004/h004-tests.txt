@@ -1,0 +1,87 @@
+# H-004 test evidence - exact per-target counts
+# captured: 2026-09-20T14:57:50.5841242+07:00
+# base:     682269338706c8ffc7d81efc0b266b5ac5a66765
+# branch:   feature/h-004-solution-config-membership-alias
+# toolchain: rustc 1.85.0 (4d91de4e4 2025-02-17), cargo 1.85.0 (d73d2caf9 2024-12-31)
+# platform:  Microsoft Windows 11 Pro, X64, PowerShell 7.6.6
+
+## 1. Card package: cargo test -p axiom-config --locked --all-targets   exit=0
+
+  Running unittests src\lib.rs            running 7 tests    ok. 7 passed; 0 failed; 0 ignored
+  Running tests\bindings.rs               running 14 tests   ok. 14 passed; 0 failed; 0 ignored
+  Running tests\solution.rs               running 9 tests    ok. 9 passed; 0 failed; 0 ignored
+                                                        total 30 passed, 0 failed
+
+  The 9 solution integration tests iterate all 14 committed H-003 fixtures
+  (axiom-specs/tests/fixtures/solution-alias-mapping/*.json), embedded verbatim.
+  Raw capture: h004-raw-config-tests.txt
+
+## 2. L3 consumer: cargo test -p graph-analyze --locked --all-targets   exit=0
+
+  Running unittests src\lib.rs            running 156 tests  ok. 156 passed; 0 failed; 0 ignored
+  Running tests\csharp_fixtures.rs        running 5 tests    ok. 5 passed; 0 failed; 0 ignored
+  Running tests\l3_fixtures.rs            running 9 tests    ok. 9 passed; 0 failed; 0 ignored
+  Running tests\typescript_fixtures.rs    running 8 tests    ok. 8 passed; 0 failed; 0 ignored
+                                                        total 178 passed, 0 failed
+
+  http_join unit tests (subset of the 156): 7 passed, 0 failed.
+  `l3_fixtures::http_join_vectors_join_only_through_configured_aliases` is the
+  F-006 harness: its five vectors now declare `link <source> <target> <protocol>
+  <route-prefix>` and the harness projects them into a solution document that is
+  read with `axiom_config::solution::read_registered_solution`, instead of
+  building an alias table by hand.
+  Raw capture: h004-raw-http-join.txt
+
+## 3. Requested `cargo test -p config`   exit=101
+
+  error: package ID specification `config` did not match any packages
+
+  The crate directory is `crates/config` but its package name is `axiom-config`, so
+  the literal command in the card cannot select it. The equivalent real command,
+  `cargo test -p axiom-config --locked --all-targets`, is section 1 above and exits 0.
+  Raw capture: h004-raw-cargo-test-p-config.txt
+
+## 4. Workspace gates from Development.md
+
+  cargo verify --no-fail-fast   exit=101   h004-raw-workspace-verify-nofailfast.txt
+  cargo verify                  exit=101   h004-raw-workspace-verify.txt
+  cargo test                    exit=101   h004-raw-workspace-test.txt
+
+  All three fail for the SAME two pre-existing targets; every other target is ok.
+
+## 5. The two failing targets are not reachable from this card
+
+  target                                  summary
+  --------------------------------------  ---------------------------------------------------------
+  -p axiom --lib                          463 passed; 44 failed   (Windows host-path joins in
+                                          crates/axiom/src/hosts/*, src/service/{linux,macos}.rs,
+                                          src/install/uninstall.rs; already recorded under H-001)
+  -p axiom-platform --test state_root      16 passed; 1 failed     (state_root.rs:119,
+                                          the_guard_directory_follows_the_frozen_abi_layout,
+                                          resolved.home().is_ok())
+
+  Neither `axiom` nor `axiom-platform` can reach a crate this card changes. Real
+  commands and output:
+
+  $ cargo tree -p axiom -i axiom-config
+  error: package ID specification `axiom-config` did not match any packages      exit=101
+  $ cargo tree -p axiom -i graph-analyze
+  error: package ID specification `graph-analyze` did not match any packages     exit=101
+  $ cargo tree -p axiom-platform -i axiom-config
+  error: package ID specification `axiom-config` did not match any packages      exit=101
+  $ cargo tree -p axiom-platform -i graph-analyze
+  error: package ID specification `graph-analyze` did not match any packages     exit=101
+
+  `cargo tree -i` cannot resolve the package inside those selections precisely
+  because the edge does not exist; the manifests say the same thing directly:
+  `crates/axiom/Cargo.toml` [dependencies] is graph-core, graph-export, serde,
+  serde_json, axiom-platform, getrandom (dev: axiom-graphd, tempfile), and
+  `crates/platform/Cargo.toml` [dependencies] is graph-core alone. Neither list
+  contains `axiom-config` or `graph-analyze`, so both failing targets compile and
+  run from sources this card does not touch. This is recorded as a limitation,
+  not as a pass.
+
+## 6. No hidden failure was suppressed
+
+  `cargo verify --no-fail-fast` ran every target; only the two above are red.
+  `cargo lint` (-D warnings) and `cargo fmt-check` are green over all targets.

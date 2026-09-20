@@ -13,5 +13,11 @@ graph-core = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 
+[dev-dependencies]
+# The L3 HTTP join resolves a host only through the registered solution document
+# (task H-004), so its tests read the alias map from `axiom-config` instead of
+# writing a host table by hand.
+axiom-config = { version = "0.0.0-dev", path = "../config" }
+
 [lints]
 workspace = true

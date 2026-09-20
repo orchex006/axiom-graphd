@@ -1,0 +1,67 @@
+{
+  "schema_version": 2,
+  "solution_id": "demo-solution",
+  "profile": "default",
+  "catalog_host_repo": "workspace",
+  "repositories": [
+    {
+      "repo_id": "workspace",
+      "binding_key": "workspace"
+    },
+    {
+      "repo_id": "auth",
+      "binding_key": "auth"
+    },
+    {
+      "repo_id": "web",
+      "binding_key": "web"
+    }
+  ],
+  "projects": [
+    {
+      "project_id": "auth-api",
+      "repo_id": "auth",
+      "path": "src/Auth.Api",
+      "language_profile": "csharp-dotnet",
+      "depends_on": [],
+      "allow_untracked": true
+    },
+    {
+      "project_id": "web-app",
+      "repo_id": "web",
+      "path": "src",
+      "language_profile": "typescript-angular",
+      "depends_on": [
+        "auth-api"
+      ],
+      "allow_untracked": true
+    }
+  ],
+  "graph_output_root": ".axiom/graph",
+  "ignore": [
+    "**/.git/**",
+    "**/node_modules/**",
+    "**/.axiom/graph/**"
+  ],
+  "watch": {
+    "debounce_ms": 750,
+    "max_wait_ms": 3000,
+    "inventory_interval_seconds": 300,
+    "backend": "auto"
+  },
+  "queue": {
+    "worker_limit": 4,
+    "max_batch_files": 64,
+    "max_batch_bytes": 16777216,
+    "retry_limit": 5
+  },
+  "semantic_links": [
+    {
+      "source_project": "web-app",
+      "target_project": "auth-api",
+      "protocol": "http",
+      "route_prefix": "/api/auth"
+    }
+  ],
+  "workspace_layout": 2
+}

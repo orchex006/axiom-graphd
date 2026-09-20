@@ -9,14 +9,13 @@
 //! exactly the documented `PATTERN_*` / `REASON_*` refusal, or no fact at all.
 //! The refusal assertions are the negative half of task F-006 AC2.
 
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use graph_analyze::l3::angular_http;
 use graph_analyze::l3::dotnet_routes::{self, HttpVerb};
-use graph_analyze::l3::http_join::{
-    self, HttpClientFact, HttpEndpointFact, SolutionAlias, SolutionMapping,
-};
+use graph_analyze::l3::http_join::{self, HttpClientFact, HttpEndpointFact, SolutionMapping};
 use graph_analyze::l3::messaging::{self, ConfiguredTopic, MessagingConfig, MessagingRole};
 use graph_analyze::l3::minimal_api;
 use graph_analyze::l3::sql_literals::{self, SqlOperation};
@@ -554,6 +553,8 @@ fn messaging_literal_topics_link_and_computed_topics_refuse() {
 struct JoinVector {
     name: String,
     mapping: SolutionMapping,
+    /// Declared `link <source> <target> <protocol> <route-prefix>` directives.
+    links: Vec<[String; 4]>,
     endpoints: Vec<HttpEndpointFact>,
     clients: Vec<HttpClientFact>,
     expectations: Vec<Expectation>,
@@ -609,10 +610,12 @@ fn parse_join_vector(relative: &str) -> JoinVector {
         let tokens: Vec<&str> = line.split_whitespace().collect();
         match tokens[0] {
             "vector" => vector.name = tokens[1].to_string(),
-            "alias" => vector
-                .mapping
-                .aliases
-                .push(SolutionAlias::new(tokens[1], tokens[2])),
+            "link" => vector.links.push([
+                tokens[1].to_string(),
+                tokens[2].to_string(),
+                tokens[3].to_string(),
+                tokens[4].to_string(),
+            ]),
             "endpoint" => vector.endpoints.push(HttpEndpointFact {
                 project: tokens[1].to_string(),
                 file: tokens[2].to_string(),
@@ -646,6 +649,51 @@ fn parse_join_vector(relative: &str) -> JoinVector {
             other => panic!("{relative}: unknown directive {other}"),
         }
     }
+
+    // The alias table is not written here. The vector's `link` directives are
+    // projected into a real solution document and read back through the same
+    // reader operator registration uses, so a host can only resolve when the
+    // document declares it.
+    let mut projects: BTreeSet<String> = BTreeSet::new();
+    for endpoint in &vector.endpoints {
+        projects.insert(endpoint.project.clone());
+    }
+    for client in &vector.clients {
+        projects.insert(client.project.clone());
+    }
+    for link in &vector.links {
+        projects.insert(link[0].clone());
+        projects.insert(link[1].clone());
+    }
+    let document = serde_json::json!({
+        "schema_version": 2,
+        "solution_id": "l3-vector",
+        "repositories": projects
+            .iter()
+            .map(|project| serde_json::json!({"repo_id": project, "binding_key": project}))
+            .collect::<Vec<_>>(),
+        "projects": projects
+            .iter()
+            .map(|project| serde_json::json!({
+                "project_id": project,
+                "repo_id": project,
+                "path": "src",
+            }))
+            .collect::<Vec<_>>(),
+        "semantic_links": vector
+            .links
+            .iter()
+            .map(|link| serde_json::json!({
+                "source_project": link[0],
+                "target_project": link[1],
+                "protocol": link[2],
+                "route_prefix": link[3],
+            }))
+            .collect::<Vec<_>>(),
+    });
+    let registered = axiom_config::solution::read_registered_solution(&document, None)
+        .unwrap_or_else(|error| panic!("{relative}: the vector document is refused: {error}"));
+    vector.mapping = SolutionMapping::from_registered_aliases(registered.l3_aliases());
     vector
 }
 

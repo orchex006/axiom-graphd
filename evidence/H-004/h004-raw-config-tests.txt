@@ -1,0 +1,49 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running unittests src\lib.rs (target\debug\deps\axiom_config-c1bdde59cfa107ef.exe)
+
+running 7 tests
+test solution::tests::an_alias_resolution_reports_the_contract_reason ... ok
+test solution::tests::prefix_matching_requires_a_slash_boundary ... ok
+test solution::tests::the_l3_host_key_is_authority_only ... ok
+test solution::tests::containment_refuses_a_bound_root_with_a_parent_segment ... ok
+test solution::tests::machine_local_and_credential_shaped_values_are_not_portable_free_text ... ok
+test solution::tests::normalization_matches_the_contract_examples ... ok
+test solution::tests::a_present_but_unusable_route_prefix_is_not_silently_ignored ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\bindings.rs (target\debug\deps\bindings-da47bcbbd129635e.exe)
+
+running 14 tests
+test logical_identity_survives_a_checkout_move ... ok
+test non_portable_logical_ids_are_refused ... ok
+test one_logical_writer_from_two_roots_is_refused ... ok
+test overlapping_output_namespace_is_refused ... ok
+test control_characters_in_a_root_are_refused ... ok
+test distinct_active_writers_are_accepted ... ok
+test duplicate_active_writer_on_one_root_is_refused ... ok
+test portable_view_carries_no_absolute_path ... ok
+test relative_root_is_refused ... ok
+test inactive_bindings_do_not_claim_output ... ok
+test remote_device_and_cloud_roots_are_refused ... ok
+test resolve_binding_is_exact_and_reports_not_found ... ok
+test two_logical_repositories_on_one_root_are_refused ... ok
+test binding_table_bound_is_enforced ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\solution.rs (target\debug\deps\solution-61364b67fb75206e.exe)
+
+running 9 tests
+test a_bound_two_repository_solution_yields_one_claim_per_project ... ok
+test resolution_refusals_are_explicit_and_never_guess_a_project ... ok
+test a_claim_set_that_fails_the_rules_returns_no_registered_solution ... ok
+test a_document_without_a_bindings_companion_keeps_its_logical_claims ... ok
+test the_binding_coverage_and_containment_boundaries_are_enforced ... ok
+test the_l3_alias_map_is_derived_from_the_registered_document ... ok
+test resolution_boundaries_follow_the_contract_order ... ok
+test names_frozen_by_the_evaluator_keep_their_existing_spelling ... ok
+test every_registry_refusal_comes_from_the_registered_document ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

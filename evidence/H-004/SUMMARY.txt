@@ -1,0 +1,139 @@
+# H-004 SUMMARY - read membership and the cross-service alias map from the registered solution config
+
+task            H-004 (card: axiom-specs tasks/H/H-004.md)
+repository      axiom-graphd (canonical remote https://github.com/orchex006/axiom-graphd.git)
+worktree        D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004
+branch          feature/h-004-solution-config-membership-alias
+base            origin/main 682269338706c8ffc7d81efc0b266b5ac5a66765
+local commit    on the branch above (SHA reported in the task close-out; no push, no merge, no tag)
+toolchain       rustc 1.85.0 (4d91de4e4 2025-02-17), cargo 1.85.0 (d73d2caf9 2024-12-31)
+platform        Microsoft Windows 11 Pro, X64, PowerShell 7.6.6
+captured        2026-09-20T14:59:18.5000996+07:00
+
+## Deliverable
+
+crates/config/src/solution.rs is the new reader. It derives exactly two tables
+from ONE accepted schema_version 2 solution document plus its owner-only bindings:
+
+  * one MembershipClaim per projects[] entry (M2/M4/M5/M6 + B-013 overlap/duplicate),
+  * one ServiceAlias per semantic_links[] entry that carries a route_prefix,
+    keyed by normalize_service_key(route_prefix) and always resolving to the
+    link's TARGET project (contract section 3).
+
+RegisteredSolution::resolve implements contract section 4 exactly: protocol
+scoping, the same normalizer, equality or a '/' boundary prefix, then one of
+Resolved / Unresolved (alias-unresolved-host) / Ambiguous (alias-ambiguous-host).
+A repeated declaration of one project is not an ambiguity; no tie is broken by
+list position. read_registered_solution validates the WHOLE claim set and returns
+no RegisteredSolution on the first failure, so a refused registration writes
+nothing (M1); no row and no file is written anywhere in the reader.
+
+The registered document is the ONLY source of the L3 cross-service alias map:
+SolutionMapping's alias table is private with no mutator, its only constructor is
+SolutionMapping::from_registered_aliases(<RegisteredSolution>::l3_aliases()), and
+both consumers of the join in this repository now read a registered document:
+
+  * crates/graph-analyze/src/l3/http_join.rs unit tests read REGISTERED_SOLUTION /
+    AMBIGUOUS_SOLUTION through read_registered_solution;
+  * the F-006 vector harness crates/graph-analyze/tests/l3_fixtures.rs projects
+    each vector's `link <source> <target> <protocol> <route-prefix>` directives
+    into a solution document and reads it back with the same reader. The old
+    hand-written `alias <host> <project>` grammar directive is gone, and the five
+    vectors now carry portable project ids as M2 requires.
+
+## Files changed
+
+  crates/config/src/solution.rs                NEW  the reader (about 49 KB)
+  crates/config/tests/solution.rs              NEW  9 integration tests over the 14 real H-003 fixtures
+  crates/config/src/lib.rs                          pub mod solution + re-exports
+  crates/config/Cargo.toml                          serde_json dependency
+  crates/graph-analyze/src/l3/http_join.rs          private alias table + from_registered_aliases;
+                                                    tests read a registered document
+  crates/graph-analyze/tests/l3_fixtures.rs         F-006 harness reads the document, not a host table
+  fixtures/l3/http_join/*.vector                    `link ...` directives, portable project ids
+  crates/graph-analyze/Cargo.toml                   dev-dependency on axiom-config
+  Cargo.lock                                        the axiom-config <-> graph-analyze dev edge
+  docs/guides/solutions.md                          refusal table + reader/join note
+  Changelog.md                                      H-004 section
+  evidence/H-004/**                                 this evidence set
+
+## Acceptance mapping
+
+AC1 - every projects[] claim is validated with the frozen membership rules before
+      a row or a file is written, and the registered document is the only source
+      of the L3 alias map.
+      * read_registered_solution validates the WHOLE claim set and returns no
+        RegisteredSolution on the first failure, so a refused registration writes
+        nothing (M1). No row and no file is written anywhere in the reader.
+      * semantic_links and route_prefix are read from the registered document; the
+        mapping alias table is private and has no mutator, so the only way to fill
+        it is from_registered_aliases(...). No test builds a host table by hand.
+      * unresolved host  -> AliasResolution::Unresolved  (alias-unresolved-host)
+        ambiguous host   -> AliasResolution::Ambiguous   (alias-ambiguous-host)
+        non-member link  -> ERR_LINK_ENDPOINT_NOT_MEMBER refusal
+        (h004-refusal-matrix.txt maps every frozen identifier to a real test)
+AC2 - positive, negative and boundary tests over the REAL registered document, with
+      real command output and exit codes (h004-tests.txt, h004-negative.txt).
+      Every fixture is the committed H-003 file embedded verbatim; the join tests
+      and the F-006 vectors read a registered document, not a hand-written table.
+
+## Commands and real exit codes (this host)
+
+  cargo build --locked --all-targets                  0     h004-raw-build.txt
+  cargo fmt-check                                     0     h004-raw-fmt-check.txt
+  cargo lint                                          0     h004-raw-lint.txt
+  cargo test -p axiom-config --locked --all-targets   0     (7 lib + 14 bindings + 9 solution) h004-raw-config-tests.txt
+  cargo test -p graph-analyze --locked --all-targets  0     (156 lib + 5 + 9 + 8) h004-raw-http-join.txt
+  cargo verify --no-fail-fast                         101   (2 failing targets, both pre-existing) h004-raw-workspace-verify-nofailfast.txt
+  cargo verify                                        101   (stops at -p axiom --lib) h004-raw-workspace-verify.txt
+  cargo test                                          101   (same 2 pre-existing targets) h004-raw-workspace-test.txt
+  cargo test -p config                                101   (no package named 'config'; the package is axiom-config)
+  solution register --config ... --dry-run            4     NOT_READY, see h004-operator-surface.txt
+  solution register --config ... --apply              4     NOT_READY, see h004-operator-surface.txt
+
+## Limitations / blockers
+
+1. The whole-workspace gate is RED for 2 pre-existing targets that this card does not
+   touch: -p axiom --lib (463 pass / 44 fail; Windows host-path joins, already recorded
+   under H-001) and -p axiom-platform --test state_root (16 pass / 1 fail,
+   the_guard_directory_follows_the_frozen_abi_layout at state_root.rs:119). Neither
+   crate lists axiom-config or graph-analyze in its manifest, so both compile from
+   untouched sources (h004-tests.txt section 5).
+2. The operator surface is wired but not implemented in this revision: the CLI parses
+   `solution register` and answers NOT_READY (exit 4) because the registry write path is
+   owned by a later work package (H-001 recorded the same reason). The register-time
+   validation this card adds is the reader; wiring the CLI/store to it is that later task.
+   The real argv and exit code are in h004-operator-surface.txt.
+3. SolutionMapping::from_registered_aliases takes the (host, project) pair list rather
+   than a type only the reader can produce, because graph-analyze must not take a
+   production dependency on axiom-config for this (the edge is a dev-dependency). The
+   field is private and every in-repository caller passes registered.l3_aliases(); a
+   future task may tighten the signature once the layering is agreed.
+4. Per the task constraint, nothing was pushed, merged, rebased or tagged, and the primary
+   checkout D:\SP-Billy\axiom\axiom-graphd was not touched. axiom-graphd/Development.md
+   asks for integration into main and a primary-checkout update; that leg is deliberately
+   NOT performed because the task forbids push/merge and touching the primary checkout.
+
+## Evidence artifacts
+
+  h004-build.txt, h004-tests.txt, h004-refusal-matrix.txt, h004-negative.txt,
+  h004-operator-surface.txt, h004-tool-versions.txt, h004-sha256.txt, h004-raw-*.txt,
+  artifacts/H-004-register/{solution,bindings}.json
+## Constraint verification (recorded at close-out)
+
+  * Worktree: all work happened in
+    D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004 only.
+  * Primary checkout D:\SP-Billy\axiom\axiom-graphd was NOT modified. Its real
+    status at close-out: `git status --short` -> `?? _probe.py` (untracked,
+    created 2026-09-20 09:47, before this task started), branch `main` at
+    2f2c496c1476766c5823c67e73ac32ee0a2be429. That pre-existing untracked file
+    was preserved and left alone; the primary checkout has therefore NOT received
+    this task's work (see limitation 4).
+  * axiom-specs was read-only: D:\SP-Billy\axiom-worktrees\axiom-specs-main
+    `git status --short` is empty at close-out, HEAD
+    177d7914d9462a144cc0a9d983f8bea1e154d947. The spec-side specctl commands in
+    the card (`begin` / `validate` / `complete`) were NOT run because the task
+    forbids modifying axiom-specs; this is recorded as not-run, not as passed.
+  * No push, merge, rebase, tag, release or branch deletion was performed.
+  * Secret scan over evidence/H-004 (`rg -i 'password|secret|api[_-]?key|
+    private[_-]?key|token'`) returned only Rust test names, no secret material.
