@@ -38,8 +38,9 @@ use graph_core::config::ServiceConfig;
 use graph_core::error::{AxiomError, ErrorCode};
 use graph_core::locks::{default_lock_path, LockMode, SolutionGuard};
 use graph_core::paths::AxiomHome;
+use graph_export::manifest::ManifestHeader;
 use graph_export::staging::StagingLayout;
-use graph_export::{pointer, reader, recovery, GraphRecord};
+use graph_export::{pointer, reader, recovery};
 use graph_store::files::{ack_generation, apply_inventory, ObservedFile};
 use graph_store::graph_rows::{EdgeFact, EdgeTarget, GraphFactSet, NodeFact};
 use graph_store::outbox::{self, AnalysisCommit, Operation, OutboxState, PublishIntent};
@@ -51,6 +52,7 @@ use serde::Serialize;
 
 use crate::instance_lock::DaemonLock;
 use crate::lifecycle::ShutdownToken;
+use crate::payload::{self, Payload};
 use crate::runtime;
 use crate::telemetry::{LogLevel, Telemetry};
 
@@ -224,11 +226,14 @@ fn run_bounded(
             }
             let _claim = token.claim()?;
             let outcome = reconcile_project(
+                config,
                 store.connection_mut(),
                 solution,
                 project,
-                &bindings,
-                &catalog,
+                ResolutionInputs {
+                    bindings: &bindings,
+                    catalog: &catalog,
+                },
                 token,
                 &mut recoveries,
             )?;
@@ -274,17 +279,32 @@ fn mark_solution_jobs_succeeded(
     Ok(())
 }
 
+/// The binding and catalog inputs one project root is resolved from.
+///
+/// A `serve` pass builds the catalog from the same project rows it resolves
+/// bindings for, so the two are carried together rather than as separate
+/// positional arguments.
+struct ResolutionInputs<'a> {
+    bindings: &'a [graph_core::bindings::LocalBinding],
+    catalog: &'a [CatalogRepoReference],
+}
+
 fn reconcile_project(
+    config: &ServiceConfig,
     connection: &mut Connection,
     solution: &runtime::SolutionRow,
     project: &runtime::ProjectRow,
-    bindings: &[graph_core::bindings::LocalBinding],
-    catalog: &[CatalogRepoReference],
+    resolution: ResolutionInputs<'_>,
     token: &ShutdownToken,
     recoveries: &mut Vec<String>,
 ) -> Result<ProjectOutcome, AxiomError> {
     let probe = runtime::symlink_probe();
-    let resolved = resolve_binding(bindings, catalog, &project.repo_id, &probe)?;
+    let resolved = resolve_binding(
+        resolution.bindings,
+        resolution.catalog,
+        &project.repo_id,
+        &probe,
+    )?;
     let project_root = resolve_project_root(&resolved, &project.relative_path, &probe)?;
     let live_lane = runtime::live_root(&project_root, &solution.id, &project.id);
     let checkpoint_lane = runtime::checkpoint_root(&project_root, &solution.id, &project.id);
@@ -357,12 +377,11 @@ fn reconcile_project(
         }
     }
 
-    let records = project_records(connection, &project.id)?;
-    let nodes = records
-        .iter()
-        .filter(|record| record.kind != EDGE_KIND)
-        .count();
-    let edges = records.len() - nodes;
+    // The published payload is rendered from the same store rows the analyzers
+    // wrote, in the frozen contract's own document shape.
+    let payload = payload::render(connection, &project.id)?;
+    let nodes = payload.nodes.len();
+    let edges = payload.edges.len();
 
     let mut outcome = ProjectOutcome {
         solution_id: solution.id.clone(),
@@ -382,7 +401,7 @@ fn reconcile_project(
         current_generation: None,
     };
 
-    if records.is_empty() {
+    if payload.is_empty() {
         outcome.current_generation = current_generation(&live_lane)?;
         return Ok(outcome);
     }
@@ -398,12 +417,13 @@ fn reconcile_project(
     }
 
     let published = publish(
+        config,
         connection,
         solution,
         project,
         &live_lane,
         &checkpoint_lane,
-        &records,
+        &payload,
     )?;
     outcome.published = true;
     outcome.generation_id = Some(published.generation_id);
@@ -421,17 +441,19 @@ struct PublishedGeneration {
 
 /// Stage, seal and publish one generation under the exclusive guard.
 fn publish(
+    config: &ServiceConfig,
     connection: &mut Connection,
     solution: &runtime::SolutionRow,
     project: &runtime::ProjectRow,
     live_lane: &Path,
     checkpoint_lane: &Path,
-    records: &[GraphRecord],
+    payload: &Payload,
 ) -> Result<PublishedGeneration, AxiomError> {
+    let header = manifest_header(config, solution, project, payload)?;
     let live_layout = StagingLayout::new(live_lane.to_path_buf());
     let staging_id = format!("pending-{}-{}", solution.event_seq, project.id);
     let (generation_id, manifest_hash, content_dir) =
-        stage_generation(&live_layout, &staging_id, records)?;
+        stage_generation(&live_layout, &staging_id, payload, &header)?;
 
     // The revision and its durable publish intent are recorded before the
     // pointer could move, so a crash leaves a replayable row rather than a
@@ -444,7 +466,7 @@ fn publish(
             solution_id: solution.id.clone(),
             event_seq: solution.event_seq,
             profile: solution.profile.clone(),
-            source_fingerprint: manifest_hash.clone(),
+            source_fingerprint: header.source_fingerprint.clone(),
             created_at: graph_store::migrations::utc_timestamp(),
         },
         &PublishIntent {
@@ -463,7 +485,7 @@ fn publish(
     // sealing leaves every lane exactly as it was.
     let checkpoint_layout = StagingLayout::new(checkpoint_lane.to_path_buf());
     let (checkpoint_id, checkpoint_hash, checkpoint_dir) =
-        stage_generation(&checkpoint_layout, &staging_id, records)?;
+        stage_generation(&checkpoint_layout, &staging_id, payload, &header)?;
     if checkpoint_id != generation_id || checkpoint_hash != manifest_hash {
         return Err(runtime::storage_error(
             "lane publication",
@@ -489,7 +511,20 @@ fn publish(
     )?;
 
     outbox::mark(connection, &intent_id, OutboxState::Published, None)?;
-    for lane in [runtime::LIVE_LANE, runtime::LANE] {
+    // Each lane is recorded with the generation and manifest digest it was
+    // actually sealed from, so a reader of either lane resolves its own row.
+    for (lane, lane_generation, lane_hash) in [
+        (
+            runtime::LIVE_LANE,
+            generation_id.as_str(),
+            manifest_hash.as_str(),
+        ),
+        (
+            runtime::LANE,
+            checkpoint_id.as_str(),
+            checkpoint_hash.as_str(),
+        ),
+    ] {
         connection
             .execute(
                 "INSERT OR IGNORE INTO published_generations(project_id, generation_id, \
@@ -497,9 +532,9 @@ fn publish(
                  SELECT ?1, ?2, revision_id, ?3, ?4, ?5 FROM publish_outbox WHERE id = ?6",
                 rusqlite::params![
                     project.id,
-                    generation_id,
+                    lane_generation,
                     lane,
-                    manifest_hash,
+                    lane_hash,
                     graph_store::migrations::utc_timestamp(),
                     intent_id
                 ],
@@ -550,16 +585,30 @@ fn publish_lane(
 fn stage_generation(
     layout: &StagingLayout,
     staging_id: &str,
-    records: &[GraphRecord],
+    payload: &Payload,
+    header: &ManifestHeader,
 ) -> Result<(String, String, PathBuf), AxiomError> {
     let mut staged = layout.begin(staging_id).map_err(runtime::export_error)?;
+    // Only non-empty roles are published, and every shard is one canonical JSON
+    // document at the fixed path the contract assigns to its role.
+    if !payload.nodes.is_empty() {
+        staged
+            .write_records(NODES_SHARD, NODES_ROLE, &payload.nodes)
+            .map_err(runtime::export_error)?;
+    }
+    if !payload.edges.is_empty() {
+        staged
+            .write_records(EDGES_SHARD, EDGES_ROLE, &payload.edges)
+            .map_err(runtime::export_error)?;
+    }
+    let coverage = serde_json::to_value(&payload.coverage)
+        .map_err(|error| runtime::storage_error("coverage document", &error))?;
     staged
-        .write_records(SHARD_NAME, records)
+        .write_document(COVERAGE_SHARD, COVERAGE_ROLE, &coverage)
         .map_err(runtime::export_error)?;
-    let sealed = staged.seal().map_err(runtime::export_error)?;
-    let generation_id = sealed.manifest().generation_id.clone();
-    let manifest_bytes = serde_json::to_vec(sealed.manifest())
-        .map_err(|error| runtime::storage_error("manifest serialization", &error))?;
+    let sealed = staged.seal(header.clone()).map_err(runtime::export_error)?;
+    let generation_id = sealed.generation_id().to_owned();
+    let manifest_bytes = sealed.manifest_bytes().map_err(runtime::export_error)?;
     let manifest_hash = graph_export::sha256_hex(&manifest_bytes);
     let staged_dir = layout.staging_dir(staging_id);
     std::fs::write(staged_dir.join(MANIFEST_NAME), &manifest_bytes)
@@ -657,74 +706,156 @@ fn known_inventory(
     Ok(KnownInventory::from_pairs(pairs))
 }
 
-/// Record kind an incident edge carries, which is what the query layer walks.
-const EDGE_KIND: &str = "edge";
-/// The single shard name one project's records are staged under.
-const SHARD_NAME: &str = "bucket-000";
+/// The fixed shard path one project's nodes are staged under.
+const NODES_SHARD: &str = "nodes/000000.json";
+/// The role that path plays in the manifest.
+const NODES_ROLE: &str = "nodes";
+/// The fixed shard path one project's edges are staged under.
+const EDGES_SHARD: &str = "edges/000000.json";
+/// The role that path plays in the manifest.
+const EDGES_ROLE: &str = "edges";
+/// The single coverage document, at the generation root.
+const COVERAGE_SHARD: &str = "coverage.json";
+/// The role that path plays in the manifest.
+const COVERAGE_ROLE: &str = "coverage";
 /// The manifest file the frozen reader loads from a generation directory.
 const MANIFEST_NAME: &str = "manifest.json";
+
+/// Build the frozen manifest header for one project's payload.
+fn manifest_header(
+    config: &ServiceConfig,
+    solution: &runtime::SolutionRow,
+    project: &runtime::ProjectRow,
+    payload: &Payload,
+) -> Result<ManifestHeader, AxiomError> {
+    let analyzer_set_hash = analyzer_set_hash()?;
+    let dependency_fingerprint = dependency_lock_hash()?;
+    let config_fingerprint = graph_export::sha256_hex(config.canonical_json().as_bytes());
+    let source_fingerprint = source_fingerprint(
+        payload,
+        &solution.profile,
+        &analyzer_set_hash,
+        &config_fingerprint,
+        &dependency_fingerprint,
+    )?;
+    Ok(ManifestHeader {
+        solution_id: solution.id.clone(),
+        project_id: project.id.clone(),
+        analysis_profile: solution.profile.clone(),
+        generator_version: env!("CARGO_PKG_VERSION").to_owned(),
+        analyzer_set_hash,
+        source_fingerprint,
+        config_fingerprint,
+        dependency_fingerprint,
+        coverage: payload.coverage.clone(),
+    })
+}
+
+/// The pinned grammar lock this build is bound to, in a stable order.
+fn pinned_grammars() -> Result<Vec<serde_json::Value>, AxiomError> {
+    let grammars = graph_analyze::grammar::GrammarSet::load_documented_default()
+        .map_err(|error| runtime::storage_error("pinned grammar set", &error))?;
+    let mut rows: Vec<serde_json::Value> = grammars
+        .grammars()
+        .iter()
+        .map(|grammar| {
+            serde_json::json!({
+                "abi": grammar.abi(),
+                "fingerprint": grammar.fingerprint(),
+                "grammar_id": grammar.id(),
+                "language": grammar.language().as_str(),
+                "version": grammar.version(),
+            })
+        })
+        .collect();
+    rows.sort_by(|left, right| left["language"].as_str().cmp(&right["language"].as_str()));
+    Ok(rows)
+}
+
+/// A lowercase `sha256` over a value's compact JSON encoding.
+fn canonical_digest(value: &serde_json::Value) -> Result<String, AxiomError> {
+    let bytes =
+        serde_json::to_vec(value).map_err(|error| runtime::storage_error("fingerprint", &error))?;
+    Ok(graph_export::sha256_hex(&bytes))
+}
+
+/// Digest of the pinned analyzer set: the declaration analyzers and the grammar lock.
+fn analyzer_set_hash() -> Result<String, AxiomError> {
+    canonical_digest(&serde_json::json!({
+        "analyzers": [payload::CSHARP_ANALYZER_ID, payload::TYPESCRIPT_ANALYZER_ID],
+        "grammars": pinned_grammars()?,
+    }))
+}
+
+/// Digest of the pinned dependency lock: the exact grammars this build binds.
+fn dependency_lock_hash() -> Result<String, AxiomError> {
+    canonical_digest(&serde_json::json!({ "grammar_lock": pinned_grammars()? }))
+}
+
+/// Digest of the analysed source: sorted inputs, the profile and every lock.
+fn source_fingerprint(
+    payload: &Payload,
+    profile: &str,
+    analyzer_set_hash: &str,
+    config_fingerprint: &str,
+    dependency_fingerprint: &str,
+) -> Result<String, AxiomError> {
+    let inputs: Vec<serde_json::Value> = payload
+        .input_paths
+        .iter()
+        .map(|(path, hash)| serde_json::json!([path, hash]))
+        .collect();
+    canonical_digest(&serde_json::json!({
+        "analyzer_set_hash": analyzer_set_hash,
+        "config_fingerprint": config_fingerprint,
+        "dependency_fingerprint": dependency_fingerprint,
+        "inputs": inputs,
+        "profile": profile,
+    }))
+}
 
 fn current_generation(lane: &Path) -> Result<Option<String>, AxiomError> {
     Ok(pointer::read(lane)
         .map_err(runtime::export_error)?
         .map(|pointer| pointer.generation_id))
 }
-/// Read the project's facts as publishable records.
-fn project_records(
-    connection: &Connection,
-    project_id: &str,
-) -> Result<Vec<GraphRecord>, AxiomError> {
-    let mut records = Vec::new();
-    {
-        let mut statement = connection
-            .prepare("SELECT id, kind, record_json FROM nodes WHERE project_id = ?1 ORDER BY id")
-            .map_err(|error| runtime::storage_error("node query", &error))?;
-        let rows = statement
-            .query_map([project_id], |row| {
-                Ok((
-                    row.get::<_, String>(0)?,
-                    row.get::<_, String>(1)?,
-                    row.get::<_, String>(2)?,
-                ))
-            })
-            .map_err(|error| runtime::storage_error("node query", &error))?;
-        for row in rows {
-            let (id, kind, body) =
-                row.map_err(|error| runtime::storage_error("node row", &error))?;
-            records.push(GraphRecord::new(id, kind, parse_body(&body)?));
-        }
-    }
-    {
-        let mut statement = connection
-            .prepare(
-                "SELECT e.id, e.record_json FROM edges e JOIN files f ON f.id = e.owner_file_id \
-                 WHERE f.project_id = ?1 ORDER BY e.id",
-            )
-            .map_err(|error| runtime::storage_error("edge query", &error))?;
-        let rows = statement
-            .query_map([project_id], |row| {
-                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
-            })
-            .map_err(|error| runtime::storage_error("edge query", &error))?;
-        for row in rows {
-            let (id, body) = row.map_err(|error| runtime::storage_error("edge row", &error))?;
-            records.push(GraphRecord::new(id, EDGE_KIND, parse_body(&body)?));
-        }
-    }
-    Ok(records)
-}
-
-fn parse_body(body: &str) -> Result<serde_json::Value, AxiomError> {
-    serde_json::from_str(body).map_err(|error| runtime::storage_error("record body", &error))
-}
-
 /// One declaration, lifted out of the language-specific analyzer types.
 struct Declaration {
     kind: &'static str,
     name: String,
     semantic_path: Vec<String>,
     key: String,
-    span: (usize, usize),
+    start_line: usize,
+    end_line: usize,
+}
+
+/// The one-based lines an analyzer byte span covers.
+///
+/// `Span::line` reports the line of a span *start*, so the end line is read from a
+/// zero-length span at the end offset. The result is clamped inside the source and
+/// to `end >= start`, so a published source location is always a valid one.
+fn span_lines(start: usize, end: usize, source: &str) -> (usize, usize) {
+    let start_line = graph_analyze::Span { start, end }.line(source);
+    let end_offset = end.min(source.len());
+    let end_line = graph_analyze::Span {
+        start: end_offset,
+        end: end_offset,
+    }
+    .line(source);
+    (start_line, end_line.max(start_line))
+}
+
+/// One path as the graph data contract spells a source location: relative, `/`.
+fn portable_path(path: &str) -> String {
+    path.replace('\\', "/")
+}
+
+/// The last component of a qualified name, for a declaration the analyzer left unnamed.
+fn leaf_name(qualified_name: &str) -> &str {
+    qualified_name
+        .rsplit(['.', '/', ':'])
+        .next()
+        .unwrap_or(qualified_name)
 }
 
 /// Analyse one source file into the facts that replace its previous ones.
@@ -739,39 +870,74 @@ fn analyze_file(path: &str, source: &str, project_id: &str) -> GraphFactSet {
             let declarations: Vec<Declaration> = analysis
                 .declarations
                 .iter()
-                .map(|declaration| Declaration {
-                    kind: declaration.kind.as_str(),
-                    name: declaration.name.clone(),
-                    semantic_path: declaration.semantic_path.clone(),
-                    key: declaration.key.clone(),
-                    span: (declaration.span.start, declaration.span.end),
+                .map(|declaration| {
+                    let (start_line, end_line) =
+                        span_lines(declaration.span.start, declaration.span.end, source);
+                    Declaration {
+                        kind: declaration.kind.as_str(),
+                        name: declaration.name.clone(),
+                        semantic_path: declaration.semantic_path.clone(),
+                        key: declaration.key.clone(),
+                        start_line,
+                        end_line,
+                    }
                 })
                 .collect();
-            facts_from_declarations(project_id, declarations)
+            facts_from_declarations(
+                project_id,
+                Language::CSharp.as_str(),
+                payload::CSHARP_ANALYZER_ID,
+                path,
+                declarations,
+            )
         }
         Some(Language::TypeScript) => {
             let analysis = graph_analyze::typescript::declarations::analyze(path, source);
             let declarations: Vec<Declaration> = analysis
                 .declarations
                 .iter()
-                .map(|declaration| Declaration {
-                    kind: declaration.kind.as_str(),
-                    name: declaration
-                        .name
-                        .clone()
-                        .unwrap_or_else(|| declaration.key.clone()),
-                    semantic_path: declaration.semantic_path.clone(),
-                    key: declaration.key.clone(),
-                    span: (declaration.span.start, declaration.span.end),
+                .map(|declaration| {
+                    let (start_line, end_line) =
+                        span_lines(declaration.span.start, declaration.span.end, source);
+                    Declaration {
+                        kind: declaration.kind.as_str(),
+                        name: declaration
+                            .name
+                            .clone()
+                            .unwrap_or_else(|| declaration.key.clone()),
+                        semantic_path: declaration.semantic_path.clone(),
+                        key: declaration.key.clone(),
+                        start_line,
+                        end_line,
+                    }
                 })
                 .collect();
-            facts_from_declarations(project_id, declarations)
+            facts_from_declarations(
+                project_id,
+                Language::TypeScript.as_str(),
+                payload::TYPESCRIPT_ANALYZER_ID,
+                path,
+                declarations,
+            )
         }
         None => GraphFactSet::new(Vec::new(), Vec::new()),
     }
 }
 
-fn facts_from_declarations(project_id: &str, declarations: Vec<Declaration>) -> GraphFactSet {
+/// Turn one file's declarations into the node and containment-edge facts the store holds.
+///
+/// The stored `record_json` is the only place the published payload reads the file,
+/// the language, the source lines and the analyzer's evidence from, so they are
+/// written here - by the one component that holds both the analysed path and the
+/// analyzer's spans - instead of being guessed by the renderer later.
+fn facts_from_declarations(
+    project_id: &str,
+    language: &str,
+    analyzer_id: &str,
+    path: &str,
+    declarations: Vec<Declaration>,
+) -> GraphFactSet {
+    let file = portable_path(path);
     let mut nodes = Vec::with_capacity(declarations.len());
     let mut scope_of: BTreeMap<String, String> = BTreeMap::new();
     for declaration in &declarations {
@@ -784,12 +950,24 @@ fn facts_from_declarations(project_id: &str, declarations: Vec<Declaration>) -> 
     let mut edges = Vec::new();
     for declaration in &declarations {
         let qualified_name = qualify(&declaration.semantic_path, &declaration.name);
+        let name = if declaration.name.is_empty() {
+            leaf_name(&qualified_name).to_owned()
+        } else {
+            declaration.name.clone()
+        };
+        // The contract's node document, written where both halves are known. The
+        // published id is not this one: `payload` derives it from the canonical
+        // identity tuple, because the store key is an analyzer-internal digest.
         let body = serde_json::json!({
-            "qualified_name": qualified_name,
-            "name": declaration.name,
             "id": declaration.key,
             "kind": declaration.kind,
-            "span": {"start": declaration.span.0, "end": declaration.span.1},
+            "name": name,
+            "qualified_name": qualified_name,
+            "language": language,
+            "file": file,
+            "start_line": declaration.start_line,
+            "end_line": declaration.end_line,
+            "attributes": {},
         });
         nodes.push(NodeFact::new(
             declaration.key.clone(),
@@ -808,11 +986,18 @@ fn facts_from_declarations(project_id: &str, declarations: Vec<Declaration>) -> 
         {
             if let Some(parent_key) = scope_of.get(&scope_key(&parent_path, parent_name)) {
                 let edge_id = format!("{parent_key}->contains->{}", declaration.key);
+                // The evidence key is part of the published edge identity, so the
+                // location and rule are stored with the fact rather than re-derived.
                 let edge_body = serde_json::json!({
-                    "source_id": parent_key,
-                    "target_id": declaration.key,
-                    "kind": "contains",
-                    "resolution": "exact_static",
+                    "evidence": [{
+                        "source": {
+                            "file": file,
+                            "start_line": declaration.start_line,
+                            "end_line": declaration.end_line,
+                        },
+                        "rule_id": payload::CONTAINS_RULE_ID,
+                    }],
+                    "analyzer_id": analyzer_id,
                 });
                 edges.push(EdgeFact::new(
                     edge_id,
@@ -839,6 +1024,7 @@ fn qualify(path: &[String], name: &str) -> String {
         format!("{}.{}", path.join("."), name)
     }
 }
+
 /// Read one published generation through the frozen, guarded reader.
 ///
 /// # Errors
@@ -932,6 +1118,34 @@ pub fn solution_exists(connection: &Connection, solution_id: &str) -> Result<boo
 mod tests {
     use super::*;
 
+    use graph_export::manifest::Coverage;
+
+    /// A payload holding exactly the documents a serve fixture publishes.
+    fn payload_of(nodes: Vec<serde_json::Value>, edges: Vec<serde_json::Value>) -> Payload {
+        let inputs = nodes.len() + edges.len();
+        Payload {
+            nodes,
+            edges,
+            coverage: Coverage::complete_for_profile(inputs, inputs, 0),
+            input_paths: Vec::new(),
+        }
+    }
+
+    /// A manifest header every serve fixture is sealed with.
+    fn fixture_header() -> ManifestHeader {
+        ManifestHeader {
+            solution_id: "demo".to_owned(),
+            project_id: "demo-project".to_owned(),
+            analysis_profile: "default".to_owned(),
+            generator_version: "w10-fixture".to_owned(),
+            analyzer_set_hash: "0".repeat(64),
+            source_fingerprint: "1".repeat(64),
+            config_fingerprint: "2".repeat(64),
+            dependency_fingerprint: "3".repeat(64),
+            coverage: Coverage::complete_for_profile(1, 1, 0),
+        }
+    }
+
     #[test]
     fn csharp_declarations_become_nodes_and_containment_edges() {
         let source = "\
@@ -964,15 +1178,21 @@ namespace Demo
                 serde_json::from_str(node.record_json()).expect("node body is JSON");
             assert!(
                 body.get("qualified_name").is_some(),
-                "the query layer reads qualified_name from the body"
+                "the published identity is read from the documented field"
             );
-            assert_ne!(node.kind(), EDGE_KIND, "a node is never an edge record");
+            assert!(
+                payload::contract_node_kind(node.kind()).is_some(),
+                "every node the publisher writes maps onto a contract node kind"
+            );
         }
         for edge in &facts.edges {
             let body: serde_json::Value =
                 serde_json::from_str(edge.record_json()).expect("edge body is JSON");
-            assert!(body.get("source_id").is_some());
-            assert!(body.get("target_id").is_some());
+            assert!(
+                body.get("evidence").is_some(),
+                "an edge publishes the evidence locations the contract requires"
+            );
+            assert!(body.get("analyzer_id").is_some());
             assert!(
                 facts.nodes.iter().any(|node| node.id() == edge.source_id()),
                 "every edge source must be a node in the same batch"
@@ -992,13 +1212,18 @@ namespace Demo
         let dir = tempfile::tempdir().expect("tempdir");
         let lane = dir.path();
         let layout = StagingLayout::new(lane);
-        let records = vec![GraphRecord::new(
-            "node-1",
-            "class",
-            serde_json::json!({"qualified_name": "Demo.Service", "name": "Service"}),
-        )];
+        let payload = payload_of(
+            vec![serde_json::json!({
+                "id": "node-1",
+                "kind": "Class",
+                "qualified_name": "Demo.Service",
+                "name": "Service",
+            })],
+            Vec::new(),
+        );
         let (generation_id, manifest_hash, content_dir) =
-            stage_generation(&layout, "pending-0-demo", &records).expect("stage");
+            stage_generation(&layout, "pending-0-demo", &payload, &fixture_header())
+                .expect("stage");
         assert_eq!(
             generation_id.len(),
             64,
@@ -1035,7 +1260,7 @@ namespace Demo
             SolutionGuard::acquire(&default_lock_path(lane), LockMode::Shared).expect("guard");
         let snapshot = reader::load(lane, &guard).expect("the frozen reader loads it");
         assert_eq!(snapshot.generation_id(), generation_id);
-        let parsed = snapshot.parse_shard(SHARD_NAME).expect("shard parses");
+        let parsed = snapshot.parse_shard(NODES_SHARD).expect("shard parses");
         assert_eq!(parsed.len(), 1);
         guard.release().expect("release");
     }
@@ -1061,8 +1286,13 @@ namespace Demo
         let mut staged = layout.begin("pending-0-demo").expect("begin");
         staged
             .write_records(
-                SHARD_NAME,
-                &[GraphRecord::new("n", "class", serde_json::json!({}))],
+                NODES_SHARD,
+                NODES_ROLE,
+                &[serde_json::json!({
+                    "id": "n",
+                    "kind": "Class",
+                    "qualified_name": "Demo.N",
+                })],
             )
             .expect("write");
         // No install, no pointer replace: the lane must stay unreadable.
@@ -1122,19 +1352,23 @@ namespace Demo
         let live = dir.path().join("live");
         let checkpoint = dir.path().join("checkpoint");
         let mut connection = publishable_store();
-        let records = vec![GraphRecord::new(
-            "node-1",
-            "class",
-            serde_json::json!({"name": "Service"}),
-        )];
+        let payload = payload_of(
+            vec![serde_json::json!({
+                "id": "node-1",
+                "kind": "Class",
+                "qualified_name": "Demo.Service",
+            })],
+            Vec::new(),
+        );
 
         let published = publish(
+            &ServiceConfig::default(),
             &mut connection,
             &demo_solution(),
             &demo_project(),
             &live,
             &checkpoint,
-            &records,
+            &payload,
         )
         .expect("publish");
         assert_eq!(published.generation_id.len(), 64);
@@ -1206,15 +1440,23 @@ namespace Demo
         let blocked = dir.path().join("blocked-checkpoint");
         std::fs::write(&blocked, b"a file where a lane directory must be").expect("write blocker");
         let mut connection = publishable_store();
-        let records = vec![GraphRecord::new("node-1", "class", serde_json::json!({}))];
+        let payload = payload_of(
+            vec![serde_json::json!({
+                "id": "node-1",
+                "kind": "Class",
+                "qualified_name": "Demo.Service",
+            })],
+            Vec::new(),
+        );
 
         let error = publish(
+            &ServiceConfig::default(),
             &mut connection,
             &demo_solution(),
             &demo_project(),
             &live,
             &blocked,
-            &records,
+            &payload,
         )
         .expect_err("a lane that cannot be staged must refuse the publication");
         assert_eq!(error.code(), ErrorCode::Internal);

@@ -23,10 +23,10 @@ use axiom_graphd::commands::doctor::{
 use graph_core::config::JournalMode;
 use graph_core::error::{exit_code_for, ErrorCode};
 use graph_core::paths::StorageClass;
-use graph_export::canonical::canonical_document;
-use graph_export::manifest::{self, ManifestEntry};
+use graph_export::canonical::canonical_document_value;
+use graph_export::manifest::{self, Coverage, ManifestEntry};
 use graph_export::validate::{validate_generation, ERR_NOT_CANONICAL};
-use graph_export::{GraphRecord, ERR_INTEGRITY, ERR_MISSING};
+use graph_export::{ERR_INTEGRITY, ERR_MISSING};
 use graph_queue::retry::{
     classify_error_code, decide, BackoffPolicy, FailureClass, RetryDecision, MAX_TRANSIENT_ATTEMPTS,
 };
@@ -121,29 +121,50 @@ fn seed_solution(connection: &Connection, id: &str) {
         .expect("project");
 }
 
-/// Write one generation directory holding one shard plus its manifest.
+/// The role shard and role name the contract fixes for the node payload.
+const NODES_PATH: &str = "nodes/000000.json";
+const NODES_ROLE: &str = "nodes";
+
+/// A manifest header a test can assemble a generation from.
+fn header() -> manifest::ManifestHeader {
+    manifest::ManifestHeader {
+        solution_id: "demo-solution".to_owned(),
+        project_id: "demo-project".to_owned(),
+        analysis_profile: "default".to_owned(),
+        generator_version: "w10-test".to_owned(),
+        analyzer_set_hash: "0".repeat(64),
+        source_fingerprint: "1".repeat(64),
+        config_fingerprint: "2".repeat(64),
+        dependency_fingerprint: "3".repeat(64),
+        coverage: Coverage::complete_for_profile(1, 1, 0),
+    }
+}
+
+/// Write one generation directory holding one node shard plus its manifest.
 fn write_generation(directory: &Path, shard: &[u8], records: usize) {
-    fs::create_dir_all(directory).expect("mkdir");
-    let manifest = manifest::build(vec![ManifestEntry::from_bytes(
-        "bucket-000",
-        shard,
-        records,
-    )])
-    .expect("manifest");
-    fs::write(directory.join("bucket-000"), shard).expect("shard");
+    fs::create_dir_all(directory.join("nodes")).expect("mkdir");
+    let entry = ManifestEntry::from_bytes(NODES_PATH, NODES_ROLE, shard, records);
+    let manifest = manifest::build(header(), vec![entry]).expect("manifest");
+    fs::write(directory.join(NODES_PATH), shard).expect("shard");
     fs::write(
         directory.join("manifest.json"),
-        serde_json::to_vec(&manifest).expect("json"),
+        manifest.canonical_bytes().expect("canonical"),
     )
     .expect("manifest file");
 }
 
 fn shard_of_a_small_graph() -> Vec<u8> {
-    canonical_document(&[GraphRecord::new(
-        "edge:a->b",
-        "edge",
-        serde_json::json!({"from": "a", "to": "b"}),
-    )])
+    canonical_document_value(&serde_json::json!([{
+        "id": "0".repeat(64),
+        "project_id": "demo-project",
+        "kind": "Class",
+        "name": "B",
+        "qualified_name": "B",
+        "language": "csharp",
+        "source": {"file": "src/B.cs", "start_line": 1, "end_line": 1},
+        "identity_quality": "syntax",
+        "attributes": {},
+    }]))
     .expect("canonical shard")
 }
 
@@ -247,9 +268,9 @@ fn troubleshooting_guide_corrupt_shard_is_an_integrity_fault() {
     assert_eq!(report.records, 1);
     assert_eq!(report.files, 1);
 
-    let mut shard = fs::read(generation.join("bucket-000")).expect("read shard");
+    let mut shard = fs::read(generation.join(NODES_PATH)).expect("read shard");
     shard[5] = b'X';
-    fs::write(generation.join("bucket-000"), &shard).expect("write shard");
+    fs::write(generation.join(NODES_PATH), &shard).expect("write shard");
     let corrupt = validate_generation(&generation).expect_err("corruption must be refused");
     assert_eq!(corrupt.code, ERR_INTEGRITY);
     assert_ne!(

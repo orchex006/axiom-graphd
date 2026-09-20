@@ -32,6 +32,7 @@ pub mod commands;
 pub mod control;
 pub mod instance_lock;
 pub mod lifecycle;
+pub mod payload;
 pub mod release;
 pub mod runtime;
 pub mod serve;

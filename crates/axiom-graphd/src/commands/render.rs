@@ -65,8 +65,10 @@ pub const COVERAGE_PARTIAL: &str = "partial";
 pub const COVERAGE_UNSUPPORTED: &str = "unsupported";
 /// Coverage status when the generation publishes no coverage document.
 pub const COVERAGE_UNKNOWN: &str = "unknown";
-/// The record kind an incident edge carries.
-pub const EDGE_KIND_RECORD: &str = "edge";
+/// The manifest role a node shard declares.
+pub const ROLE_NODES: &str = "nodes";
+/// The manifest role an edge shard declares.
+pub const ROLE_EDGES: &str = "edges";
 /// Vocabulary label for a kind the frozen schema enum names.
 pub const VOCABULARY_FROZEN: &str = "frozen";
 /// Vocabulary label for a kind the frozen schema enum does not name.
@@ -606,20 +608,15 @@ fn parse_coverage(
         .map_err(|error| document_invalid(&error.to_string()))
 }
 
-fn body_str(record: &serde_json::Value, names: &[&str]) -> Option<String> {
-    let body = record.get("body")?;
+/// Read a string field from a contract document.
+///
+/// The contract's shards hold the documents themselves, so every field is read
+/// from the record and never from a JSONL envelope around it.
+fn record_str(record: &serde_json::Value, names: &[&str]) -> Option<String> {
     names
         .iter()
-        .find_map(|name| body.get(*name).and_then(serde_json::Value::as_str))
+        .find_map(|name| record.get(*name).and_then(serde_json::Value::as_str))
         .map(ToOwned::to_owned)
-}
-
-fn record_kind(record: &serde_json::Value) -> String {
-    record
-        .get("kind")
-        .and_then(serde_json::Value::as_str)
-        .unwrap_or_default()
-        .to_owned()
 }
 
 /// Map an observed spelling onto the frozen vocabulary, case-insensitively.
@@ -665,14 +662,8 @@ fn placeholder_id(name: &str) -> String {
 }
 
 fn node_from_record(project_id: &str, record: &serde_json::Value) -> (String, NodeBuild) {
-    let id = body_str(record, &["id"]).unwrap_or_else(|| {
-        record
-            .get("key")
-            .and_then(serde_json::Value::as_str)
-            .unwrap_or_default()
-            .to_owned()
-    });
-    let observed = body_str(record, &["kind"]).unwrap_or_else(|| record_kind(record));
+    let id = record_str(record, &["id"]).unwrap_or_default();
+    let observed = record_str(record, &["kind"]).unwrap_or_default();
     let (kind, vocabulary) = canonical_kind(&observed, &NODE_KINDS);
     let mut projects = BTreeSet::new();
     projects.insert(project_id.to_owned());
@@ -681,8 +672,8 @@ fn node_from_record(project_id: &str, record: &serde_json::Value) -> (String, No
         NodeBuild {
             kind,
             vocabulary: vocabulary.to_owned(),
-            name: body_str(record, &["name"]),
-            qualified_name: body_str(record, &["qualified_name"]),
+            name: record_str(record, &["name"]),
+            qualified_name: record_str(record, &["qualified_name"]),
             placeholder: false,
             placeholder_reason: None,
             projects,
@@ -691,31 +682,31 @@ fn node_from_record(project_id: &str, record: &serde_json::Value) -> (String, No
 }
 
 fn edge_from_record(project_id: &str, record: &serde_json::Value) -> RawEdge {
-    let id = record
-        .get("key")
-        .and_then(serde_json::Value::as_str)
-        .unwrap_or_default()
-        .to_owned();
-    let source_id = body_str(record, &["source_id", "from", "source"]).unwrap_or_default();
+    let id = record_str(record, &["id"]).unwrap_or_default();
+    let source_id = record_str(record, &["source_id"]).unwrap_or_default();
     let resolution = canonical_resolution(
-        body_str(record, &["resolution"])
+        record_str(record, &["resolution"])
             .unwrap_or_default()
             .as_str(),
     );
-    let target_id = body_str(record, &["target_id", "to", "target"]);
-    let unresolved = body_str(record, &["unresolved_target", "unresolved"]);
+    // The contract puts exactly one of `target_id` and `unresolved_target` on an
+    // edge, and the resolution names which. A document that names a pinned target
+    // but calls itself unresolved is still drawn as unresolved, and a document
+    // that names neither is unresolved by construction.
+    let target_id = record_str(record, &["target_id"]);
+    let unresolved = record_str(record, &["unresolved_target"]);
     let target = match (resolution == "unresolved", target_id) {
         (false, Some(resolved)) => RawTarget::Resolved(resolved),
         _ => RawTarget::Unresolved(unresolved.unwrap_or_default()),
     };
-    let observed_kind = body_str(record, &["kind"]).unwrap_or_else(|| record_kind(record));
+    let observed_kind = record_str(record, &["kind"]).unwrap_or_default();
     let (kind, _) = canonical_kind(&observed_kind, &EDGE_KINDS);
     RawEdge {
         project_id: project_id.to_owned(),
         id,
         source_id,
         target,
-        target_project_id: body_str(record, &["target_project_id"]),
+        target_project_id: record_str(record, &["target_project_id"]),
         kind,
         resolution,
     }
@@ -909,29 +900,27 @@ pub fn build_diagram(
         let mut project_coverage: Option<CoverageDocument> = None;
         let mut skipped = 0usize;
         let mut counted = 0usize;
-        for entry in &manifest.entries {
-            let path = entry.relative_path.replace('\\', "/");
+        for entry in &manifest.files {
+            let path = entry.path.replace('\\', "/");
             if path == COVERAGE_DOCUMENT {
-                project_coverage = Some(parse_coverage(snapshot, &entry.relative_path)?);
-                skipped += entry.record_count;
+                project_coverage = Some(parse_coverage(snapshot, &entry.path)?);
+                skipped += entry.records;
                 continue;
             }
             if path.starts_with(INDEX_PREFIX) || path.starts_with(ARCHITECTURE_PREFIX) {
-                skipped += entry.record_count;
+                skipped += entry.records;
                 continue;
             }
-            let parsed = snapshot
-                .parse_shard(&entry.relative_path)
-                .map_err(|error| {
-                    AxiomError::new(
-                        ErrorCode::Internal,
-                        format!("a published shard could not be read: {error}"),
-                    )
-                    .with_detail("rule", REASON_SHARD_UNREADABLE)
-                    .with_detail("observed", path.clone())
-                    .with_detail("generation", snapshot.generation_id())
-                })?;
-            if parsed.len() != entry.record_count {
+            let parsed = snapshot.parse_shard(&entry.path).map_err(|error| {
+                AxiomError::new(
+                    ErrorCode::Internal,
+                    format!("a published shard could not be read: {error}"),
+                )
+                .with_detail("rule", REASON_SHARD_UNREADABLE)
+                .with_detail("observed", path.clone())
+                .with_detail("generation", snapshot.generation_id())
+            })?;
+            if parsed.len() != entry.records {
                 return Err(AxiomError::new(
                     ErrorCode::Internal,
                     format!(
@@ -941,12 +930,12 @@ pub fn build_diagram(
                 )
                 .with_detail("rule", REASON_MANIFEST_DISAGREES)
                 .with_detail("observed", path.clone())
-                .with_detail("expected", entry.record_count.to_string())
+                .with_detail("expected", entry.records.to_string())
                 .with_detail("actual", parsed.len().to_string()));
             }
             for record in &parsed {
                 counted += 1;
-                if record_kind(record) == EDGE_KIND_RECORD {
+                if entry.role == ROLE_EDGES {
                     raw_edges.push(edge_from_record(&project.project_id, record));
                 } else {
                     let (id, build) = node_from_record(&project.project_id, record);
@@ -954,7 +943,7 @@ pub fn build_diagram(
                 }
             }
         }
-        if counted + skipped != manifest.record_count {
+        if counted + skipped != manifest.record_count() {
             return Err(AxiomError::new(
                 ErrorCode::Internal,
                 format!(
@@ -963,13 +952,13 @@ pub fn build_diagram(
                 ),
             )
             .with_detail("rule", REASON_MANIFEST_DISAGREES)
-            .with_detail("expected", manifest.record_count.to_string())
+            .with_detail("expected", manifest.record_count().to_string())
             .with_detail("actual", counted.to_string())
             .with_detail("observed", format!("skipped_records={skipped}")));
         }
-        shards += manifest.entries.len();
-        records += manifest.record_count;
-        total_bytes += manifest.total_bytes;
+        shards += manifest.files.len();
+        records += manifest.record_count();
+        total_bytes += manifest.total_bytes();
         skipped_records += skipped;
         graph_records += counted;
         match project_coverage {
@@ -1785,7 +1774,8 @@ mod tests {
     use graph_core::locks::{default_lock_path, LockMode, SolutionGuard};
     use graph_export::manifest::{self, ManifestEntry};
     use graph_export::pointer::{self, CurrentPointer, PointerStrategy};
-    use graph_export::{canonical, reader, GraphRecord};
+    use graph_export::staging::count_records;
+    use graph_export::{canonical, reader};
     use serde_json::{json, Value};
     use std::path::{Path, PathBuf};
 
@@ -1794,10 +1784,11 @@ mod tests {
     type FixtureShard = (String, Vec<u8>, Option<usize>);
 
     /// A shard of canonical records, counted the way the publisher counts them.
-    fn canonical_shard(relative_path: &str, records: &[GraphRecord]) -> FixtureShard {
+    fn canonical_shard(relative_path: &str, documents: &[Value]) -> FixtureShard {
         (
             relative_path.to_owned(),
-            canonical::canonical_document(records).expect("canonical bytes"),
+            canonical::canonical_document_value(&Value::Array(documents.to_vec()))
+                .expect("canonical bytes"),
             None,
         )
     }
@@ -1812,43 +1803,33 @@ mod tests {
         (relative_path.to_owned(), bytes, None)
     }
 
-    fn node(id: &str, kind: &str, name: &str) -> GraphRecord {
-        GraphRecord::new(
-            id,
-            kind,
-            json!({
-                "id": id,
-                "kind": kind,
-                "name": name,
-                "qualified_name": format!("Demo.{name}"),
-            }),
-        )
+    fn node(id: &str, kind: &str, name: &str) -> Value {
+        json!({
+            "id": id,
+            "kind": kind,
+            "name": name,
+            "qualified_name": format!("Demo.{name}"),
+        })
     }
 
-    fn edge(key: &str, kind: &str, source: &str, target: &str, resolution: &str) -> GraphRecord {
-        GraphRecord::new(
-            key,
-            "edge",
-            json!({
-                "kind": kind,
-                "source_id": source,
-                "target_id": target,
-                "resolution": resolution,
-            }),
-        )
+    fn edge(id: &str, kind: &str, source: &str, target: &str, resolution: &str) -> Value {
+        json!({
+            "id": id,
+            "kind": kind,
+            "source_id": source,
+            "target_id": target,
+            "resolution": resolution,
+        })
     }
 
-    fn unresolved_edge(key: &str, source: &str, name: &str) -> GraphRecord {
-        GraphRecord::new(
-            key,
-            "edge",
-            json!({
-                "kind": "calls",
-                "source_id": source,
-                "resolution": "unresolved",
-                "unresolved_target": name,
-            }),
-        )
+    fn unresolved_edge(id: &str, source: &str, name: &str) -> Value {
+        json!({
+            "id": id,
+            "kind": "calls",
+            "source_id": source,
+            "resolution": "unresolved",
+            "unresolved_target": name,
+        })
     }
 
     /// A coverage document, as compact canonical JSON or as a pretty document,
@@ -1876,27 +1857,66 @@ mod tests {
     /// a content-addressed directory, its `manifest.json`, then the atomic
     /// pointer. The snapshot is then read back through the frozen reader, so no
     /// test ever hand-builds a `Snapshot`.
+    /// The manifest role a fixture path plays, mirroring the publisher's layout.
+    fn role_for(relative_path: &str) -> &'static str {
+        if relative_path == COVERAGE_DOCUMENT {
+            "coverage"
+        } else if relative_path.starts_with("edges/") {
+            ROLE_EDGES
+        } else if relative_path.starts_with("indexes/symbols/") {
+            "symbol_index"
+        } else if relative_path.starts_with("indexes/outgoing/") {
+            "outgoing_index"
+        } else if relative_path.starts_with("indexes/incoming/") {
+            "incoming_index"
+        } else if relative_path.starts_with(ARCHITECTURE_PREFIX) {
+            "architecture_summary"
+        } else {
+            ROLE_NODES
+        }
+    }
+
+    /// A manifest header every fixture generation is assembled from.
+    fn fixture_header() -> manifest::ManifestHeader {
+        manifest::ManifestHeader {
+            solution_id: "fixture-solution".to_owned(),
+            project_id: "auth-api".to_owned(),
+            analysis_profile: "default".to_owned(),
+            generator_version: "w10-fixture".to_owned(),
+            analyzer_set_hash: "0".repeat(64),
+            source_fingerprint: "1".repeat(64),
+            config_fingerprint: "2".repeat(64),
+            dependency_fingerprint: "3".repeat(64),
+            coverage: manifest::Coverage {
+                status: COVERAGE_COMPLETE.to_owned(),
+                input_files: 12,
+                processed_files: 9,
+                unresolved_references: 3,
+                unsupported_patterns: vec!["dynamic".to_owned(), "generics".to_owned()],
+            },
+        }
+    }
+
     fn publish(root: &Path, shards: &[FixtureShard]) -> Snapshot {
         let mut entries = Vec::new();
         for (relative_path, bytes, declared) in shards {
             let count = match declared {
                 Some(count) => *count,
-                // The publisher counts records as non-empty lines, so the
-                // fixture counts them the same way.
-                None => String::from_utf8_lossy(bytes)
-                    .lines()
-                    .filter(|line| !line.trim().is_empty())
-                    .count(),
+                // The publisher counts a shard's records the way the reader does:
+                // an array yields its length and an object one record.
+                None => count_records(bytes).expect("countable shard"),
             };
             entries.push(ManifestEntry::from_bytes(
                 relative_path.clone(),
+                role_for(relative_path),
                 bytes,
                 count,
             ));
         }
-        let manifest = manifest::build(entries).expect("manifest");
+        let manifest = manifest::build(fixture_header(), entries).expect("manifest");
+        let generation_id = manifest.generation_id().expect("generation id");
         let layout = graph_export::staging::StagingLayout::new(root.to_path_buf());
-        let generation_dir = layout.generation_dir(&manifest.generation_id);
+        let generation_dir = layout.generation_dir(&generation_id);
         std::fs::create_dir_all(&generation_dir).expect("generation directory");
         for (relative_path, bytes, _) in shards {
             let target = generation_dir.join(relative_path);
@@ -1907,12 +1927,12 @@ mod tests {
         }
         std::fs::write(
             generation_dir.join("manifest.json"),
-            serde_json::to_vec(&manifest).expect("manifest json"),
+            manifest.canonical_bytes().expect("canonical manifest"),
         )
         .expect("manifest file");
         pointer::replace(
             root,
-            &CurrentPointer::new(manifest.generation_id.clone()),
+            &CurrentPointer::new(generation_id),
             PointerStrategy::AtomicReplace,
         )
         .expect("current pointer");
@@ -1990,12 +2010,15 @@ mod tests {
             dir.path(),
             &[
                 canonical_shard(
-                    "bucket-000",
-                    &[node("n-a", "class", "Alpha"), node("n-b", "Class", "Beta")],
+                    "nodes/000000.json",
+                    &[
+                        node("n-a", "class", "Alpha"),
+                        node("n-b", "Class", "Beta"),
+                        node("n-c", "interface", "Gamma"),
+                    ],
                 ),
-                canonical_shard("bucket-001", &[node("n-c", "interface", "Gamma")]),
                 canonical_shard(
-                    "bucket-002",
+                    "edges/000000.json",
                     &[edge("e-1", "implements", "n-b", "n-c", "exact_static")],
                 ),
                 raw_shard(
@@ -2016,7 +2039,7 @@ mod tests {
             &fresh(0, &[]),
         );
         let summary = &diagram.summary;
-        assert_eq!(summary.counts.shards, 4, "every manifest entry is read");
+        assert_eq!(summary.counts.shards, 3, "every manifest entry is read");
         assert_eq!(summary.counts.nodes, 3);
         assert_eq!(summary.counts.edges, 1);
         assert_eq!(summary.counts.graph_records, 4);
@@ -2048,9 +2071,9 @@ mod tests {
         let second = publish(
             dir_b.path(),
             &[
-                canonical_shard("bucket-000", &[node("n-z", "class", "Zeta")]),
+                canonical_shard("nodes/000000.json", &[node("n-z", "class", "Zeta")]),
                 canonical_shard(
-                    "bucket-001",
+                    "edges/000000.json",
                     &[edge("e-cross", "calls", "n-z", "n-b", "inferred_static")],
                 ),
             ],
@@ -2061,7 +2084,7 @@ mod tests {
             &fresh(0, &[]),
         );
         let summary = &diagram.summary;
-        assert_eq!(summary.counts.shards, 6);
+        assert_eq!(summary.counts.shards, 5);
         assert_eq!(summary.counts.nodes, 4);
         // One in-file edge from the first project, plus the cross-project edge.
         assert_eq!(summary.counts.edges, 2);
@@ -2084,9 +2107,9 @@ mod tests {
         let snapshot = publish(
             dir.path(),
             &[
-                canonical_shard("bucket-000", &[node("n-a", "class", "Alpha")]),
+                canonical_shard("nodes/000000.json", &[node("n-a", "class", "Alpha")]),
                 canonical_shard(
-                    "bucket-001",
+                    "edges/000000.json",
                     &[unresolved_edge("e-u", "n-a", "Demo.Missing.Target")],
                 ),
             ],
@@ -2139,13 +2162,13 @@ mod tests {
         let dir = fixture_dir();
         let snapshot = publish(
             dir.path(),
-            &[canonical_shard(
-                "bucket-000",
-                &[
-                    node("n-a", "class", "Alpha"),
-                    edge("e-1", "references", "n-a", "n-ghost", "exact_static"),
-                ],
-            )],
+            &[
+                canonical_shard("nodes/000000.json", &[node("n-a", "class", "Alpha")]),
+                canonical_shard(
+                    "edges/000000.json",
+                    &[edge("e-1", "references", "n-a", "n-ghost", "exact_static")],
+                ),
+            ],
         );
         let diagram = render(
             "fixture-solution",
@@ -2174,13 +2197,13 @@ mod tests {
         let dir = fixture_dir();
         let snapshot = publish(
             dir.path(),
-            &[canonical_shard(
-                "bucket-000",
-                &[
-                    node("n-a", "class", "Alpha"),
-                    edge("e-1", "calls", "n-ghost", "n-a", "exact_static"),
-                ],
-            )],
+            &[
+                canonical_shard("nodes/000000.json", &[node("n-a", "class", "Alpha")]),
+                canonical_shard(
+                    "edges/000000.json",
+                    &[edge("e-1", "calls", "n-ghost", "n-a", "exact_static")],
+                ),
+            ],
         );
         let diagram = render(
             "fixture-solution",
@@ -2291,7 +2314,7 @@ mod tests {
         );
         assert_eq!(banner.freshness.status, FRESHNESS_FRESH);
         assert_eq!(banner.freshness.verification, VERIFICATION_INVENTORY_HASH);
-        assert_eq!(banner.manifest.shards, 4);
+        assert_eq!(banner.manifest.shards, 3);
         assert!(banner.notice.contains("coverage is complete_for_profile"));
         let html = &diagram.result_html;
         assert!(html.contains("id=\"axiom-banner\""));
@@ -2307,7 +2330,7 @@ mod tests {
         let snapshot = publish(
             dir.path(),
             &[
-                canonical_shard("bucket-000", &[node("n-a", "class", "Alpha")]),
+                canonical_shard("nodes/000000.json", &[node("n-a", "class", "Alpha")]),
                 raw_shard("coverage.json", coverage_bytes("partial", true)),
             ],
         );
@@ -2332,7 +2355,7 @@ mod tests {
         let snapshot = publish(
             dir.path(),
             &[canonical_shard(
-                "bucket-000",
+                "nodes/000000.json",
                 &[node("n-a", "class", "Alpha")],
             )],
         );
@@ -2379,8 +2402,10 @@ mod tests {
     fn a_manifest_that_disagrees_with_a_shard_is_a_failure() {
         let dir = fixture_dir();
         // The shard really holds one record; the manifest claims five.
-        let bytes = canonical::canonical_document(&[node("n-a", "class", "Alpha")]).expect("bytes");
-        let snapshot = publish(dir.path(), &[declared_shard("bucket-000", bytes, 5)]);
+        let bytes =
+            canonical::canonical_document_value(&Value::Array(vec![node("n-a", "class", "Alpha")]))
+                .expect("bytes");
+        let snapshot = publish(dir.path(), &[declared_shard("nodes/000000.json", bytes, 5)]);
         let error = build_diagram(
             "fixture-solution",
             &[graph("auth-api", snapshot)],
@@ -2399,7 +2424,7 @@ mod tests {
         assert_eq!(error.details().get("actual").map(String::as_str), Some("1"));
         assert_eq!(
             error.details().get("observed").map(String::as_str),
-            Some("bucket-000")
+            Some("nodes/000000.json")
         );
         assert_eq!(error.dropped_details(), 0, "the context must survive");
     }
@@ -2407,7 +2432,7 @@ mod tests {
     #[test]
     fn a_generation_with_no_records_still_carries_its_banner() {
         let dir = fixture_dir();
-        let snapshot = publish(dir.path(), &[]);
+        let snapshot = publish(dir.path(), &[canonical_shard("nodes/000000.json", &[])]);
         let diagram = render(
             "fixture-solution",
             &[graph("auth-api", snapshot)],
@@ -2415,7 +2440,7 @@ mod tests {
         );
         assert_eq!(diagram.summary.counts.nodes, 0);
         assert_eq!(diagram.summary.counts.edges, 0);
-        assert_eq!(diagram.summary.counts.shards, 0);
+        assert_eq!(diagram.summary.counts.shards, 1);
         assert_eq!(diagram.summary.banner.manifest.records, 0);
         assert!(diagram.result_html.contains("id=\"axiom-banner\""));
         assert!(diagram
@@ -2431,10 +2456,15 @@ mod tests {
         let extended = publish(
             dir.path(),
             &[
-                canonical_shard("bucket-000", &[node("n-a", "class", "Alpha")]),
-                canonical_shard("bucket-001", &[node("n-x", "wibble", "Weird")]),
                 canonical_shard(
-                    "bucket-002",
+                    "nodes/000000.json",
+                    &[
+                        node("n-a", "class", "Alpha"),
+                        node("n-x", "wibble", "Weird"),
+                    ],
+                ),
+                canonical_shard(
+                    "edges/000000.json",
                     &[
                         edge("e-1", "calls", "n-a", "n-x", "exact_static"),
                         edge("e-2", "depends_on", "n-x", "n-a", "annotated"),
@@ -2506,11 +2536,11 @@ mod tests {
             dir.path(),
             &[
                 canonical_shard(
-                    "bucket-000",
+                    "nodes/000000.json",
                     &[node("n-a", "class", "Alpha"), node("n-b", "class", "Beta")],
                 ),
                 canonical_shard(
-                    "bucket-001",
+                    "edges/000000.json",
                     &[
                         edge("e-exact", "calls", "n-a", "n-b", "exact_static"),
                         edge("e-inferred", "calls", "n-a", "n-b", "inferred_static"),
@@ -2553,13 +2583,13 @@ mod tests {
         let dir = fixture_dir();
         let snapshot = publish(
             dir.path(),
-            &[canonical_shard(
-                "bucket-000",
-                &[
-                    node("n-a", "class", "Alpha"),
-                    edge("e-1", "calls", "n-a", "n-a2", "guessed"),
-                ],
-            )],
+            &[
+                canonical_shard("nodes/000000.json", &[node("n-a", "class", "Alpha")]),
+                canonical_shard(
+                    "edges/000000.json",
+                    &[edge("e-1", "calls", "n-a", "n-a2", "guessed")],
+                ),
+            ],
         );
         let diagram = render(
             "fixture-solution",
@@ -2614,7 +2644,7 @@ mod tests {
             value["banner"]["freshness"]["status"],
             json!(FRESHNESS_STALE)
         );
-        assert_eq!(value["banner"]["manifest"]["shards"].as_u64(), Some(4));
+        assert_eq!(value["banner"]["manifest"]["shards"].as_u64(), Some(3));
         assert_eq!(
             value["banner"]["manifest"]["generation_ids"]
                 .as_array()

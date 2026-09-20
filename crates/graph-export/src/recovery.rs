@@ -150,9 +150,7 @@ pub fn observe(root: &Path, pinned: Option<String>) -> Result<RecoveryState> {
         for entry in fs::read_dir(&staging_root).map_err(|error| ExportError::io(&error))? {
             let entry = entry.map_err(|error| ExportError::io(&error))?;
             let generation_id = entry.file_name().to_string_lossy().into_owned();
-            let sealed = read_staged_manifest(&entry.path())
-                .map(|manifest| manifest.identity_is_self_consistent())
-                .unwrap_or(false);
+            let sealed = read_staged_manifest(&entry.path()).is_ok();
             staging.push(StagingObservation {
                 generation_id,
                 sealed,
@@ -189,7 +187,7 @@ pub fn resume(root: &Path, pinned: Option<String>) -> Result<RecoveryAction> {
             }
             crate::pointer::replace(
                 root,
-                &CurrentPointer::new(manifest.generation_id.clone()),
+                &CurrentPointer::new(manifest.generation_id()?),
                 PointerStrategy::AtomicReplace,
             )?;
         }
@@ -206,10 +204,14 @@ pub fn resume(root: &Path, pinned: Option<String>) -> Result<RecoveryAction> {
 
 fn read_staged_manifest(dir: &Path) -> Result<GenerationManifest> {
     let path = dir.join("manifest.json");
+    if !path.is_file() {
+        return Err(ExportError::new(
+            crate::ERR_MISSING,
+            format!("no manifest at {}", path.display()),
+        ));
+    }
     let bytes = fs::read(&path).map_err(|error| ExportError::io(&error))?;
-    serde_json::from_slice(&bytes).map_err(|error| {
-        ExportError::new(crate::ERR_MISSING, format!("{}: {error}", path.display()))
-    })
+    GenerationManifest::from_canonical_bytes(&bytes)
 }
 
 /// The pointer file a resumed publication writes.
