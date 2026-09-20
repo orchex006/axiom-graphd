@@ -355,28 +355,31 @@ fn csharp_unsupported_constructs_are_refused_not_guessed() {
 }
 
 /// Boundary case: two partial declarations of one type are recorded literally
-/// and are never merged, so they share one identity key while their members
-/// keep distinct keys.
+/// and are never merged. Each block keeps its own identity key (H-007), so the
+/// file can never contribute a repeated node id, while their members keep
+/// distinct keys and a second pass over the same bytes yields the same keys.
 #[test]
 fn csharp_partial_declarations_are_recorded_but_not_merged() {
     let manifest = manifest("partial_class_boundary");
+    let name = manifest["fixture"].as_str().expect("fixture name");
+    let source = read_text(&fixture_dir().join(name));
     let (_, observed) = assert_declaration_manifest("partial_class_boundary");
 
     let widgets: Vec<&Observed> = observed
         .iter()
         .filter(|declaration| declaration.kind == "class" && declaration.name == "Widget")
         .collect();
-    let expected_count = manifest["expected_duplicate_key"]["count"]
+    let expected_count = manifest["expected_distinct_class_keys"]["count"]
         .as_u64()
-        .expect("duplicate count") as usize;
+        .expect("expected distinct class key count") as usize;
     assert_eq!(
         widgets.len(),
         expected_count,
         "both partial declarations are recorded"
     );
-    assert_eq!(
+    assert_ne!(
         widgets[0].key, widgets[1].key,
-        "partial declarations of one type must share one identity key"
+        "the two blocks of a partial type must keep distinct identity keys"
     );
 
     let first = observed
@@ -390,6 +393,21 @@ fn csharp_partial_declarations_are_recorded_but_not_merged() {
     assert_ne!(
         first.key, second.key,
         "distinct members of a partial type must keep distinct keys"
+    );
+
+    let again = declarations::analyze(name, &source);
+    let again_keys: Vec<&str> = again
+        .declarations
+        .iter()
+        .map(|declaration| declaration.key.as_str())
+        .collect();
+    let observed_keys: Vec<&str> = observed
+        .iter()
+        .map(|declaration| declaration.key.as_str())
+        .collect();
+    assert_eq!(
+        again_keys, observed_keys,
+        "the disambiguated keys must be stable across a second run"
     );
 }
 

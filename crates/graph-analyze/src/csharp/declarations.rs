@@ -1,6 +1,6 @@
 //! C# namespace, type, interface and method declarations with source spans.
 
-use crate::identity::declaration_key;
+use crate::identity::{declaration_key, unique_declaration_keys};
 use crate::{line_span, line_starts, Coverage, Diagnostic, Severity, Span};
 
 /// Diagnostic code for a declaration keyword with no name.
@@ -240,6 +240,24 @@ pub fn analyze(file: &str, source: &str) -> CsharpAnalysis {
         }
     }
 
+    // Two declarations can legitimately share one semantic path inside a single
+    // file: method overloads, a `namespace P { }` block repeated, a partial type
+    // split across blocks, and constructor overloads (recorded as methods named
+    // after their type). A repeated declaration key is not a usable identity -
+    // the graph data contract rejects a file whose fact set repeats a node id -
+    // so every member of a repeated group is rewritten with its occurrence
+    // ordinal. Keys that do not repeat are left byte-identical to what
+    // `declaration_key` produced, so a file with no repeated key is unaffected.
+    let base_keys: Vec<String> = declarations
+        .iter()
+        .map(|declaration| declaration.key.clone())
+        .collect();
+    for (declaration, key) in declarations
+        .iter_mut()
+        .zip(unique_declaration_keys(&base_keys))
+    {
+        declaration.key = key;
+    }
     if depth != 0 {
         let last = line_span(source, &starts, lines.len().saturating_sub(1));
         diagnostics.push(Diagnostic::error(
@@ -457,8 +475,8 @@ fn is_identifier_byte(byte: u8) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{
-        analyze, CsharpDeclarationKind, CODE_MISSING_NAME, CODE_MISSING_NAMESPACE,
-        CODE_UNBALANCED_BRACES,
+        analyze, CsharpAnalysis, CsharpDeclaration, CsharpDeclarationKind, CODE_MISSING_NAME,
+        CODE_MISSING_NAMESPACE, CODE_UNBALANCED_BRACES,
     };
     use crate::CoverageStatus;
 
@@ -575,5 +593,160 @@ mod tests {
         let analysis = analyze("src/app/Nothing.cs", "}}}\n");
         assert!(analysis.has_errors());
         assert!(analysis.declarations.is_empty());
+    }
+
+    /// H-007: no file may contribute a repeated node id. Every test below drives
+    /// the declared-and-then-disambiguated keys through this check, because a
+    /// file that still repeats a key is a failure, not a partial success.
+    fn assert_every_declaration_key_is_unique(analysis: &CsharpAnalysis) {
+        let mut keys: Vec<&str> = analysis
+            .declarations
+            .iter()
+            .map(|declaration| declaration.key.as_str())
+            .collect();
+        let total = keys.len();
+        keys.sort_unstable();
+        keys.dedup();
+        assert_eq!(
+            keys.len(),
+            total,
+            "a file must not contribute two declarations with one key: {:?}",
+            analysis.declarations
+        );
+    }
+
+    /// Overloads: two methods with one name and one signature position inside
+    /// one type. The two declarations are distinct symbols that shared one base
+    /// key before H-007, which made the whole file invalid input for the store.
+    #[test]
+    fn method_overloads_in_one_type_get_distinct_keys() {
+        let source = "namespace Demo\n{\n    public class Calc\n    {\n        public int Get(int id)\n        {\n            return id;\n        }\n\n        public int Get(string key)\n        {\n            return key.Length;\n        }\n    }\n}\n";
+        let analysis = analyze("src/app/Calc.cs", source);
+        assert!(!analysis.has_errors(), "{:?}", analysis.diagnostics);
+        assert_every_declaration_key_is_unique(&analysis);
+
+        let overloads: Vec<&CsharpDeclaration> = analysis
+            .methods()
+            .into_iter()
+            .filter(|method| method.name == "Get")
+            .collect();
+        assert_eq!(overloads.len(), 2, "both overloads are recorded");
+        assert_eq!(
+            overloads[0].semantic_path, overloads[1].semantic_path,
+            "the ambiguity is real: the two declarations share one semantic path"
+        );
+        assert_ne!(overloads[0].key, overloads[1].key);
+        assert_eq!(analysis, analyze("src/app/Calc.cs", source));
+    }
+
+    /// A brace-scoped `namespace P { }` block repeated in one file declares the
+    /// same namespace twice, so both records share one base key.
+    #[test]
+    fn a_repeated_namespace_block_gets_distinct_keys() {
+        let source =
+            "namespace P\n{\n    public class First { }\n}\n\nnamespace P\n{\n    public class Second { }\n}\n";
+        let analysis = analyze("src/app/P.cs", source);
+        assert!(!analysis.has_errors(), "{:?}", analysis.diagnostics);
+        assert_every_declaration_key_is_unique(&analysis);
+
+        let namespaces = analysis.namespaces();
+        assert_eq!(namespaces.len(), 2, "both namespace blocks are recorded");
+        assert_eq!(namespaces[0].name, "P");
+        assert_eq!(namespaces[1].name, "P");
+        assert_ne!(namespaces[0].key, namespaces[1].key);
+        assert_eq!(analysis, analyze("src/app/P.cs", source));
+    }
+
+    /// A partial type split across two blocks is one type written twice; the two
+    /// declarations are distinct records on one semantic path, so they may not
+    /// share a key. Members keep their own distinct keys.
+    #[test]
+    fn partial_type_split_across_two_blocks_gets_distinct_keys() {
+        let source = "namespace App\n{\n    public partial class Widget\n    {\n        public void First()\n        {\n        }\n    }\n\n    public partial class Widget\n    {\n        public void Second()\n        {\n        }\n    }\n}\n";
+        let analysis = analyze("src/app/Widget.cs", source);
+        assert!(!analysis.has_errors(), "{:?}", analysis.diagnostics);
+        assert_every_declaration_key_is_unique(&analysis);
+
+        let widgets: Vec<&CsharpDeclaration> = analysis
+            .of_kind(CsharpDeclarationKind::Class)
+            .into_iter()
+            .filter(|declaration| declaration.name == "Widget")
+            .collect();
+        assert_eq!(widgets.len(), 2);
+        assert_ne!(widgets[0].key, widgets[1].key);
+        assert_eq!(analysis, analyze("src/app/Widget.cs", source));
+    }
+
+    /// Constructor overloads are recorded as methods named after their type, so
+    /// they take exactly the same path as method overloads.
+    #[test]
+    fn constructor_overloads_get_distinct_keys() {
+        let source = "namespace App\n{\n    public class Service\n    {\n        public Service()\n        {\n        }\n\n        public Service(string name)\n        {\n            Name = name;\n        }\n\n        public string Name { get; }\n    }\n}\n";
+        let analysis = analyze("src/app/Service.cs", source);
+        assert!(!analysis.has_errors(), "{:?}", analysis.diagnostics);
+        assert_every_declaration_key_is_unique(&analysis);
+
+        let constructors: Vec<&CsharpDeclaration> = analysis
+            .methods()
+            .into_iter()
+            .filter(|method| method.name == "Service")
+            .collect();
+        assert_eq!(constructors.len(), 2, "both constructors are recorded");
+        assert_ne!(constructors[0].key, constructors[1].key);
+        assert_eq!(analysis, analyze("src/app/Service.cs", source));
+    }
+
+    /// Control: a file with no repeated declaration must keep, byte for byte,
+    /// the keys the pre-H-007 scheme produced. The expected digests below were
+    /// taken from the pre-H-007 `declaration_key` (FNV-1a over
+    /// `[version, file, kind, path...]`), so a change to the disambiguation that
+    /// leaked into a non-colliding declaration fails here.
+    #[test]
+    fn a_file_without_a_repeated_declaration_keeps_its_exact_keys() {
+        let analysis = analyze("src/app/Core.cs", SAMPLE);
+        assert_every_declaration_key_is_unique(&analysis);
+        let observed: Vec<(&str, &str, &str)> = analysis
+            .declarations
+            .iter()
+            .map(|declaration| {
+                (
+                    declaration.kind.as_str(),
+                    declaration.name.as_str(),
+                    declaration.key.as_str(),
+                )
+            })
+            .collect();
+        assert_eq!(
+            observed,
+            vec![
+                ("namespace", "App.Core", "10eb657f34b6e11b"),
+                ("interface", "IThing", "681dfa2a9297ae60"),
+                ("method", "Run", "b120f0621025d653"),
+                ("class", "Thing", "8f840184faf90653"),
+                ("method", "Run", "33a247d2519fa0d7"),
+                ("record", "Point", "5ef51eb602ba0647"),
+                ("struct", "Vec", "64a826b89c9148e9"),
+                ("enum", "Color", "624700a527e3c444"),
+            ]
+        );
+    }
+
+    /// A repeated key is only disambiguated inside the file that repeats it: the
+    /// same semantic path in another file keeps a key derived from that file.
+    #[test]
+    fn disambiguation_never_leaks_across_files() {
+        let source = "namespace Demo\n{\n    public class Calc\n    {\n        public int Get(int id)\n        {\n            return id;\n        }\n\n        public int Get(string key)\n        {\n            return key.Length;\n        }\n    }\n}\n";
+        let first = analyze("src/app/Calc.cs", source);
+        let second = analyze("src/other/Calc.cs", source);
+        for declaration in &first.declarations {
+            assert!(
+                !second
+                    .declarations
+                    .iter()
+                    .any(|other| other.key == declaration.key),
+                "keys must stay file-scoped: {} collided across files",
+                declaration.key
+            );
+        }
     }
 }

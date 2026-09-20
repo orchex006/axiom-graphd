@@ -1,6 +1,6 @@
 //! TypeScript class, function, interface, type and member declarations.
 
-use crate::identity::{anonymous_key, declaration_key};
+use crate::identity::{anonymous_key, declaration_key, unique_declaration_keys};
 use crate::{line_span, line_starts, Coverage, Diagnostic, Severity, Span};
 
 /// Diagnostic code for braces that do not balance.
@@ -226,6 +226,24 @@ pub fn analyze(file: &str, source: &str) -> TsAnalysis {
         }
     }
 
+    // TypeScript has the same repeated-path class as C#: overloaded function
+    // declarations, an interface merged across two blocks, a repeated namespace
+    // block and a class or namespace declared twice all produce two
+    // declarations on one semantic path. A repeated key is not a usable
+    // identity - the graph data contract rejects a file whose fact set repeats
+    // a node id - so every member of a repeated group is rewritten with its
+    // occurrence ordinal. Non-repeated keys, including the anonymous and
+    // computed keys that already carry an ordinal, are left untouched.
+    let base_keys: Vec<String> = declarations
+        .iter()
+        .map(|declaration| declaration.key.clone())
+        .collect();
+    for (declaration, key) in declarations
+        .iter_mut()
+        .zip(unique_declaration_keys(&base_keys))
+    {
+        declaration.key = key;
+    }
     if depth != 0 {
         let last = line_span(source, &starts, lines.len().saturating_sub(1));
         diagnostics.push(Diagnostic::error(
@@ -399,7 +417,7 @@ fn strip_line_comment(line: &str) -> &str {
 
 #[cfg(test)]
 mod tests {
-    use super::{analyze, IdentityQuality, TsDeclarationKind, CODE_UNBALANCED_BRACES};
+    use super::{analyze, IdentityQuality, TsAnalysis, TsDeclarationKind, CODE_UNBALANCED_BRACES};
     use crate::CoverageStatus;
 
     const SAMPLE: &str = "export interface Widget {\n  run(): void;\n}\n\nexport type Id = string;\n\nexport class Panel implements Widget {\n  run(): void {}\n}\n\nexport async function build(name: string): Promise<Panel> {\n  return new Panel();\n}\n\nconst counter = 0;\n";
@@ -520,6 +538,128 @@ mod tests {
         let first = analyze("src/panel.ts", SAMPLE);
         for _ in 0..3 {
             assert_eq!(analyze("src/panel.ts", SAMPLE), first);
+        }
+    }
+    /// H-007: no file may contribute a repeated node id. Every test below drives
+    /// the disambiguated keys through this check, because a file that still
+    /// repeats a key is a failure, not a partial success.
+    fn assert_every_declaration_key_is_unique(analysis: &TsAnalysis) {
+        let mut keys: Vec<&str> = analysis
+            .declarations
+            .iter()
+            .map(|declaration| declaration.key.as_str())
+            .collect();
+        let total = keys.len();
+        keys.sort_unstable();
+        keys.dedup();
+        assert_eq!(
+            keys.len(),
+            total,
+            "a file must not contribute two declarations with one key: {:?}",
+            analysis.declarations
+        );
+    }
+
+    /// Control: a file with no repeated declaration keeps exactly the keys the
+    /// shared `declaration_key` produces, byte for byte, so the H-007
+    /// disambiguation cannot leak into a non-colliding declaration.
+    #[test]
+    fn a_file_without_a_repeated_declaration_keeps_its_exact_keys() {
+        let analysis = analyze("src/panel.ts", SAMPLE);
+        assert_every_declaration_key_is_unique(&analysis);
+        for declaration in &analysis.declarations {
+            let name = declaration.name.as_deref().expect("explicit name");
+            let mut path: Vec<&str> = declaration
+                .semantic_path
+                .iter()
+                .map(String::as_str)
+                .collect();
+            path.push(name);
+            assert_eq!(
+                declaration.key,
+                crate::identity::declaration_key("src/panel.ts", declaration.kind.as_str(), &path),
+                "a non-colliding declaration must keep its pre-H-007 key"
+            );
+        }
+    }
+
+    /// Overloaded or re-declared functions share one name and one module scope.
+    #[test]
+    fn repeated_function_declarations_get_distinct_keys() {
+        let source = "export function foo(value: number): void;\nexport function foo(value: string): void;\nexport function foo(value: unknown): void {\n}\n";
+        let analysis = analyze("src/foo.ts", source);
+        assert!(!analysis.has_errors(), "{:?}", analysis.diagnostics);
+        assert_every_declaration_key_is_unique(&analysis);
+        let functions = analysis.of_kind(TsDeclarationKind::Function);
+        assert_eq!(functions.len(), 3, "all three declarations are recorded");
+        assert_eq!(
+            functions[0].semantic_path, functions[1].semantic_path,
+            "the ambiguity is real: the two declarations share one semantic path"
+        );
+        let keys: Vec<&str> = functions
+            .iter()
+            .map(|declaration| declaration.key.as_str())
+            .collect();
+        assert!(keys[0] != keys[1] && keys[1] != keys[2] && keys[0] != keys[2]);
+        assert_eq!(analysis, analyze("src/foo.ts", source));
+    }
+
+    /// An interface merged across two blocks is one name in one scope, twice.
+    #[test]
+    fn an_interface_merged_across_two_blocks_gets_distinct_keys() {
+        let source = "interface A {\n  a: string;\n}\n\ninterface A {\n  b: number;\n}\n";
+        let analysis = analyze("src/a.ts", source);
+        assert!(!analysis.has_errors(), "{:?}", analysis.diagnostics);
+        assert_every_declaration_key_is_unique(&analysis);
+        let interfaces = analysis.of_kind(TsDeclarationKind::Interface);
+        assert_eq!(interfaces.len(), 2, "both interface blocks are recorded");
+        assert_ne!(interfaces[0].key, interfaces[1].key);
+        assert_eq!(analysis, analyze("src/a.ts", source));
+    }
+
+    /// A brace-scoped `namespace N { }` block repeated in one file declares the
+    /// same namespace twice.
+    #[test]
+    fn a_repeated_namespace_block_gets_distinct_keys() {
+        let source = "namespace N {\n}\n\nnamespace N {\n}\n";
+        let analysis = analyze("src/n.ts", source);
+        assert!(!analysis.has_errors(), "{:?}", analysis.diagnostics);
+        assert_every_declaration_key_is_unique(&analysis);
+        let namespaces = analysis.of_kind(TsDeclarationKind::Namespace);
+        assert_eq!(namespaces.len(), 2, "both namespace blocks are recorded");
+        assert_ne!(namespaces[0].key, namespaces[1].key);
+        assert_eq!(analysis, analyze("src/n.ts", source));
+    }
+
+    /// A type declared twice in one module is two declarations on one path.
+    #[test]
+    fn a_type_declared_twice_gets_distinct_keys() {
+        let source = "class C {\n}\n\nclass C {\n}\n";
+        let analysis = analyze("src/c.ts", source);
+        assert!(!analysis.has_errors(), "{:?}", analysis.diagnostics);
+        assert_every_declaration_key_is_unique(&analysis);
+        let classes = analysis.of_kind(TsDeclarationKind::Class);
+        assert_eq!(classes.len(), 2, "both class declarations are recorded");
+        assert_ne!(classes[0].key, classes[1].key);
+        assert_eq!(analysis, analyze("src/c.ts", source));
+    }
+
+    /// A repeated key is only disambiguated inside the file that repeats it: the
+    /// same semantic path in another file keeps a key derived from that file.
+    #[test]
+    fn disambiguation_never_leaks_across_files() {
+        let source = "interface A {\n  a: string;\n}\n\ninterface A {\n  b: number;\n}\n";
+        let first = analyze("src/a.ts", source);
+        let second = analyze("src/other/a.ts", source);
+        for declaration in &first.declarations {
+            assert!(
+                !second
+                    .declarations
+                    .iter()
+                    .any(|other| other.key == declaration.key),
+                "keys must stay file-scoped: {} collided across files",
+                declaration.key
+            );
         }
     }
 }
