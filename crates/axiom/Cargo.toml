@@ -17,6 +17,10 @@ graph-core.workspace = true
 # defined over those bytes plus the trailing newline, so a second encoder here
 # would be a second digest contract.
 graph-export.workspace = true
+# The store owns the patched-SQLite runtime gate (I-004): the ecosystem
+# prerequisite report renders its WAL baseline from the store's own constant
+# instead of copying the version, so a baseline change moves the report with it.
+graph-store.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 axiom-platform = { version = "0.0.0-dev", path = "../platform" }

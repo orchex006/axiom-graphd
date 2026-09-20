@@ -25,6 +25,10 @@ Default ไม่ publishGitcheckpoint ทุก save. Taskowner สร้าง
 | branchswitch | sourceepochchanged | rescan/invalidateoldjobs;waitnewcatalog |
 | bootstrapconflict | humaneditedownedblock | showdiff/manualadoptionplan;preserveusertext |
 | updateincompatible | schema/componentrangeconflict | choosecompatiblebundle/pinold;noautomajormigration |
+| install prerequisite not ready (exit4) | one declared row is unsatisfied/unknown: interpreter,toolchain,runtime,hostexecutable หรือ permission | read the named `component/class` row and install that prerequisite per-user;neverrelaunchaselevatedortrytobypassbyeditingtheplan |
+| install staging incomplete (exit6) | a planned payload is not staged or its bytes/byte-count differ from the approved plan | re-download and re-verify the bundle;suspectahand-editedstagingtree;nothingwaswritten |
+| install already-installed (exit0) | every destination already holds the planned bytes | nothing to do;there-runrewritesnopointer,journalorrollbackrecord |
+| install partially applied | the previous run stopped between components | re-run the same approved plan;onlythecomponentsnotyetinplaceareactivated,eachkeepsitsowntransactionandjournal |
 | hooksloop | hookcontinuationwithoutnewwork | loopguard/circuitbreaker+surfaceblockedstate |
 
 ## Health/metrics
