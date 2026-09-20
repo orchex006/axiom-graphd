@@ -234,9 +234,11 @@ exist, and both matter to an operator:
   the `axiom` binary, so the observed exit status is unverified here even though
   the code path is not;
 - the daemon binary `axiom-graphd` implements `help` and `version`; its
-  `doctor` and `serve` verbs are recognised but answer `NOT_READY` (exit 4)
-  because their status sources and reconcile worker belong to later work
-  packages, and any other verb is rejected with a validation error (exit 2).
+  `doctor` and `serve` verbs, plus the seven operator verbs wired by task H-001
+  (`status`, `solution`, `changed`, `reconcile`, `queue`, `query`, `update`), are
+  recognised but answer `NOT_READY` (exit 4) because their status sources, queue
+  writer and store bindings belong to later work packages, and any other verb is
+  rejected with a validation error (exit 2).
   Running the prebuilt binary from the owner's primary checkout reproduced
   exactly that (`help` and `version` exit 0, `doctor` `NOT_READY` exit 4,
   unknown verb `VALIDATION_ERROR` exit 2); its `version` reports

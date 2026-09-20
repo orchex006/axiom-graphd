@@ -22,7 +22,7 @@ no implementation in the pinned revision and cannot be executed at all.
 | 1 Prerequisites | available | Read-only checklist; nothing is executed. |
 | 2 Approved release and trust setup | pending | No signed release archive exists; `axiom install` has no implementation in this build. |
 | 3 Install the core release | pending | No installer, no archive and no `crates/axiom` crate exist in the pinned revision. |
-| 4 Machine-local state and bindings | pending | `AXIOM_HOME` resolution exists in `graph-core`, but the registry/binding commands are not wired into argv. |
+| 4 Machine-local state and bindings | pending | `AXIOM_HOME` resolution exists in `graph-core`; the registry/binding commands (`status`, `solution`) are wired into argv and answer `NOT_READY` (exit 4) without reading or writing state. |
 | 5 Opt-in user service | pending | No service adapter, registration or native lifecycle evidence exists. |
 | 6 MCP handshake | pending | `axiom-mcp` is a separate repository and no handshake evidence exists for this host. |
 | 7 First-run smoke test | pending | The daemon cannot serve: `serve` reports `NOT_READY`. |
@@ -108,8 +108,9 @@ axiom install apply --plan install-plan.json
 ## 5. Machine-local state and bindings
 
 Target procedure (Step 4, `pending`). The state home and layout below are
-implemented; the registry/binding commands are not wired into argv in this
-revision.
+implemented; the registry/binding commands (`status`, `solution`) are wired into
+argv in this revision, but they answer `NOT_READY` (exit 4) and read or write no
+binding.
 
 Default state home on Windows:
 
@@ -245,7 +246,8 @@ to their pre-uninstall state.
   document. No Windows target is certified.
 - The commands in sections 4, 5, 6 and 9 are documentation of an intended
   contract for a later work package; they are not accepted by any binary in this
-  revision.
+  revision, except the `axiom-graphd solution` shape, which task H-001 wired into
+  argv so it is accepted and then refused with `NOT_READY` (exit 4).
 
 ## 12. Related documents
 

@@ -23,7 +23,7 @@ one into a configuration file, a command line or a plist.
 | 1 Prerequisites and architecture selection | pending | Target selection is defined, but no archive exists for either macOS architecture. |
 | 2 Approved release and trust setup | pending | No signed or notarised release archive exists; `axiom install` has no implementation in this build. |
 | 3 Install the core release | pending | No installer, no archive and no `crates/axiom` crate exist in the pinned revision. |
-| 4 Machine-local state, bindings and filesystem permission checks | pending | `AXIOM_HOME` resolution and the storage policy exist, but the registry/binding commands are not wired into argv. |
+| 4 Machine-local state, bindings and filesystem permission checks | pending | `AXIOM_HOME` resolution and the storage policy exist; the registry/binding commands (`status`, `solution`) are wired into argv and answer `NOT_READY` (exit 4) without reading or writing state. |
 | 5 User LaunchAgent | pending | No LaunchAgent template or service adapter exists in this build. |
 | 6 MCP handshake | pending | `axiom-mcp` is a separate repository and no handshake evidence exists for this host. |
 | 7 First-run smoke test | pending | The daemon cannot serve: `serve` reports `NOT_READY`. |
@@ -108,8 +108,9 @@ axiom install apply --plan install-plan.json
 ## 5. Machine-local state, bindings and permission checks
 
 Target procedure (Step 4, `pending`). The state home, layout and storage policy
-below are implemented; the registry/binding commands are not wired into argv in
-this revision.
+below are implemented; the registry/binding commands (`status`, `solution`) are
+wired into argv in this revision, but they answer `NOT_READY` (exit 4) and read
+or write no binding.
 
 Default state home on macOS:
 
