@@ -1,0 +1,7 @@
+=== artifacts of both renders (bytes / sha256) ===
+render-a graph.mmd bytes=11328 sha256=bf58e92f2109a7b1fbcf22bb6ac6a33f33ae4778fd8d2e1df3564215e7a2fd7c
+render-a result.html bytes=947928 sha256=98567f86d29173573f1b1f19b8bbfb6b0477175eead8408be589c19912085380
+render-a summary.json bytes=1295180 sha256=af0e1a77eedfe9d7326d50efe35ae3831b72d942c33ab253d27d3c0b478b1f71
+render-b graph.mmd bytes=11328 sha256=bf58e92f2109a7b1fbcf22bb6ac6a33f33ae4778fd8d2e1df3564215e7a2fd7c
+render-b result.html bytes=947928 sha256=98567f86d29173573f1b1f19b8bbfb6b0477175eead8408be589c19912085380
+render-b summary.json bytes=1295180 sha256=af0e1a77eedfe9d7326d50efe35ae3831b72d942c33ab253d27d3c0b478b1f71

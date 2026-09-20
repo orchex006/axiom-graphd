@@ -1,0 +1,7 @@
+PARSE_OK return=true
+RENDER_OK bytes=82357
+svg_nodes=160
+svg_subgraphs=1
+svg_edgePaths=3
+source_header=%% projection: 160 of 1368 node(s) and 3 of 1213 edge(s); kind order is the priority order and the projection stops at 160 node(s)
+svg_written=D:\SP-Billy\axiom-worktrees\axiom-graphd-mermaid\_w10mermaid\evidence\06-mermaid-rendered.svg

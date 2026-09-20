@@ -30,7 +30,9 @@ mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: "base",
 console.log("PARSE_OK return=" + JSON.stringify(await mermaid.parse(src)));
 const { svg } = await mermaid.render("probeGraph", src);
 console.log("RENDER_OK bytes=" + svg.length);
-for (const [label, re] of [["nodes", /class="node default/g], ["edgePaths", /class="edge-thickness/g]]) {
+// Counted as elements, not as substring hits: Mermaid also emits wrapper
+// groups named "clusters" and "cluster-label".
+for (const [label, re] of [["nodes", /<g class="node default/g], ["subgraphs", /<g class="cluster /g], ["edgePaths", /class="edge-thickness/g]]) {
   console.log("svg_" + label + "=" + (svg.match(re) || []).length);
 }
 const header = src.split("\n").find((line) => line.startsWith("%% projection:")) || "";

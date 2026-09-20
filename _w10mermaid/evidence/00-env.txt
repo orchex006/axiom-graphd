@@ -1,0 +1,11 @@
+binary=D:\SP-Billy\axiom-worktrees\axiom-graphd-mermaid\target\release\axiom-graphd.exe
+binary_bytes=3805184
+binary_sha256=d90514441eb4ff86a0c1106e98fcd28acc9057f03d0ca4d74fa9d947023ce688
+graphd_branch=feature/graph-mermaid-view
+graphd_revision=09cd648613e0e111d9d262b98d52d6dbeecc9a12
+graphd_status_porcelain= M _w10mermaid/scripts/run_render.ps1; ?? _w10mermaid/evidence/
+cargo_profile=release
+repo=D:\SP-Billy\axiom\agmws-license-management-netcore
+repo_branch=feature/graphd
+repo_head=24410f3665447a7555c711e8aafe74f4c0f0ced7
+repo_status=?? .axiom/

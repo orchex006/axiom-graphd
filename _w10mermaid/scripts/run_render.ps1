@@ -20,6 +20,14 @@ $PRJ  = 'agmws-web-service'
 if (-not (Test-Path $bin)) { throw "build first: cd $wt; cargo build --release --locked -p axiom-graphd" }
 if (-not (Test-Path $gw))  { throw "the real project has no published generation at $gw - run serve in it first" }
 
+# The scratch AXIOM_HOME is rebuilt from nothing every run, so a second run never
+# answers CONFLICT/duplicate-solution. Every recursive delete stays inside the
+# verified package root.
+$pkgFull = [System.IO.Path]::GetFullPath($pkg)
+$axhFull = [System.IO.Path]::GetFullPath($axh)
+if (-not $axhFull.StartsWith($pkgFull, [System.StringComparison]::OrdinalIgnoreCase)) { throw "home outside package: $axhFull" }
+if (Test-Path $axhFull) { Remove-Item -Recurse -Force -LiteralPath $axhFull }
+
 New-Item -ItemType Directory -Force -Path $out, (Join-Path $axh 'config') | Out-Null
 Set-Content -NoNewline -Path (Join-Path $axh 'config\bindings.json') -Value '{ "status": "ok", "bindings": { "agmws": "D:\\SP-Billy\\axiom" } }'
 Set-Content -NoNewline -Path (Join-Path $axh 'config\registry.json') -Value '{ "storage": { "journalMode": "DELETE" } }'
