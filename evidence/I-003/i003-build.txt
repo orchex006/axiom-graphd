@@ -1,0 +1,16 @@
+I-003 build evidence
+captured (Gregorian, invariant): 2026-09-20 14:28:14 +07:00
+toolchain: rustc rustc 1.85.0 (4d91de4e4 2025-02-17) ; cargo cargo 1.85.0 (d73d2caf9 2024-12-31)
+
+command: cargo build -p axiom
+exit code: 0
+--- output (tail) ---
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.06s
+
+command: cargo build -p axiom-cli
+exit code: 0
+--- output (tail) ---
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.06s
+
+binary: target\debug\axiom.exe
+binary sha256: A54CAD81C7AD8ACCE84898D6BF6A9387FC8EF5DA74EDABFA9DB3198076BD5E70

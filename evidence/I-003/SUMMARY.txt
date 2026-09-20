@@ -1,0 +1,91 @@
+I-003 SUMMARY - reach the installation surface from the axiom entrypoint argv
+written (Gregorian, invariant): 2026-09-20 14:33:06 +07:00
+
+Task / card
+  card: D:\SP-Billy\axiom-worktrees\axiom-specs-main\tasks\I\I-003.md
+  requirement: R22, R06, R16 (work package ecosystem-installation)
+  repository: axiom-graphd
+  worktree: D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-i003
+  branch: feature/i-003-axiom-cli-install-surface
+  base: origin/main 682269338706c8ffc7d81efc0b266b5ac5a66765
+  note: the remote-tracking origin/main has since advanced to 19ce8426 (the H-002 merge); this
+        branch was created from the instructed base 6822693 and carries exactly one commit on top of it.
+  push: none (the orchestrator publishes; per the task instruction no push/merge/rebase/tag was performed)
+
+What was changed (composition only - no new installation behaviour)
+  crates/axiom/src/cli.rs      the one declared dispatcher table VERBS: &[FormSpec] (35 forms) plus
+                               USAGE, strict per-form parsing, Command::Slice -> NotReady (exit 4),
+                               and 9 tests including the bidirectional drift guard.
+  Changelog.md                 I-003 entry under Unreleased.
+  docs/native-operations.md    the "not a verb" table now says the migrate and pending verbs are
+                               advertised by --help and dispatched (I-003) yet still answer NOT_READY.
+  evidence/I-003/*             the evidence described below.
+
+AC1 - every documented command reachable from argv and listed by --help
+  - The dispatcher (VERBS) and the help text (USAGE) are compared by an independent reader of the
+    Commands: block; advertised_commands_match_the_dispatcher_in_both_directions asserts the two path
+    lists are EQUAL (order included) and then checks each direction of containment, and
+    advertised_options_match_the_dispatcher_in_both_directions does the same for options.
+  - Every advertised form is exercised: every_advertised_form_is_dispatchable builds a sample argv
+    for each of the 35 forms and asserts it resolves to that same form.
+  - --json contract: i003-argv-matrix.txt cases P4/P5 (implemented), U2/U3/U4 (unbuilt) and E2
+    (rejected) each show exactly ONE JSON object on stdout and the diagnostic on stderr. Text mode
+    cases U1/P3 show empty stdout on failure.
+  - Validation exit code for an unknown verb (E1/E2), a missing option value (E5/E6) and an invalid
+    flag combination (E7/E8) is 2, matching docs/16-CLI-AND-CONTROL-API.md section 6.
+  - An unbuilt subcommand answers NotReady (exit 4) with a stated reason (U1-U4) and never an empty
+    success: no execute() arm can turn Command::Slice into a payload, and unbuilt_slices_answer_
+    not_ready_with_a_stated_reason asserts it in text and JSON mode.
+  - Drift is a test failure in both directions: i003-negative-drift.txt shows two real mutations
+    that each fail the drift guard (exit 101), proven applied (sha256 changed, line count moved)
+    before the run, with the file byte-restored afterwards and a green re-run (exit 0).
+
+AC2 - real positive/negative/boundary argv evidence with exit codes
+  - i003-argv-matrix.txt: 22 real spawned-process runs of target\debug\axiom.exe
+    (binary sha256 A54CAD81C7AD8ACCE84898D6BF6A9387FC8EF5DA74EDABFA9DB3198076BD5E70),
+    captured as argv -> exit code -> verbatim stdout and stderr:
+      5 implemented/positive (P1-P5): exit 0
+      4 unbuilt (U1-U4): exit 4, recorded as unbuilt, never a success envelope
+      13 negative/boundary (E1-E13): exit 2
+  - i003-help-inventory.txt: verbatim axiom --help, exit 0, 3497 stdout bytes, 0 stderr bytes.
+
+Commands executed, with real exit codes
+  cargo build -p axiom                         exit 0
+  cargo build -p axiom-cli                     exit 0 (produces target\debug\axiom.exe)
+  cargo test -p axiom --lib cli::              exit 0  9 passed; 0 failed
+  cargo test -p axiom-cli                      exit 0  7 passed; 0 failed
+  cargo fmt --all -- --check                   exit 0  (alias cargo fmt-check)
+  cargo lint                                   exit 0  (clippy --locked --all-targets -- -D warnings)
+  cargo test -p axiom                          exit 101  472 passed; 44 failed (pre-existing, see below)
+
+Limitations / blockers (recorded, not hidden)
+  1. cargo test -p axiom over the whole crate fails 44 pre-existing tests that this card neither
+     caused nor touches: hosts::antigravity 8, hosts::gemini 9, hosts::claude 7, hosts::codex 7,
+     hosts::detect 6, install::uninstall 4, service::macos 2, service::linux 1. Every one panics
+     with "a root must be an absolute host path" - a Windows host-path/absolute-path guard outside
+     crates/axiom/src/cli.rs. Zero failures are in cli::. They are reported, not fixed.
+  2. Every installation/bootstrap/skills/update/service/host/doctor/support-bundle/migrate form is
+     advertised and dispatchable but still answers NotReady (exit 4): this card composes the argv
+     surface only and implements no installation behaviour. No unbuilt slice is turned into success.
+  3. The card names evidence/preflight/I-003.json, evidence/completion/I-003.json and
+     evidence/artifacts/I-003/ and the specctl state commands. specctl and those paths live in the
+     axiom-specs repository, which this task forbids touching, so the preflight/completion JSON and
+     specctl run are owned by the orchestrator; the required artifacts were produced under
+     evidence/I-003/ as the task instructed.
+  4. No remote interaction was performed: no push, merge, rebase, force-push or tag, by instruction.
+
+Evidence files in evidence\I-003\ (sha256)
+  (hashes are of the LF worktree files written by this task; .gitattributes has
+   `* text=auto`, so git stores the same content with LF line endings)
+  i003-argv-matrix.txt           17419 bytes  BA7B15A9B0082D03E4E3CAFA24B030F655307155DBF5D154F3D93ED5FBA9418B
+  i003-build.txt                   570 bytes  BC025C3AEE682F05DC8332C26066E15A634562EBF180D7991CC3027F9DB22CEE
+  i003-help-inventory.txt         3926 bytes  69DEF386E822FB6BC0F2D731A9E16CB8A8A00D0F1F04F521D5F12D1BAA6A653D
+  i003-negative-drift.txt         8704 bytes  5EEC4248CEA4ADE95AAE8501D93F16C72936CA2996AA9A3FB10495A199C6B904
+  i003-tests-raw.txt             68396 bytes  F4AA3C5523DE96663FBD0F35DC830A169A45CDA95319763CAE59705F28716AA7
+  i003-tests.txt                  3424 bytes  7C89BD6D185CE2E353A9F57CA972E3CC72CCDF3AD1259EB6C725717D0AB264A9
+  i003-tool-versions.txt           814 bytes  D62588E28272D3D275D9D28B8453D517E9A2FBAD50A18CAF3A886A53E8BBE33A
+
+Changed file hashes
+  crates/axiom/src/cli.rs      51AE124F14F0E97DED5670BB046FFB7450F6F29B97A03965DB7DE48A469948DF
+  Changelog.md                 F446CF05A5B09534772D2402048905869BBBFCAAD15B1CC5AB70C3C87529F853
+  docs/native-operations.md    15BEA599250906AC861F37AEE53FFEFA965BF468AEEF445B51723F0DF97C1FC4
