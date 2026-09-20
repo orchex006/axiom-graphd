@@ -517,7 +517,6 @@ a rejection, and so a future implementation has a documented target.
 
 | Proposed command | Target contract | Current behaviour |
 | ---------------- | --------------- | ----------------- |
-| `axiom install plan` / `axiom install apply` | [../21-INSTALLATION.md](../21-INSTALLATION.md) | Binary `axiom` does not exist in this repository; `install` is not an accepted `axiom-graphd` command. |
 | `axiom service install`, then `axiom service start` / `status` / `uninstall --user` | [../21-INSTALLATION-QUICKSTART.md](../21-INSTALLATION-QUICKSTART.md) | Not accepted as a command. |
 | `axiom host detect`, and `axiom bootstrap plan` / `apply` / `verify` | [../18-BOOTSTRAP-AND-MANAGED-INSTRUCTIONS](../18-BOOTSTRAP-AND-MANAGED-INSTRUCTIONS.md) | Not accepted as commands. |
 | `axiom-graphd checkpoint create\|verify`, `axiom-graphd snapshot read\|export\|gc` | CLI contract `docs/16-CLI-AND-CONTROL-API.md` in `axiom-specs` | Documented in the contract, but no module owns them in this revision, so `parse` rejects them as an unrecognised command (`VALIDATION_ERROR`, exit 2). |
@@ -526,6 +525,12 @@ a rejection, and so a future implementation has a documented target.
 Do not treat a module existing in `crates/` as a command: availability is decided
 by `parse` in `crates/axiom-graphd/src/cli.rs`, and the tables in sections 1 and
 4 to 13 mirror exactly that.
+
+`axiom install plan` / `axiom install apply` are no longer proposed: task I-004
+composed them onto the sibling `axiom` entrypoint (`crates/axiom/src/cli.rs`,
+package `axiom`) and they delegate to the ecosystem orchestration module. They
+remain unrecognised by `axiom-graphd` itself, which is why the `install` row in
+section 1 stays `proposed` for this binary.
 
 ## 15. Exit-code and envelope rules
 

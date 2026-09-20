@@ -86,13 +86,15 @@ Refusals that are contract, not preference:
 
 ## 4. Install the core release
 
-Target procedure (Step 3, `pending`). The installer CLI is not part of this
-revision; see [reference/axiom-graphd](../reference/axiom-graphd.md) for the
-availability table.
+The installer CLI is composed in this revision (task I-004): the `axiom`
+entrypoint accepts `install plan` and `install apply` and delegates to the
+ecosystem orchestration module. Signing, archive and the Windows service legs
+remain `pending`; see [reference/axiom-graphd](../reference/axiom-graphd.md)
+for the availability table.
 
 ```text
 axiom install plan  --bundle <verified-local-bundle> --out install-plan.json
-axiom install apply --plan install-plan.json
+axiom install apply --plan install-plan.json --approve-digest <plan-sha256>
 ```
 
 - Install into a versioned directory under the user state home
@@ -229,7 +231,7 @@ to their pre-uninstall state.
 | `UNSAFE_HOME_PATH` (exit 2) | Relative, remote, cloud-synchronised or device `AXIOM_HOME` | Point `AXIOM_HOME` at an absolute path on a local fixed volume. |
 | `CONFIG_INVALID` (exit 2) | Registry or config rejected | Fix the named field; do not delete the database to silence it. |
 | `WRITER_ALREADY_RUNNING` (exit 10) | Another owner holds `run/daemon.lock` | Find the owning process; never delete the lock by guess. |
-| `NOT_READY` (exit 4) | Requested capability not implemented in this build | Use the documented foreground/read-only path or wait for the owning work package. |
+| `NOT_READY` (exit 4) | A required prerequisite is unsatisfied or unknown, or the requested capability is not implemented in this build | Satisfy the named `(component, class)` row before writing; never bypass it. For an unbuilt capability, use the documented foreground/read-only path. |
 | Task creation denied | Organisation policy | Report it and stay in foreground mode. Do not request machine-wide privilege automatically. |
 | `PUBLISH_BLOCKED`-style sharing violation on publication | Open reader, antivirus or file handle | Bounded retry, close the offending reader. Never delete the current generation first. |
 
@@ -244,11 +246,14 @@ to their pre-uninstall state.
   handshake and uninstall step in this runbook. No archive, signature, service,
   process or host handshake was exercised on any Windows host for this
   document. No Windows target is certified.
-- The commands in sections 4, 5, 6 and 9 are documentation of an intended
-  contract for a later work package; they are not accepted by any binary in this
-  revision, except the `axiom-graphd solution` shape, which task H-001 wired into
-  argv and task H-002 bound to the registry, so `solution register|list|remove`
-  now executes against a machine-local store.
+- The commands in sections 5, 6 and 9 are documentation of an intended contract
+  for a later work package; they are not accepted by any binary in this revision,
+  except the `axiom-graphd solution` shape, which task H-001 wired into argv and
+  task H-002 bound to the registry, so `solution register|list|remove` now
+  executes against a machine-local store. The section 4 `axiom install plan` /
+  `axiom install apply` forms are now accepted (task I-004) and delegate to the
+  ecosystem orchestration module; the signed archive, service and
+  trust-verification steps still are not.
 
 ## 12. Related documents
 
