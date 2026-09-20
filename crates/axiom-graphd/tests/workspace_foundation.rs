@@ -180,19 +180,14 @@ fn read(root: &Path, name: &str) -> String {
 }
 
 /// One mutation of a single foundation file, with the problem it must provoke.
-struct Case {
-    file: &'static str,
-    from: &'static str,
-    to: &'static str,
-    marker: &'static str,
+struct Case<'a> {
+    file: &'a str,
+    from: &'a str,
+    to: &'a str,
+    marker: &'a str,
 }
 
-const fn cases(
-    file: &'static str,
-    from: &'static str,
-    to: &'static str,
-    marker: &'static str,
-) -> Case {
+fn cases<'a>(file: &'a str, from: &'a str, to: &'a str, marker: &'a str) -> Case<'a> {
     Case {
         file,
         from,
@@ -314,7 +309,12 @@ fn losing_any_single_foundation_rule_is_reported() {
             "wildcards = \"allow\"",
             "deny: missing audit rule wildcards",
         ),
-        cases("version", "0.0.0-dev", "0.0.1-dev", "version: VERSION"),
+        cases(
+            "version",
+            base_version.trim(),
+            "0.0.0-dev",
+            "version: VERSION",
+        ),
         cases(
             "editorconfig",
             "end_of_line = lf",

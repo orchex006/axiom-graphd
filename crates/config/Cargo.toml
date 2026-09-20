@@ -14,7 +14,7 @@ workspace = true
 [dependencies]
 # Portable-id, absolute-host-path and storage-class policy is shared so the
 # binding rules cannot drift from the path rules they depend on.
-graph-core = { version = "0.0.0-dev", path = "../graph-core" }
+graph-core = { version = "0.1.0", path = "../graph-core" }
 # A solution document and its owner-only bindings document are JSON; the reader
 # parses them without owning the schema (task H-004).
 serde_json = { workspace = true }

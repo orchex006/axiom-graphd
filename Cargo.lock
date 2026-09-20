@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "axiom"
-version = "0.0.0-dev"
+version = "0.1.0"
 dependencies = [
  "axiom-graphd",
  "axiom-platform",
@@ -19,11 +19,11 @@ dependencies = [
 
 [[package]]
 name = "axiom-bootstrap"
-version = "0.0.0-dev"
+version = "0.1.0"
 
 [[package]]
 name = "axiom-cli"
-version = "0.0.0-dev"
+version = "0.1.0"
 dependencies = [
  "axiom",
  "axiom-graphd",
@@ -33,7 +33,7 @@ dependencies = [
 
 [[package]]
 name = "axiom-config"
-version = "0.0.0-dev"
+version = "0.1.0"
 dependencies = [
  "graph-core",
  "serde_json",
@@ -42,7 +42,7 @@ dependencies = [
 
 [[package]]
 name = "axiom-graphd"
-version = "0.0.0-dev"
+version = "0.1.0"
 dependencies = [
  "graph-analyze",
  "graph-core",
@@ -58,7 +58,7 @@ dependencies = [
 
 [[package]]
 name = "axiom-migration"
-version = "0.0.0-dev"
+version = "0.1.0"
 dependencies = [
  "axiom-platform",
  "graph-core",
@@ -68,7 +68,7 @@ dependencies = [
 
 [[package]]
 name = "axiom-platform"
-version = "0.0.0-dev"
+version = "0.1.0"
 dependencies = [
  "graph-core",
  "tempfile",
@@ -206,7 +206,7 @@ dependencies = [
 
 [[package]]
 name = "graph-analyze"
-version = "0.0.0-dev"
+version = "0.1.0"
 dependencies = [
  "axiom-config",
  "graph-core",
@@ -216,7 +216,7 @@ dependencies = [
 
 [[package]]
 name = "graph-core"
-version = "0.0.0-dev"
+version = "0.1.0"
 dependencies = [
  "libc",
  "serde",
@@ -228,7 +228,7 @@ dependencies = [
 
 [[package]]
 name = "graph-export"
-version = "0.0.0-dev"
+version = "0.1.0"
 dependencies = [
  "graph-core",
  "serde",
@@ -239,7 +239,7 @@ dependencies = [
 
 [[package]]
 name = "graph-queue"
-version = "0.0.0-dev"
+version = "0.1.0"
 dependencies = [
  "graph-core",
  "serde",
@@ -248,7 +248,7 @@ dependencies = [
 
 [[package]]
 name = "graph-store"
-version = "0.0.0-dev"
+version = "0.1.0"
 dependencies = [
  "graph-core",
  "rusqlite",
@@ -258,7 +258,7 @@ dependencies = [
 
 [[package]]
 name = "graph-watch"
-version = "0.0.0-dev"
+version = "0.1.0"
 dependencies = [
  "graph-core",
  "notify",

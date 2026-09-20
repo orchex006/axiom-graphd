@@ -23,7 +23,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.0.0-dev"
+version = "0.1.0"
 edition = "2021"
 rust-version = "1.85"
 # Private, unpublished crates. `LicenseRef-` is a valid SPDX user-defined
@@ -37,15 +37,15 @@ publish = false
 # Internal path dependencies carry an explicit version so the workspace has no
 # wildcard requirement (`cargo deny check bans`); the version matches
 # `workspace.package.version`.
-graph-core = { version = "0.0.0-dev", path = "crates/graph-core" }
-graph-store = { version = "0.0.0-dev", path = "crates/graph-store" }
-graph-watch = { version = "0.0.0-dev", path = "crates/graph-watch" }
-graph-queue = { version = "0.0.0-dev", path = "crates/graph-queue" }
-graph-analyze = { version = "0.0.0-dev", path = "crates/graph-analyze" }
-graph-export = { version = "0.0.0-dev", path = "crates/graph-export" }
+graph-core = { version = "0.1.0", path = "crates/graph-core" }
+graph-store = { version = "0.1.0", path = "crates/graph-store" }
+graph-watch = { version = "0.1.0", path = "crates/graph-watch" }
+graph-queue = { version = "0.1.0", path = "crates/graph-queue" }
+graph-analyze = { version = "0.1.0", path = "crates/graph-analyze" }
+graph-export = { version = "0.1.0", path = "crates/graph-export" }
 # The installation/operations CLI shares the daemon's release boundary: one
 # workspace, one core version, one publish (tasks E-001, E-002).
-axiom = { version = "0.0.0-dev", path = "crates/axiom" }
+axiom = { version = "0.1.0", path = "crates/axiom" }
 # The native filesystem-notification backend of the watcher (B-021): the only
 # supported cross-platform backend that reports recursive changes without
 # polling. The polling fallback in the same crate is the declared alternative.

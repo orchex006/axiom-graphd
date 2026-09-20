@@ -12,8 +12,8 @@ publish.workspace = true
 workspace = true
 
 [dependencies]
-graph-core = { version = "0.0.0-dev", path = "../graph-core" }
-axiom-platform = { version = "0.0.0-dev", path = "../platform" }
+graph-core = { version = "0.1.0", path = "../graph-core" }
+axiom-platform = { version = "0.1.0", path = "../platform" }
 sha2.workspace = true
 
 [dev-dependencies]
