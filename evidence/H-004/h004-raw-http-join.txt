@@ -1,0 +1,204 @@
+   Compiling graph-analyze v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004\crates\graph-analyze)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.58s
+     Running unittests src\lib.rs (target\debug\deps\graph_analyze-444f66d1351a3f9c.exe)
+
+running 156 tests
+test adapter::tests::a_path_without_an_extension_is_unsupported_with_a_named_pattern ... ok
+test adapter::tests::an_unknown_language_reports_unsupported_not_empty_complete ... ok
+test adapter::tests::supported_languages_and_versions_are_enumerated ... ok
+test adapter::tests::the_documented_default_registry_matches_the_pinned_grammar_table ... ok
+test adapter::tests::paths_route_to_their_language ... ok
+test calls::tests::a_computed_member_is_dynamic_and_produces_no_edge ... ok
+test adapter::tests::a_duplicate_language_is_rejected_before_any_analysis ... ok
+test calls::tests::a_direct_call_to_one_declared_symbol_is_exact_static ... ok
+test calls::tests::a_single_implementation_still_records_an_ambiguous_set ... ok
+test calls::tests::an_unknown_target_is_unresolved_not_guessed ... ok
+test calls::tests::a_delegate_target_is_never_certified_as_a_direct_call ... ok
+test calls::tests::an_interface_call_keeps_the_interface_and_never_certifies_one_implementation ... ok
+test calls::tests::edge_order_is_deterministic ... ok
+test calls::tests::two_matching_declarations_are_ambiguous_and_never_pick_the_first ... ok
+test coverage::tests::a_parse_error_does_not_crash_and_still_reports_partial ... ok
+test coverage::tests::a_parse_error_with_a_retained_extract_is_stale_and_never_fresh ... ok
+test coverage::tests::an_unstable_read_is_reported_as_transient_not_as_parsed_content ... ok
+test csharp::declarations::tests::a_fully_malformed_file_is_reported_not_silently_empty ... ok
+test coverage::tests::only_a_fully_fresh_run_claims_completeness ... ok
+test coverage::tests::error_diagnostics_increase_the_unresolved_count ... ok
+test csharp::declarations::tests::a_file_without_a_namespace_warns_and_still_records_types ... ok
+test csharp::declarations::tests::a_property_is_not_reported_as_a_method ... ok
+test csharp::declarations::tests::generic_constraints_and_lambdas_are_not_declarations ... ok
+test csharp::declarations::tests::malformed_type_declaration_and_unbalanced_braces_are_diagnostics ... ok
+test csharp::declarations::tests::namespaces_types_interfaces_and_methods_carry_spans ... ok
+test csharp::declarations::tests::keys_are_stable_across_runs_and_change_with_the_file ... ok
+test grammar::tests::a_single_mismatched_grammar_is_enough_to_fail_the_set ... ok
+test grammar::tests::an_empty_table_is_rejected ... ok
+test coverage::tests::skipped_binary_oversized_and_generated_files_keep_named_reasons ... ok
+test identity::tests::canonical_tuples_are_length_delimited ... ok
+test grammar::tests::an_incompatible_grammar_abi_fails_before_any_analysis ... ok
+test grammar::tests::every_supported_language_has_one_pinned_grammar ... ok
+test identity::tests::unchanged_symbols_keep_their_id_across_repeated_runs ... ok
+test identity::tests::anonymous_keys_are_deterministic_and_distinct_by_ordinal ... ok
+test identity::tests::changing_any_part_changes_the_id ... ok
+test identity::tests::concatenation_collisions_do_not_collide ... ok
+test imports::tests::a_bare_package_specifier_is_never_guessed ... ok
+test imports::tests::a_missing_relative_target_stays_unresolved ... ok
+test grammar::tests::the_build_is_deterministic ... ok
+test imports::tests::a_multi_root_alias_is_ambiguous_and_never_picks_the_first_target ... ok
+test imports::tests::an_ambiguous_extension_choice_is_ambiguous ... ok
+test imports::tests::computed_and_escaping_specifiers_are_unresolved ... ok
+test imports::tests::explicit_aliases_resolve_through_configured_targets ... ok
+test imports::tests::parent_relative_imports_are_normalized ... ok
+test imports::tests::resolution_order_and_results_are_deterministic ... ok
+test incremental::tests::a_redelivered_identical_digest_is_skipped_instead_of_churned ... ok
+test incremental::tests::a_new_file_is_an_addition_and_removal_reports_only_its_keys ... ok
+test imports::tests::relative_imports_resolve_against_the_importing_directory ... ok
+test incremental::tests::incremental_update_matches_a_full_rebuild ... ok
+test incremental::tests::replacement_reports_the_file_it_actually_changed ... ok
+test incremental::tests::replacing_one_file_leaves_every_other_file_key_untouched ... ok
+test invalidation::tests::a_changed_exported_signature_invalidates_dependents_transitively ... ok
+test invalidation::tests::removing_a_target_clears_incoming_edges_and_leaves_a_diagnostic_for_a_living_caller ... ok
+test invalidation::tests::a_newly_added_file_is_parsed_instead_of_trusting_old_reverse_edges ... ok
+test invalidation::tests::a_removed_caller_produces_no_living_diagnostic ... ok
+test incremental::tests::an_empty_reparse_drops_the_previous_facts_instead_of_retaining_them_as_fresh ... ok
+test invalidation::tests::the_fingerprint_is_order_independent_and_content_sensitive ... ok
+test invalidation::tests::an_unchanged_signature_invalidates_nothing ... ok
+test l3::angular_http::tests::a_computed_route_is_unresolved ... ok
+test l3::angular_http::tests::a_literal_base_url_is_recorded_as_a_declared_binding ... ok
+test l3::angular_http::tests::a_literal_verb_and_route_are_read_from_a_request_call ... ok
+test l3::angular_http::tests::a_method_call_on_a_non_client_is_not_an_http_call ... ok
+test l3::angular_http::tests::a_runtime_base_url_is_surfaced_and_never_resolved_to_a_server ... ok
+test l3::angular_http::tests::method_and_literal_route_evidence_are_recorded ... ok
+test l3::annotations::tests::an_agreeing_annotation_merges_without_losing_either_source ... ok
+test l3::angular_http::tests::analysis_is_deterministic ... ok
+test l3::angular_http::tests::an_absolute_literal_url_is_not_a_runtime_base_binding ... ok
+test l3::annotations::tests::contradictory_annotation_pattern_is_recorded ... ok
+test l3::annotations::tests::a_new_annotated_edge_retains_its_source_and_version ... ok
+test l3::angular_http::tests::a_template_literal_route_is_unresolved_and_never_a_call ... ok
+test l3::annotations::tests::a_contradicting_annotation_never_overwrites_the_generated_fact ... ok
+test l3::annotations::tests::an_annotation_without_provenance_is_rejected ... ok
+test l3::annotations::tests::a_malformed_line_is_rejected_with_a_reason ... ok
+test l3::dotnet_routes::tests::a_bare_verb_attribute_composes_the_declared_action_name ... ok
+test l3::dotnet_routes::tests::a_dynamic_route_expression_is_unresolved_and_never_an_endpoint ... ok
+test l3::dotnet_routes::tests::an_interpolated_verb_template_is_unresolved ... ok
+test l3::dotnet_routes::tests::one_action_can_bind_two_verbs_and_a_route_attribute_is_an_explicit_wildcard ... ok
+test l3::dotnet_routes::tests::literal_controller_and_action_routes_compose_with_http_verbs ... ok
+test l3::dotnet_routes::tests::plain_methods_and_actions_outside_a_controller_body_are_not_endpoints ... ok
+test l3::ef_mapping::tests::a_literal_dbset_is_still_only_a_convention ... ok
+test l3::ef_mapping::tests::conventions_and_runtime_names_are_never_invented ... ok
+test l3::ef_mapping::tests::explicit_attribute_and_fluent_mappings_are_retained ... ok
+test l3::dotnet_routes::tests::analysis_is_deterministic ... ok
+test l3::ef_mapping::tests::a_dynamic_table_attribute_is_unresolved_not_ignored ... ok
+test l3::http_join::tests::hosts_normalise_scheme_port_and_case ... ok
+test l3::http_join::tests::a_relative_address_is_a_runtime_base_url ... ok
+test l3::http_join::tests::a_host_claimed_by_two_projects_is_not_joinable ... ok
+test l3::http_join::tests::duplicate_route_candidates_stay_ambiguous ... ok
+test l3::http_join::tests::an_unconfigured_host_never_resolves_to_a_project ... ok
+test l3::http_join::tests::only_a_configured_alias_and_a_compatible_route_join ... ok
+test l3::manifests::tests::a_secret_value_is_never_exported ... ok
+test l3::manifests::tests::a_kubernetes_manifest_is_recognised_and_its_secret_withheld ... ok
+test l3::manifests::tests::redaction_reason_is_recorded_for_withheld_values ... ok
+test l3::manifests::tests::a_variable_reference_is_unsupported_not_a_fact ... ok
+test l3::manifests::tests::manifest_kind_is_detected_from_content_not_just_the_name ... ok
+test l3::http_join::tests::templates_match_segment_wise_and_never_by_prefix ... ok
+test l3::manifests::tests::a_non_manifest_file_exports_nothing_and_says_so ... ok
+test l3::manifests::tests::secret_key_detection_is_name_based_and_case_insensitive ... ok
+test l3::manifests::tests::safe_service_references_are_exported_with_provenance ... ok
+test l3::messaging::tests::a_topic_attribute_declares_a_consumer_binding ... ok
+test l3::messaging::tests::a_topic_without_a_consumer_is_reported_as_unmatched ... ok
+test l3::messaging::tests::an_unconfigured_literal_topic_is_not_linked ... ok
+test l3::messaging::tests::unknown_topic_expressions_stay_unresolved ... ok
+test l3::messaging::tests::a_fan_out_topic_stays_inferred_static ... ok
+test l3::messaging::tests::literal_producers_and_consumers_link_through_configuration ... ok
+test l3::minimal_api::tests::a_computed_route_pattern_is_unresolved_and_never_an_endpoint ... ok
+test l3::minimal_api::tests::a_grouped_post_mapping_composes_the_literal_group_prefix ... ok
+test l3::minimal_api::tests::a_mapping_on_an_unbuilt_builder_is_reported_separately ... ok
+test l3::minimal_api::tests::a_mapping_without_a_handler_is_reported ... ok
+test l3::minimal_api::tests::a_mapping_on_an_undeclared_receiver_is_never_an_endpoint ... ok
+test l3::minimal_api::tests::analysis_is_deterministic ... ok
+test l3::minimal_api::tests::convention_mappers_are_reported_as_unsupported_patterns ... ok
+test l3::report::tests::an_empty_report_proves_nothing ... ok
+test l3::minimal_api::tests::literal_map_get_and_map_post_expose_endpoints ... ok
+test l3::report::tests::every_rule_analysed_is_the_only_complete_for_profile_case ... ok
+test l3::report::tests::findings_exceeding_analysed_inputs_are_flagged ... ok
+test l3::report::tests::notes_explain_unexercised_and_unsupported_rules ... ok
+test l3::report::tests::zero_findings_never_means_the_architecture_is_complete ... ok
+test l3::report::tests::supported_and_unsupported_counts_stay_separate ... ok
+test l3::sql_literals::tests::a_derived_table_object_is_reported_rather_than_guessed ... ok
+test l3::sql_literals::tests::concatenated_sql_is_unresolved_boundary_case ... ok
+test l3::sql_literals::tests::dynamic_sql_is_never_labelled_fully_analysed ... ok
+test l3::sql_literals::tests::non_sql_literals_are_ignored_entirely ... ok
+test l3::tests::a_string_literal_is_unquoted_and_never_partially_matched ... ok
+test l3::sql_literals::tests::stored_procedure_with_a_variable_name_is_unresolved ... ok
+test l3::tests::arguments_split_only_at_top_level_commas ... ok
+test project_manifests::tests::a_csproj_package_reference_without_an_include_is_a_diagnostic ... ok
+test l3::sql_literals::tests::supported_literal_statements_yield_coarse_facts ... ok
+test project_manifests::tests::a_csproj_yields_dependency_and_property_facts ... ok
+test project_manifests::tests::a_malformed_manifest_is_an_error_and_not_an_empty_success ... ok
+test project_manifests::tests::a_package_json_yields_resolved_and_unresolved_facts ... ok
+test project_manifests::tests::an_empty_dependency_map_is_a_complete_but_empty_extraction ... ok
+test project_manifests::tests::extraction_is_deterministic_and_key_sorted ... ok
+test project_manifests::tests::values_requiring_evaluation_or_a_version_are_unresolved_with_a_reason ... ok
+test tests::an_unsupported_language_never_claims_completeness ... ok
+test tests::coverage_consistency_is_enforced_by_construction ... ok
+test tests::diagnostics_keep_their_severity_and_span ... ok
+test tests::spans_slice_the_source_and_report_one_based_lines ... ok
+test tests::the_status_vocabulary_matches_the_contract_schema ... ok
+test types::tests::a_duplicated_key_is_reported_and_never_linked_silently ... ok
+test types::tests::a_framework_base_is_unresolved_not_invented ... ok
+test types::tests::a_name_matching_two_declarations_is_ambiguous ... ok
+test types::tests::a_self_reference_never_creates_an_edge ... ok
+test types::tests::a_registration_is_a_declared_binding_not_runtime_routing ... ok
+test types::tests::explicit_type_declarations_link_with_evidence ... ok
+test types::tests::csharp_headers_yield_literal_base_names_only ... ok
+test types::tests::typescript_headers_yield_extends_and_implements ... ok
+test typescript::declarations::tests::a_bare_class_keyword_is_anonymous_not_a_fabricated_name ... ok
+test typescript::declarations::tests::a_computed_or_destructured_binding_is_marked_computed ... ok
+test typescript::declarations::tests::an_anonymous_default_export_has_explicit_identity_quality ... ok
+test typescript::declarations::tests::class_bodies_are_not_reported_as_declarations_by_this_scan ... ok
+test typescript::declarations::tests::unbalanced_braces_are_a_diagnostic_and_partial_coverage ... ok
+test typescript::declarations::tests::an_anonymous_default_value_is_never_given_a_name ... ok
+test typescript::declarations::tests::two_anonymous_declarations_do_not_share_a_key ... ok
+test typescript::declarations::tests::classes_functions_and_exported_members_get_explicit_stable_keys ... ok
+test typescript::declarations::tests::unchanged_symbols_keep_their_key_across_repeated_runs ... ok
+
+test result: ok. 156 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\csharp_fixtures.rs (target\debug\deps\csharp_fixtures-800b7d1a80969853.exe)
+
+running 5 tests
+test csharp_malformed_fixture_reports_partial_coverage ... ok
+test fixture_readme_records_the_component_local_policy ... ok
+test csharp_partial_declarations_are_recorded_but_not_merged ... ok
+test csharp_unsupported_constructs_are_refused_not_guessed ... ok
+test csharp_static_declarations_match_the_manifest ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\l3_fixtures.rs (target\debug\deps\l3_fixtures-070481f2f4ef826c.exe)
+
+running 9 tests
+test angular_literal_calls_are_recorded_and_computed_routes_refuse ... ok
+test angular_refusal_vectors_never_produce_a_call ... ok
+test aspnet_literal_routes_compose_and_a_computed_prefix_refuses ... ok
+test minimal_api_convention_mappers_refuse_with_their_own_pattern ... ok
+test minimal_api_literal_mappings_compose_without_refusal ... ok
+test sql_literal_statements_are_classified_and_dynamic_text_refuses ... ok
+test minimal_api_unresolved_boundaries_name_the_exact_pattern ... ok
+test messaging_literal_topics_link_and_computed_topics_refuse ... ok
+test http_join_vectors_join_only_through_configured_aliases ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\typescript_fixtures.rs (target\debug\deps\typescript_fixtures-fc3f7c2a45110aa6.exe)
+
+running 8 tests
+test angular_literal_http_calls_match_the_manifest ... ok
+test typescript_declarations_match_the_manifest ... ok
+test angular_dynamic_http_cases_are_reported_unresolved ... ok
+test typescript_unbalanced_declarations_report_partial_coverage ... ok
+test typescript_re_exports_never_claim_the_reexported_symbol ... ok
+test typescript_dynamic_and_ambiguous_imports_are_refused_not_guessed ... ok
+test typescript_static_imports_match_the_manifest ... ok
+test typescript_fixtures_are_deterministic ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

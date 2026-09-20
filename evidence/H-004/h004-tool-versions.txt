@@ -1,0 +1,43 @@
+# H-004 tool versions and platform
+# captured: 2026-09-20T14:59:26.1924375+07:00
+# worktree: D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004
+# branch: feature/h-004-solution-config-membership-alias
+# base commit: 682269338706c8ffc7d81efc0b266b5ac5a66765
+# remote: https://github.com/orchex006/axiom-graphd.git
+
+--- rustc -Vv ---
+rustc 1.85.0 (4d91de4e4 2025-02-17)
+binary: rustc
+commit-hash: 4d91de4e48198da2e33413efdcd9cd2cc0c46688
+commit-date: 2025-02-17
+host: x86_64-pc-windows-msvc
+release: 1.85.0
+LLVM version: 19.1.7
+--- cargo -V ---
+cargo 1.85.0 (d73d2caf9 2024-12-31)
+--- rustup show active-toolchain ---
+1.85.0-x86_64-pc-windows-msvc (overridden by 'D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004\rust-toolchain.toml')
+--- platform ---
+powershell: 7.6.6
+os: Microsoft Windows NT 10.0.26200.0
+arch: X64
+--- git log -1 --format=%H%n%s ---
+682269338706c8ffc7d81efc0b266b5ac5a66765 Merge branch 'feature/h-001-cli-command-wiring' (H-001 argv wiring)
+
+--- git status --short (at capture) ---
+ M Cargo.lock
+ M Changelog.md
+ M crates/config/Cargo.toml
+ M crates/config/src/lib.rs
+ M crates/graph-analyze/Cargo.toml
+ M crates/graph-analyze/src/l3/http_join.rs
+ M crates/graph-analyze/tests/l3_fixtures.rs
+ M docs/guides/solutions.md
+ M fixtures/l3/http_join/negative_ambiguous_route.vector
+ M fixtures/l3/http_join/negative_no_route_candidate.vector
+ M fixtures/l3/http_join/negative_relative_client.vector
+ M fixtures/l3/http_join/negative_unconfigured_host.vector
+ M fixtures/l3/http_join/positive_alias_join.vector
+?? crates/config/src/solution.rs
+?? crates/config/tests/solution.rs
+?? evidence/

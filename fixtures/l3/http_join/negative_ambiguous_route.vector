@@ -2,7 +2,7 @@
 # no captured traffic and no executed user source.
 # Grammar, one directive per line:
 #   vector <name>
-#   alias <host> <project>
+#   link <source-project> <target-project> <protocol> <route-prefix>
 #   endpoint <project> <file> <VERB> <template>
 #   client <project> <file> <VERB> <absolute-url|-> <path|->
 #   expect-relation <client-project> <server-project> <VERB> <request-path>
@@ -10,8 +10,8 @@
 #   expect-ambiguous <client-project> <candidate-count>
 
 vector negative-ambiguous-route
-alias api.contoso.example OrdersApi
-endpoint OrdersApi Api/OrdersController.cs GET api/items/{id}
-endpoint OrdersApi Api/LegacyController.cs GET api/items/{name}
-client Web Web/api.ts GET https://api.contoso.example/api/items/7 -
-expect-ambiguous Web 2
+link web orders-api http //api.contoso.example
+endpoint orders-api Api/OrdersController.cs GET api/items/{id}
+endpoint orders-api Api/LegacyController.cs GET api/items/{name}
+client web web/api.ts GET https://api.contoso.example/api/items/7 -
+expect-ambiguous web 2

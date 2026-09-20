@@ -143,12 +143,27 @@ or a nested source or generated-output root.
 | Catalog member absent without an explicit drop | refused with `export-catalog-member-missing` |
 | Catalog naming an unpublished or mismatched generation | refused with `export-missing` / `export-integrity` |
 | Two writers claiming one output namespace | refused with `WRITER_ALREADY_RUNNING` |
+| One `binding_key` declared by two `repositories[]` entries | refused with `CONFLICT` (`rule=binding-key-duplicate`) |
+| A declared `binding_key` with no local root, or a local key the solution does not declare | refused with `VALIDATION_ERROR` (`rule=binding-key-unresolved`) |
+| A derived project root that leaves its bound local root | refused with `VALIDATION_ERROR` (`rule=project-root-escapes-binding`) |
+| A `semantic_links[]` endpoint that is not a member project | refused with `VALIDATION_ERROR` (`rule=link-endpoint-not-member`) |
+| An `http`, `sql` or `message` link with no `route_prefix` | refused with `VALIDATION_ERROR` (`rule=route-prefix-required`) |
+| A `route_prefix` that is machine-local or credential-shaped | refused with `VALIDATION_ERROR` (`rule=route-prefix-not-portable-free-text`) |
+| An observed service address that no declared alias matches | explicit unresolved result (`rule=alias-unresolved-host`), never a guessed project |
+| An observed service address two different projects claim | refused with `CONFLICT` (`rule=alias-ambiguous-host`), never a tie broken by order |
 
 ## 7. Status and limits
 
 The membership, path, binding, publication and catalog rules above are
-implemented in `graph-core` and `graph-export`. The registration CLI, the
-installer and the service lifecycle are separate graphd tasks; until they ship,
-this guide documents the intended interface and the invariants the engine
-already enforces. See `docs/13-SQLITE-QUEUE-AND-RECONCILIATION.md` for the
+implemented in `graph-core` and `graph-export`. The registered solution document
+itself is read by `axiom-config` (`read_registered_solution`, task H-004): it
+validates the whole membership claim set before returning anything, derives the
+cross-service alias map from `semantic_links[].route_prefix`, and writes no row
+and no file, so an accepted document is the only source of the cross-service
+join. The L3 HTTP join consumes that map through
+`SolutionMapping::from_registered_aliases(registered.l3_aliases())`; its alias
+table is private and has no mutator, so a host cannot be resolved by a table a
+caller built by hand. The registration CLI, the installer and the service lifecycle are separate
+graphd tasks; until they ship, this guide documents the intended interface and
+the invariants the engine already enforces. See `docs/13-SQLITE-QUEUE-AND-RECONCILIATION.md` for the
 durable-state contract and `docs/21-INSTALLATION.md` for the install runbook.

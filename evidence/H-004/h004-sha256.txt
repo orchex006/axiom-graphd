@@ -1,0 +1,21 @@
+# H-004 SHA256 manifest
+# captured: 2026-09-20T14:59:04.1225450+07:00
+# base commit: 682269338706c8ffc7d81efc0b266b5ac5a66765
+
+439b7bf94c39f15fdcca420b581fd849b639bf61877a1710932845f0fba15d0f  49169  crates/config/src/solution.rs
+ae7e5bf08bc16a3650bcaa67fb4cbbd8aa7c61baa67ed8ec6a7b04b7eec6cb7f  43221  crates/config/tests/solution.rs
+3e89a5ca0f5a0abb2930b0265d30d390f0dc95436db96dba8c823a7f162be626  880  crates/config/src/lib.rs
+f52c9243338cc74932cdd9a1ca56a64f31051701c193666fbeb0826d970cf4a4  748  crates/config/Cargo.toml
+3eac2f109d5a679f1d6e8188a66080cce787fa4f62d9e2b794c41e9b74dc2211  26105  crates/graph-analyze/src/l3/http_join.rs
+b706450614f1a3b55781c5d35631d8c9b614d271792f60f4907aa0f51fadc915  28371  crates/graph-analyze/tests/l3_fixtures.rs
+786b14945f88111213a8b625bb99d17da1a04ba092eef240d9713a2c9c0f2674  713  crates/graph-analyze/Cargo.toml
+d0d92e440f6ae8b159584ceeb48f509e71cf4326fe659adf6c3f5e5a7e755a2c  817  fixtures/l3/http_join/positive_alias_join.vector
+164c85e1ab837cceec2da59823731e9d437bf2fa42b0a6fd83aaac197bec5948  849  fixtures/l3/http_join/negative_unconfigured_host.vector
+e303f1b768ec93788c0b427f94b9bc4e9dd7fb90067759552e8cd023a247e18a  816  fixtures/l3/http_join/negative_relative_client.vector
+bdd99380c2b46c587e1408c3185df0d2ef57fe8966fe69ece31f6885741a81e8  852  fixtures/l3/http_join/negative_no_route_candidate.vector
+1efc3aba34e112b9a696f9eb6a5efcc19dae7061985bb98e61b55e97df699b5f  864  fixtures/l3/http_join/negative_ambiguous_route.vector
+af3ded8637fdfde71556095130daf854356089f6364b42247316ee808ea6bd36  17211  Cargo.lock
+7738771eb6675151e338beb881bee87961f15b61e1634c16eaedacb9f4ad49cb  9053  docs/guides/solutions.md
+2d122cba5004e3f5a918894ae7552046877c402331a973e8837c017a8e9c0302  157164  Changelog.md
+ea0909da25a7347b5e0471d863254b0d8872faa8017b593eb206ca897de00ffd  1421  evidence/H-004/artifacts/H-004-register/solution.json
+cbda90f81d5d5fbce6ba10d822a94eeb106e7e69a0eb3f33c91f2e9fc12dac1d  195  evidence/H-004/artifacts/H-004-register/bindings.json

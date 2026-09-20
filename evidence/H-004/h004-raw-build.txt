@@ -1,0 +1,3 @@
+   Compiling graph-analyze v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004\crates\graph-analyze)
+   Compiling axiom-graphd v0.0.0-dev (D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004\crates\axiom-graphd)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 9.07s

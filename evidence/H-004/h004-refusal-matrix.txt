@@ -1,0 +1,79 @@
+# H-004 refusal matrix: frozen H-003 identifier -> the real test that produced it
+# captured: 2026-09-20T14:58:20.7118395+07:00
+# base:     682269338706c8ffc7d81efc0b266b5ac5a66765
+# commands: cargo test -p axiom-config --locked --test solution -- --exact <name>
+#           cargo test -p axiom-config --locked --lib <name>
+#           cargo test -p graph-analyze --locked --test l3_fixtures <name>
+#           cargo test -p graph-analyze --locked --lib <name>
+
+identifier                           kind        produced by (test)                                    fixture / isolated input
+-----------------------------------  ----------  ---------------------------------------------------  ------------------------------------------------------------------
+binding-key-duplicate                config      every_registry_refusal_comes_from_the_registered_    membership.shared-binding-key.json          -> ERR_BINDING_KEY_DUPLICATE
+binding-key-unresolved               config      every_registry_refusal_comes_from_the_registered_    membership.binding-key-unresolved.json      -> ERR_BINDING_KEY_UNRESOLVED
+binding-key-unresolved               config      the_binding_coverage_and_containment_boundaries_      bindings carries an undeclared "shared" key -> ERR_BINDING_KEY_UNRESOLVED
+project-path-not-repository-relative config      every_registry_refusal_comes_from_the_registered_    membership.{absolute,backslash,escape}-project-path.json
+project-path-not-repository-relative config      a_claim_set_that_fails_the_rules_returns_no_          projects[1].path = "../other"               -> ERR_PROJECT_PATH_NOT_REPOSITORY_RELATIVE
+project-root-escapes-binding         config      the_binding_coverage_and_containment_boundaries_      bindings web = /srv/checkout/web/..          -> ERR_PROJECT_ROOT_ESCAPES_BINDING
+link-endpoint-not-member             config      every_registry_refusal_comes_from_the_registered_    alias.endpoint-not-member.json              -> ERR_LINK_ENDPOINT_NOT_MEMBER
+route-prefix-required                config      every_registry_refusal_comes_from_the_registered_    alias.route-prefix-required.json            -> ERR_ROUTE_PREFIX_REQUIRED
+route-prefix-required                config      names_frozen_by_the_evaluator_keep_their_existing_   http link with route_prefix = ""            -> ERR_ROUTE_PREFIX_REQUIRED
+route-prefix-not-portable-free-text  config      every_registry_refusal_comes_from_the_registered_    alias.route-prefix-{machine-local,credential-shaped}.json
+alias-ambiguous-host                 resolution  resolution_refusals_are_explicit_and_never_guess_a_   alias.two-projects-one-key.json: resolve("http","/api/auth")
+alias-unresolved-host                resolution  resolution_refusals_are_explicit_and_never_guess_a_   valid fixture: resolve("http","/api/other")
+alias-ambiguous-host                 boundary    resolution_boundaries_follow_the_contract_order       a repeated declaration of one project is NOT ambiguous
+alias-ambiguous-host                 join        a_host_claimed_by_two_projects_is_not_joinable        graph-analyze: a registered document declares one host twice
+                                                              (//orders.contoso.example -> orders-api and other-api); the
+                                                              documents' own pair set makes project_for() return None
+document-shape-invalid (local)       config      the_binding_coverage_and_containment_boundaries_      {schema_version:2,projects:[]} missing solution_id/bindings
+
+AC2 - the join resolves through the REGISTERED document, not a hand-built table:
+
+(no refusal)                         join        http_join_vectors_join_only_through_configured_       F-006 vectors: `link web orders-api http //api.contoso.example`
+                                                              is projected into a solution document and read with
+                                                              read_registered_solution; the positive vector still joins.
+(no refusal)                         join        the_l3_alias_map_is_derived_from_the_registered_      the host pair equals the document's semantic_links target
+
+Names already frozen outside this contract, reused verbatim (section 5 of the contract does not re-spell them):
+
+duplicate-project-id                 config      names_frozen_by_the_evaluator_keep_their_existing_   membership.duplicate-project-id.json       -> Code::Conflict
+is not a portable id                 config      names_frozen_by_the_evaluator_keep_their_existing_   project_id = "Auth-Api" (patched into a valid fixture)
+is not a portable alias              config      names_frozen_by_the_evaluator_keep_their_existing_   repositories[1].binding_key = "Shared" (patched in)
+semantic link route prefix is not     config      names_frozen_by_the_evaluator_keep_their_existing_   route_prefix = "api/auth" (no leading slash)
+  absolute
+portable free text (unit precondition) config    machine_local_and_credential_shaped_values_are_...   (unit) %VAR%/$VAR/$env:VAR/credential shapes are not portable
+
+Observed result: every row above is "... ok" with exit 0 (see the per-test runs below).
+Each test asserts the identifier through AxiomError::details()["rule"] (or
+AliasResolution::reason()), so a misspelled or guessed identifier - or a guessed
+project - makes the test fail.
+
+--- per-test runs, real output ---
+$ cargo test -p axiom-config --locked --test solution -- --exact <name>   (one run per test)
+exit=0  test every_registry_refusal_comes_from_the_registered_document ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test names_frozen_by_the_evaluator_keep_their_existing_spelling ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test resolution_refusals_are_explicit_and_never_guess_a_project ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test resolution_boundaries_follow_the_contract_order ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test the_binding_coverage_and_containment_boundaries_are_enforced ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test a_claim_set_that_fails_the_rules_returns_no_registered_solution ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test the_l3_alias_map_is_derived_from_the_registered_document ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test a_bound_two_repository_solution_yields_one_claim_per_project ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test a_document_without_a_bindings_companion_keeps_its_logical_claims ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+--- unit test carrying the present-but-unusable route prefix boundary ---
+
+$ cargo test -p axiom-config --locked --lib a_present_but_unusable_route_prefix_is_not_silently_ignored
+test solution::tests::a_present_but_unusable_route_prefix_is_not_silently_ignored ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+# EXIT=0
+
+--- L3 join proof: the F-006 vector harness and the http_join unit test read a registered document ---
+
+$ cargo test -p graph-analyze --locked --test l3_fixtures http_join_vectors_join_only_through_configured_aliases
+test http_join_vectors_join_only_through_configured_aliases ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+# EXIT=0
+
+$ cargo test -p graph-analyze --locked --lib a_host_claimed_by_two_projects_is_not_joinable
+test l3::http_join::tests::a_host_claimed_by_two_projects_is_not_joinable ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 155 filtered out; finished in 0.00s
+# EXIT=0

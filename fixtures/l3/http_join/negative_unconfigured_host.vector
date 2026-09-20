@@ -2,7 +2,7 @@
 # no captured traffic and no executed user source.
 # Grammar, one directive per line:
 #   vector <name>
-#   alias <host> <project>
+#   link <source-project> <target-project> <protocol> <route-prefix>
 #   endpoint <project> <file> <VERB> <template>
 #   client <project> <file> <VERB> <absolute-url|-> <path|->
 #   expect-relation <client-project> <server-project> <VERB> <request-path>
@@ -10,7 +10,7 @@
 #   expect-ambiguous <client-project> <candidate-count>
 
 vector negative-unconfigured-host
-alias api.contoso.example OrdersApi
-endpoint OrdersApi Api/OrdersController.cs GET api/items
-client Web Web/api.ts GET https://other.example.com/api/items -
-expect-unresolved Web http-join-unconfigured-host unresolved-no-configured-alias
+link web orders-api http //api.contoso.example
+endpoint orders-api Api/OrdersController.cs GET api/items
+client web web/api.ts GET https://other.example.com/api/items -
+expect-unresolved web http-join-unconfigured-host unresolved-no-configured-alias

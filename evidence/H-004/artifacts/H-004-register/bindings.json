@@ -1,0 +1,9 @@
+{
+  "status": "bound",
+  "solution_id": "demo-solution",
+  "bindings": {
+    "workspace": "/srv/checkout/workspace",
+    "auth": "/srv/checkout/auth",
+    "web": "/srv/checkout/web"
+  }
+}

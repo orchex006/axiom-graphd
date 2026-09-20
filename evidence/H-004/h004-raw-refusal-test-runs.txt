@@ -1,0 +1,29 @@
+$ cargo test -p axiom-config --locked --test solution -- --exact <name>   (one run per test)
+exit=0  test every_registry_refusal_comes_from_the_registered_document ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test names_frozen_by_the_evaluator_keep_their_existing_spelling ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test resolution_refusals_are_explicit_and_never_guess_a_project ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test resolution_boundaries_follow_the_contract_order ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test the_binding_coverage_and_containment_boundaries_are_enforced ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test a_claim_set_that_fails_the_rules_returns_no_registered_solution ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test the_l3_alias_map_is_derived_from_the_registered_document ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test a_bound_two_repository_solution_yields_one_claim_per_project ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+exit=0  test a_document_without_a_bindings_companion_keeps_its_logical_claims ... ok | test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+--- unit test carrying the present-but-unusable route prefix boundary ---
+
+$ cargo test -p axiom-config --locked --lib a_present_but_unusable_route_prefix_is_not_silently_ignored
+test solution::tests::a_present_but_unusable_route_prefix_is_not_silently_ignored ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+# EXIT=0
+
+--- L3 join proof: the F-006 vector harness and the http_join unit test read a registered document ---
+
+$ cargo test -p graph-analyze --locked --test l3_fixtures http_join_vectors_join_only_through_configured_aliases
+test http_join_vectors_join_only_through_configured_aliases ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+# EXIT=0
+
+$ cargo test -p graph-analyze --locked --lib a_host_claimed_by_two_projects_is_not_joinable
+test l3::http_join::tests::a_host_claimed_by_two_projects_is_not_joinable ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 155 filtered out; finished in 0.00s
+# EXIT=0

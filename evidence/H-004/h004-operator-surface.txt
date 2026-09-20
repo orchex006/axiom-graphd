@@ -1,0 +1,33 @@
+# H-004 operator-surface real run (argv + exit code)
+# captured: 2026-09-20T14:58:53.3749679+07:00
+# base:     682269338706c8ffc7d81efc0b266b5ac5a66765
+# exe:      D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004\target\debug\axiom-graphd.exe
+#
+# Result: the CLI reaches `solution register` and answers NOT_READY (exit 4) because
+# this revision wires the verb but has no registry write path yet (H-001 recorded the
+# same reason). The run writes no row and no file, which is the precondition AC1
+# states; the register-time validation this card adds is the reader
+# axiom_config::solution::read_registered_solution, which validates the whole claim
+# set before returning anything and writes nothing.
+#
+# Documents used (split from the real H-003 fixture membership.valid-bound-two-repos.json):
+#   evidence/H-004/artifacts/H-004-register/solution.json
+#   evidence/H-004/artifacts/H-004-register/bindings.json
+
+$ & 'D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004\target\debug\axiom-graphd.exe' solution register --config 'D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004\evidence\H-004\artifacts\H-004-register\solution.json' --bindings 'D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004\evidence\H-004\artifacts\H-004-register\bindings.json' --dry-run --json
+STDOUT+STDERR:
+{"code":"NOT_READY","message":"solution administration needs the user-owned registry write path that a later work package adds; this build writes no registry","retryable":true,"details":{},"request_id":null}
+{"level":"error","message":"NOT_READY: solution administration needs the user-owned registry write path that a later work package adds; this build writes no registry","target":"axiom-graphd"}
+
+EXIT=4
+
+$ & 'D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004\target\debug\axiom-graphd.exe' solution register --config 'D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004\evidence\H-004\artifacts\H-004-register\solution.json' --bindings 'D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-h004\evidence\H-004\artifacts\H-004-register\bindings.json' --apply --json
+STDOUT+STDERR:
+{"level":"error","message":"NOT_READY: solution administration needs the user-owned registry write path that a later work package adds; this build writes no registry","target":"axiom-graphd"}
+{"code":"NOT_READY","message":"solution administration needs the user-owned registry write path that a later work package adds; this build writes no registry","retryable":true,"details":{},"request_id":null}
+
+EXIT=4
+
+# No registry directory or row appeared after either run; the command is wired but
+# deliberately refuses until the registry write path lands, so AC1's "before a row
+# or a file is written" gate is the reader's validation, not this verb.

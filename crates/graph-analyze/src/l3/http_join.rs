@@ -69,10 +69,43 @@ impl SolutionAlias {
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct SolutionMapping {
     /// Configured host-to-project aliases.
-    pub aliases: Vec<SolutionAlias>,
+    ///
+    /// Private so a host table cannot be attached by hand: the only way to fill
+    /// it is [`SolutionMapping::from_registered_aliases`], which consumes the
+    /// `(host, project)` pairs of a registered solution document.
+    aliases: Vec<SolutionAlias>,
 }
 
 impl SolutionMapping {
+    /// Build one mapping from the `(host, project)` pairs of a registered solution.
+    ///
+    /// The pairs are `RegisteredSolution::l3_aliases()` output from
+    /// `axiom_config::solution::read_registered_solution`, which reads
+    /// `semantic_links[].route_prefix` out of the document the operator
+    /// registered. The alias table is private and has no mutator, so a mapping
+    /// cannot be assembled entry by entry; the reader is the only in-workspace
+    /// producer of these pairs.
+    #[must_use]
+    pub fn from_registered_aliases<I, H, P>(pairs: I) -> Self
+    where
+        I: IntoIterator<Item = (H, P)>,
+        H: Into<String>,
+        P: Into<String>,
+    {
+        Self {
+            aliases: pairs
+                .into_iter()
+                .map(|(host, project)| SolutionAlias::new(host, project))
+                .collect(),
+        }
+    }
+
+    /// The configured aliases, in the order the registered document declared them.
+    #[must_use]
+    pub fn aliases(&self) -> &[SolutionAlias] {
+        &self.aliases
+    }
+
     /// The project a request host resolves to, when exactly one alias matches.
     #[must_use]
     pub fn project_for(&self, host: &str) -> Option<&str> {
@@ -425,20 +458,67 @@ pub fn join(
 mod tests {
     use super::{
         host_of, join, normalize_host, path_matches, HttpClientFact, HttpEndpointFact,
-        SolutionAlias, SolutionMapping, REASON_AMBIGUOUS_ROUTE, REASON_NO_CONFIGURED_ALIAS,
+        SolutionMapping, REASON_AMBIGUOUS_ROUTE, REASON_NO_CONFIGURED_ALIAS,
         REASON_NO_ROUTE_CANDIDATE, REASON_RUNTIME_BASE_URL,
     };
     use crate::l3::dotnet_routes::HttpVerb;
     use crate::l3::FactQuality;
     use crate::Span;
 
+    /// The registered solution document the join below is configured from.
+    ///
+    /// The aliases are not written here: they are read out of
+    /// `semantic_links[].route_prefix` by
+    /// `axiom_config::solution::read_registered_solution` and projected with
+    /// `SolutionMapping::from_registered_aliases`, so the join can only resolve a
+    /// host the registered document declares.
+    const REGISTERED_SOLUTION: &str = r#"{
+      "schema_version": 2,
+      "solution_id": "demo-solution",
+      "repositories": [
+        {"repo_id": "billing", "binding_key": "billing"},
+        {"repo_id": "orders", "binding_key": "orders"}
+      ],
+      "projects": [
+        {"project_id": "billing-api", "repo_id": "billing", "path": "src"},
+        {"project_id": "orders-api", "repo_id": "orders", "path": "src"}
+      ],
+      "semantic_links": [
+        {"source_project": "billing-api", "target_project": "orders-api", "protocol": "http", "route_prefix": "//orders.contoso.example"},
+        {"source_project": "orders-api", "target_project": "billing-api", "protocol": "http", "route_prefix": "//billing.contoso.example:443"}
+      ]
+    }"#;
+
+    /// A registered document whose two links resolve one host to two projects.
+    /// The table is not written here: the reader derives both aliases from the
+    /// document, so the ambiguity belongs to the registered document.
+    const AMBIGUOUS_SOLUTION: &str = r#"{
+      "schema_version": 2,
+      "solution_id": "ambiguous-solution",
+      "repositories": [
+        {"repo_id": "orders", "binding_key": "orders"},
+        {"repo_id": "other", "binding_key": "other"}
+      ],
+      "projects": [
+        {"project_id": "orders-api", "repo_id": "orders", "path": "src"},
+        {"project_id": "other-api", "repo_id": "other", "path": "src"}
+      ],
+      "semantic_links": [
+        {"source_project": "orders-api", "target_project": "orders-api", "protocol": "http", "route_prefix": "//orders.contoso.example"},
+        {"source_project": "other-api", "target_project": "other-api", "protocol": "http", "route_prefix": "//orders.contoso.example"}
+      ]
+    }"#;
+
+    fn mapping_from(document: &str) -> SolutionMapping {
+        let document: serde_json::Value =
+            serde_json::from_str(document).expect("the registered document is JSON");
+        let registered = axiom_config::solution::read_registered_solution(&document, None)
+            .expect("the registered document is accepted");
+        SolutionMapping::from_registered_aliases(registered.l3_aliases())
+    }
+
     fn mapping() -> SolutionMapping {
-        SolutionMapping {
-            aliases: vec![
-                SolutionAlias::new("https://orders.contoso.example/", "Orders"),
-                SolutionAlias::new("billing.contoso.example:443", "Billing"),
-            ],
-        }
+        mapping_from(REGISTERED_SOLUTION)
     }
 
     fn endpoint(project: &str, file: &str, method: HttpVerb, template: &str) -> HttpEndpointFact {
@@ -472,28 +552,28 @@ mod tests {
     fn only_a_configured_alias_and_a_compatible_route_join() {
         let endpoints = vec![
             endpoint(
-                "Orders",
-                "Orders/Controllers/Items.cs",
+                "orders-api",
+                "orders-api/Controllers/Items.cs",
                 HttpVerb::Get,
                 "api/items/{id}",
             ),
             endpoint(
-                "Orders",
-                "Orders/Controllers/Items.cs",
+                "orders-api",
+                "orders-api/Controllers/Items.cs",
                 HttpVerb::Get,
                 "api/items",
             ),
         ];
         let clients = vec![
             client(
-                "Web",
+                "web-app",
                 "web/src/app/items.service.ts",
                 HttpVerb::Get,
                 Some("https://orders.contoso.example/api/items/42"),
                 None,
             ),
             client(
-                "Web",
+                "web-app",
                 "web/src/app/items.service.ts",
                 HttpVerb::Post,
                 Some("https://orders.contoso.example/api/items/42"),
@@ -503,7 +583,7 @@ mod tests {
         let report = join(&endpoints, &clients, &mapping());
         assert_eq!(report.relations.len(), 1);
         let relation = &report.relations[0];
-        assert_eq!(relation.server_project, "Orders");
+        assert_eq!(relation.server_project, "orders-api");
         assert_eq!(relation.endpoint_template, "api/items/{id}");
         assert_eq!(relation.quality, FactQuality::ExactStatic);
         assert!(relation.quality.is_proven());
@@ -515,9 +595,9 @@ mod tests {
 
     #[test]
     fn an_unconfigured_host_never_resolves_to_a_project() {
-        let endpoints = vec![endpoint("Orders", "a.cs", HttpVerb::Get, "api/items")];
+        let endpoints = vec![endpoint("orders-api", "a.cs", HttpVerb::Get, "api/items")];
         let clients = vec![client(
-            "Web",
+            "web-app",
             "w.ts",
             HttpVerb::Get,
             Some("https://unknown.example/api/items"),
@@ -532,11 +612,11 @@ mod tests {
     #[test]
     fn duplicate_route_candidates_stay_ambiguous() {
         let endpoints = vec![
-            endpoint("Orders", "a.cs", HttpVerb::Get, "api/items"),
-            endpoint("Orders", "b.cs", HttpVerb::Get, "api/{controller}"),
+            endpoint("orders-api", "a.cs", HttpVerb::Get, "api/items"),
+            endpoint("orders-api", "b.cs", HttpVerb::Get, "api/{controller}"),
         ];
         let clients = vec![client(
-            "Web",
+            "web-app",
             "w.ts",
             HttpVerb::Get,
             Some("https://orders.contoso.example/api/items"),
@@ -550,14 +630,14 @@ mod tests {
         assert!(report.ambiguous[0]
             .candidates
             .iter()
-            .all(|candidate| candidate.project == "Orders"));
-        assert!(report.relations_for("Web").is_empty());
+            .all(|candidate| candidate.project == "orders-api"));
+        assert!(report.relations_for("web-app").is_empty());
     }
 
     #[test]
     fn a_relative_address_is_a_runtime_base_url() {
         let clients = vec![client(
-            "Web",
+            "web-app",
             "w.ts",
             HttpVerb::Get,
             None,
@@ -599,13 +679,19 @@ mod tests {
 
     #[test]
     fn a_host_claimed_by_two_projects_is_not_joinable() {
-        let mut mapping = mapping();
-        mapping
-            .aliases
-            .push(SolutionAlias::new("orders.contoso.example", "Another"));
-        let endpoints = vec![endpoint("Orders", "a.cs", HttpVerb::Get, "api/items")];
+        let mapping = mapping_from(AMBIGUOUS_SOLUTION);
+        assert_eq!(
+            mapping.aliases().len(),
+            2,
+            "both declared aliases come from the document"
+        );
+        assert!(
+            mapping.project_for("orders.contoso.example").is_none(),
+            "one host resolved to two projects is not joinable"
+        );
+        let endpoints = vec![endpoint("orders-api", "a.cs", HttpVerb::Get, "api/items")];
         let clients = vec![client(
-            "Web",
+            "web-app",
             "w.ts",
             HttpVerb::Get,
             Some("https://orders.contoso.example/api/items"),
