@@ -210,15 +210,25 @@ axiom-graphd serve --json --registry <path>
 - Behaviour: resolves `AXIOM_HOME`, verifies the destination, loads the service
   config, takes the single-owner instance lock at `AXIOM_HOME/run/daemon.lock`,
   then runs **one bounded reconcile pass** over every registered solution: it
-  resumes the checkpoint lane, plans a stat-based inventory delta, analyses the
-  changed files and publishes the closed generation through the publication
+  resumes both publication lanes, plans a stat-based inventory delta, analyses
+  the changed files and publishes the closed generation through the publication
   barrier (staging seal, analysis commit, event-sequence bump, exclusive
-  solution guard, content-addressed install, atomic pointer replace, outbox
-  acknowledgement). The JSON report names, per project, the inventory delta, the
-  analysed files, the node and edge counts, whether a generation was published
-  and the published `generation_id`/`manifest_hash`. One pass is not a daemon
-  loop: `serve` installs no `SIGINT`/`SIGTERM` handler and exits after the pass,
-  so the `lifecycle.rs` drain stays a design target.
+  solution guard, content-addressed install, atomic pointer replace in both
+  lanes, outbox acknowledgement). One publication writes the *same*
+  content-addressed generation into the project's `live/` lane (the Git-ignored
+  working set a query answers from) and its `checkpoint/` lane (the tracked
+  artifact the operator verbs read); both lanes are sealed before either pointer
+  moves, so a failure while sealing leaves every lane exactly as it was and the
+  two lanes can never name different generations. Each lane's `current.json`
+  carries the schema document `contracts/schemas/pointer.schema.json` fixes -
+  `schema_version`, `generation_id` and `manifest_sha256` - as compact,
+  key-sorted bytes with one trailing LF, which is the exact form the shipped
+  `axiom-mcp` pointer reader accepts. The JSON report names, per project, the
+  inventory delta, the analysed files, the node and edge counts, whether a
+  generation was published and the published `generation_id`/`manifest_hash`;
+  `lane_root` names the live lane, because that is the lane a query resolves.
+  One pass is not a daemon loop: `serve` installs no `SIGINT`/`SIGTERM` handler
+  and exits after the pass, so the `lifecycle.rs` drain stays a design target.
 - Example response (captured run, Windows 11 x64, task H-002):
 
 ```json
@@ -235,6 +245,27 @@ axiom-graphd serve --json --registry <path>
 | Another owner holds the instance lock | `10` (`WRITER_ALREADY_RUNNING`) | Identify the owning process and coordinate. Never delete `run/daemon.lock` by guess. |
 | Lock held but unusable | Retryable; bounded retry | Retry with a bounded wait, then report. |
 | `--registry` supplied for another command | `2` (`VALIDATION_ERROR`) | Remove the flag; it applies only to `serve`. |
+
+- Known limitation (W10 lane publication): a `serve` publication is now readable
+  at the *pointer* and *lane* level by `axiom-mcp`, but the published generation
+  **payload** is still `axiom-graphd`'s native form, which the shipped
+  `axiom-mcp` data plane does not yet accept. `serve` writes a single canonical
+  JSONL shard (`bucket-000`) holding `{key, kind, body}` records and a
+  `manifest.json` of
+  `{generation_id, entries[], record_count, total_bytes}`, while
+  `docs/11-GRAPH-DATA-CONTRACT.md` section 6 and
+  `contracts/schemas/project-manifest.schema.json` require role-sharded JSON
+  (`nodes/`, `edges/`, `indexes/{symbols,outgoing,incoming}/`,
+  `architecture/summary.json`, `coverage.json`) described by a manifest of
+  `{schema_version, solution_id, project_id, analysis_profile, generator_version,
+  analyzer_set_hash, source_fingerprint, config_fingerprint,
+  dependency_fingerprint, coverage, files[]}` that must not carry its own hash.
+  The reader therefore stops with `ManifestInvalid: manifest <id> schema_version
+  is not an integer` before any shard is read. Closing that gap changes the
+  published payload layout and the generation-identity rule, which is a
+  `graph_payload_schema`/layout decision that `AGENTS.md` and `Development.md`
+  route through `axiom-specs` coordination; it is not a local implementation
+  change and is recorded here as a blocker rather than worked around.
 
 - `SIGINT`/`SIGTERM` are not handled in this revision: a pass runs to its
   bounded end and exits. The `lifecycle.rs` design target is a bounded graceful

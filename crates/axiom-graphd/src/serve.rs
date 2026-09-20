@@ -63,7 +63,10 @@ pub struct ProjectOutcome {
     pub project_id: String,
     /// Absolute root the project was resolved to.
     pub project_root: String,
-    /// Checkpoint lane the generation is published under.
+    /// Live lane root the generation is published under.
+    ///
+    /// One publication writes the same generation into the live lane and the
+    /// checkpoint lane, so this is the lane a query resolves.
     pub lane_root: String,
     /// Inventory generation this pass advanced the project to.
     pub inventory_generation: i64,
@@ -283,14 +286,18 @@ fn reconcile_project(
     let probe = runtime::symlink_probe();
     let resolved = resolve_binding(bindings, catalog, &project.repo_id, &probe)?;
     let project_root = resolve_project_root(&resolved, &project.relative_path, &probe)?;
-    let lane = runtime::checkpoint_root(&project_root, &solution.id, &project.id);
-    let lane_display = lane.to_string_lossy().to_string();
+    let live_lane = runtime::live_root(&project_root, &solution.id, &project.id);
+    let checkpoint_lane = runtime::checkpoint_root(&project_root, &solution.id, &project.id);
+    let lane_display = live_lane.to_string_lossy().to_string();
 
     // Recovery runs before anything else writes, so a crashed publication is
-    // completed or discarded rather than mistaken for a clean lane.
-    let action = recovery::resume(&lane, None).map_err(runtime::export_error)?;
-    if !matches!(action, recovery::RecoveryAction::Nothing) {
-        recoveries.push(format!("{}: {}", project.id, action.describe()));
+    // completed or discarded rather than mistaken for a clean lane. Every lane
+    // this pass publishes is recovered, so neither can be left half-published.
+    for lane in [&live_lane, &checkpoint_lane] {
+        let action = recovery::resume(lane, None).map_err(runtime::export_error)?;
+        if !matches!(action, recovery::RecoveryAction::Nothing) {
+            recoveries.push(format!("{}: {}", project.id, action.describe()));
+        }
     }
 
     // Inventory is planned with the watcher's own ignore and input policies, so
@@ -376,28 +383,37 @@ fn reconcile_project(
     };
 
     if records.is_empty() {
-        outcome.current_generation = current_generation(&lane)?;
+        outcome.current_generation = current_generation(&live_lane)?;
         return Ok(outcome);
     }
 
     // Publish when there is new work, or when a previous pass analysed but did
-    // not finish publishing (the lane has no pointer yet).
-    let pointer_before = pointer::read(&lane).map_err(runtime::export_error)?;
+    // not finish publishing (a lane has no pointer yet).
+    let live_before = pointer::read(&live_lane).map_err(runtime::export_error)?;
+    let checkpoint_before = pointer::read(&checkpoint_lane).map_err(runtime::export_error)?;
     let has_new_work = inventory.queued > 0 || analyzed > 0;
-    if !has_new_work && pointer_before.is_some() {
-        outcome.current_generation = pointer_before.map(|pointer| pointer.generation_id);
+    if !has_new_work && live_before.is_some() && checkpoint_before.is_some() {
+        outcome.current_generation = live_before.map(|pointer| pointer.generation_id);
         return Ok(outcome);
     }
 
-    let published = publish(connection, solution, project, &lane, &records)?;
+    let published = publish(
+        connection,
+        solution,
+        project,
+        &live_lane,
+        &checkpoint_lane,
+        &records,
+    )?;
     outcome.published = true;
     outcome.generation_id = Some(published.generation_id);
     outcome.manifest_hash = Some(published.manifest_hash);
-    outcome.current_generation = current_generation(&lane)?;
+    outcome.current_generation = current_generation(&live_lane)?;
     Ok(outcome)
 }
 
 /// The identity of one published generation.
+#[derive(Debug)]
 struct PublishedGeneration {
     generation_id: String,
     manifest_hash: String,
@@ -408,13 +424,14 @@ fn publish(
     connection: &mut Connection,
     solution: &runtime::SolutionRow,
     project: &runtime::ProjectRow,
-    lane: &Path,
+    live_lane: &Path,
+    checkpoint_lane: &Path,
     records: &[GraphRecord],
 ) -> Result<PublishedGeneration, AxiomError> {
-    let layout = StagingLayout::new(lane.to_path_buf());
+    let live_layout = StagingLayout::new(live_lane.to_path_buf());
     let staging_id = format!("pending-{}-{}", solution.event_seq, project.id);
     let (generation_id, manifest_hash, content_dir) =
-        stage_generation(&layout, &staging_id, records)?;
+        stage_generation(&live_layout, &staging_id, records)?;
 
     // The revision and its durable publish intent are recorded before the
     // pointer could move, so a crash leaves a replayable row rather than a
@@ -440,42 +457,84 @@ fn publish(
     )?;
     runtime::bump_event_seq(connection, &solution.id)?;
 
+    // Both lanes carry the same content-addressed generation, so a reader of
+    // either lane sees one generation and the two can never disagree. Both
+    // generations are sealed before either pointer moves, so a failure while
+    // sealing leaves every lane exactly as it was.
+    let checkpoint_layout = StagingLayout::new(checkpoint_lane.to_path_buf());
+    let (checkpoint_id, checkpoint_hash, checkpoint_dir) =
+        stage_generation(&checkpoint_layout, &staging_id, records)?;
+    if checkpoint_id != generation_id || checkpoint_hash != manifest_hash {
+        return Err(runtime::storage_error(
+            "lane publication",
+            &format!(
+                "the live lane sealed {generation_id} but the checkpoint lane sealed \
+                 {checkpoint_id}; publishing divergent lanes is refused"
+            ),
+        ));
+    }
+
     // Publication barrier: install the complete generation, then move the
     // pointer. Both happen under the exclusive solution guard, and the guard is
     // released before the outcome is recorded, so a slower reader never waits
     // behind a database write.
-    let guard = SolutionGuard::acquire(&default_lock_path(lane), LockMode::Exclusive)
-        .map_err(runtime::guard_error)?;
-    install_generation(&layout, &generation_id, &content_dir)?;
-    pointer::replace(
-        lane,
-        &pointer::CurrentPointer::new(generation_id.clone()),
-        pointer::PointerStrategy::AtomicReplace,
-    )
-    .map_err(runtime::export_error)?;
-    guard.release().map_err(runtime::guard_error)?;
+    // The live lane is what a query answers from; the checkpoint lane is the
+    // tracked artifact the operator verbs read.
+    publish_lane(live_lane, &live_layout, &generation_id, &content_dir)?;
+    publish_lane(
+        checkpoint_lane,
+        &checkpoint_layout,
+        &checkpoint_id,
+        &checkpoint_dir,
+    )?;
 
     outbox::mark(connection, &intent_id, OutboxState::Published, None)?;
-    connection
-        .execute(
-            "INSERT OR IGNORE INTO published_generations(project_id, generation_id, \
-             revision_id, lane, manifest_hash, published_at) \
-             SELECT ?1, ?2, revision_id, ?3, ?4, ?5 FROM publish_outbox WHERE id = ?6",
-            rusqlite::params![
-                project.id,
-                generation_id,
-                runtime::LANE,
-                manifest_hash,
-                graph_store::migrations::utc_timestamp(),
-                intent_id
-            ],
-        )
-        .map_err(|error| runtime::storage_error("published generation record", &error))?;
+    for lane in [runtime::LIVE_LANE, runtime::LANE] {
+        connection
+            .execute(
+                "INSERT OR IGNORE INTO published_generations(project_id, generation_id, \
+                 revision_id, lane, manifest_hash, published_at) \
+                 SELECT ?1, ?2, revision_id, ?3, ?4, ?5 FROM publish_outbox WHERE id = ?6",
+                rusqlite::params![
+                    project.id,
+                    generation_id,
+                    lane,
+                    manifest_hash,
+                    graph_store::migrations::utc_timestamp(),
+                    intent_id
+                ],
+            )
+            .map_err(|error| runtime::storage_error("published generation record", &error))?;
+    }
 
     Ok(PublishedGeneration {
         generation_id,
         manifest_hash,
     })
+}
+
+/// Install one lane's sealed generation, then move that lane's pointer, both
+/// under the exclusive solution guard.
+///
+/// The order is the whole point: a reader either sees the previous complete
+/// pointer or the new one, and never a pointer that names a generation which is
+/// not already readable.
+fn publish_lane(
+    lane: &Path,
+    layout: &StagingLayout,
+    generation_id: &str,
+    content_dir: &Path,
+) -> Result<(), AxiomError> {
+    let guard = SolutionGuard::acquire(&default_lock_path(lane), LockMode::Exclusive)
+        .map_err(runtime::guard_error)?;
+    install_generation(layout, generation_id, content_dir)?;
+    pointer::replace(
+        lane,
+        &pointer::CurrentPointer::new(generation_id.to_owned()),
+        pointer::PointerStrategy::AtomicReplace,
+    )
+    .map_err(runtime::export_error)?;
+    guard.release().map_err(runtime::guard_error)
 }
 
 /// Stage and seal one generation, then name its directory after the content id.
@@ -1009,5 +1068,177 @@ namespace Demo
         // No install, no pointer replace: the lane must stay unreadable.
         assert!(pointer::read(lane).expect("read").is_none());
         assert!(!layout.generation_dir("pending-0-demo").exists());
+    }
+
+    /// A migrated in-memory store with one registered solution and project.
+    ///
+    /// `publish` writes through the real schema, so the fixture applies the real
+    /// `schema-v1.sql` (including its `lane IN('live','checkpoint')` check)
+    /// instead of a laxer hand-written table.
+    fn publishable_store() -> Connection {
+        let mut connection = Connection::open_in_memory().expect("open in-memory sqlite");
+        graph_store::migrations::apply(&mut connection).expect("schema v1 applies");
+        connection
+            .execute(
+                "INSERT INTO solutions(id, workspace_instance_id, profile, config_hash) \
+                 VALUES('demo', 'inst-1', 'default', 'config-hash')",
+                [],
+            )
+            .expect("seed solution");
+        connection
+            .execute(
+                "INSERT INTO projects(id, solution_id, repo_id, relative_path) \
+                 VALUES('demo-project', 'demo', 'demo', '.')",
+                [],
+            )
+            .expect("seed project");
+        connection
+    }
+
+    fn demo_solution() -> runtime::SolutionRow {
+        runtime::SolutionRow {
+            id: "demo".to_owned(),
+            profile: "default".to_owned(),
+            event_seq: 1,
+            full_scan_required: false,
+        }
+    }
+
+    fn demo_project() -> runtime::ProjectRow {
+        runtime::ProjectRow {
+            id: "demo-project".to_owned(),
+            repo_id: "demo".to_owned(),
+            relative_path: ".".to_owned(),
+        }
+    }
+
+    #[test]
+    fn one_publication_publishes_both_lanes_with_the_same_generation() {
+        // docs/12-SNAPSHOT-READ-WRITE-PROTOCOL.md section 2: each of
+        // `<project>/live` and `<project>/checkpoint` carries `current.json` and
+        // `generations/<hash>/`. A publication that wrote only the checkpoint
+        // lane left the query lane empty, so this pins both halves.
+        let dir = tempfile::tempdir().expect("tempdir");
+        let live = dir.path().join("live");
+        let checkpoint = dir.path().join("checkpoint");
+        let mut connection = publishable_store();
+        let records = vec![GraphRecord::new(
+            "node-1",
+            "class",
+            serde_json::json!({"name": "Service"}),
+        )];
+
+        let published = publish(
+            &mut connection,
+            &demo_solution(),
+            &demo_project(),
+            &live,
+            &checkpoint,
+            &records,
+        )
+        .expect("publish");
+        assert_eq!(published.generation_id.len(), 64);
+
+        let mut lane_generations = Vec::new();
+        for lane in [&live, &checkpoint] {
+            let pointer = pointer::read(lane)
+                .expect("read pointer")
+                .expect("the lane has a pointer");
+            assert_eq!(
+                pointer.schema_version,
+                pointer::POINTER_SCHEMA_VERSION,
+                "{} must carry the schema version the shared reader requires",
+                lane.display()
+            );
+            assert_eq!(pointer.generation_id, published.generation_id);
+            // The bytes on disk are the exact canonical document, which is what
+            // makes the lane readable by the shipped `axiom-mcp` data plane.
+            let written = std::fs::read(lane.join(pointer::POINTER_FILE)).expect("read bytes");
+            assert_eq!(
+                written,
+                pointer::canonical_bytes(&pointer).expect("canonical"),
+                "{} must hold the canonical pointer document",
+                lane.display()
+            );
+            let layout = StagingLayout::new(lane.to_path_buf());
+            assert!(layout
+                .generation_dir(&published.generation_id)
+                .join(MANIFEST_NAME)
+                .is_file());
+
+            let guard =
+                SolutionGuard::acquire(&default_lock_path(lane), LockMode::Shared).expect("guard");
+            let snapshot = reader::load(lane, &guard).expect("the frozen reader loads the lane");
+            assert_eq!(snapshot.generation_id(), published.generation_id);
+            guard.release().expect("release");
+            lane_generations.push(pointer.generation_id);
+        }
+        assert_eq!(
+            lane_generations[0], lane_generations[1],
+            "the two lanes must not name different generations"
+        );
+
+        // The recorded publication names both lanes, which is what
+        // `doctor` reports and what a catalog vector reads.
+        let recorded: Vec<String> = {
+            let mut statement = connection
+                .prepare(
+                    "SELECT lane FROM published_generations WHERE project_id = 'demo-project' \
+                     ORDER BY lane",
+                )
+                .expect("prepare");
+            statement
+                .query_map([], |row| row.get::<_, String>(0))
+                .expect("query")
+                .map(|row| row.expect("row"))
+                .collect()
+        };
+        assert_eq!(recorded, vec!["checkpoint".to_owned(), "live".to_owned()]);
+    }
+
+    #[test]
+    fn a_lane_that_cannot_be_sealed_leaves_every_pointer_unmoved() {
+        // Both generations are sealed before either pointer moves, so a failure
+        // while sealing the second lane leaves the first lane exactly as it was:
+        // no pointer names a generation that is not complete.
+        let dir = tempfile::tempdir().expect("tempdir");
+        let live = dir.path().join("live");
+        let blocked = dir.path().join("blocked-checkpoint");
+        std::fs::write(&blocked, b"a file where a lane directory must be").expect("write blocker");
+        let mut connection = publishable_store();
+        let records = vec![GraphRecord::new("node-1", "class", serde_json::json!({}))];
+
+        let error = publish(
+            &mut connection,
+            &demo_solution(),
+            &demo_project(),
+            &live,
+            &blocked,
+            &records,
+        )
+        .expect_err("a lane that cannot be staged must refuse the publication");
+        assert_eq!(error.code(), ErrorCode::Internal);
+
+        assert!(
+            pointer::read(&live).expect("read").is_none(),
+            "the live lane must not gain a pointer when the checkpoint lane could not be sealed"
+        );
+        assert!(!live.join("generations").exists());
+        let recorded: i64 = connection
+            .query_row("SELECT COUNT(*) FROM published_generations", [], |row| {
+                row.get(0)
+            })
+            .expect("count");
+        assert_eq!(recorded, 0, "nothing may be recorded as published");
+        // The durable intent survives, so the failed publication is replayable
+        // rather than a generation nothing knows about.
+        let pending: i64 = connection
+            .query_row(
+                "SELECT COUNT(*) FROM publish_outbox WHERE state = 'PENDING'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("count");
+        assert_eq!(pending, 1);
     }
 }
