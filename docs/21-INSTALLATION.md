@@ -188,13 +188,18 @@ recorded as `not_run` rather than invented.
 ## L. Ecosystem prerequisite probe and one-command install (I-004)
 
 `crates/axiom/src/install/ecosystem.rs` owns the *ecosystem* view of an
-installation. It is library behaviour in `crates/axiom`, so the entrypoint
-still answers honestly rather than pretending: `axiom install plan --bundle
-<signed-bundle>` and `axiom install apply --plan <file> --approve-digest
-<sha256>` both return `NOT_READY` with the frozen `not ready/stale` code `4`
-until a command-binding task composes them, and a bare `axiom install` is a
-`VALIDATION_ERROR` with code `2` because these forms require a subcommand. What
-follows is what the module already guarantees for that command to use.
+installation, and the `axiom` entrypoint composes it (task I-004):
+`axiom install plan --bundle <verified-local-bundle> [--out install-plan.json]
+[--json]` probes and writes one plan, and `axiom install apply --plan <file>
+--approve-digest <sha256> [--json]` re-verifies and applies it. Applying at a
+digest other than the one the plan was approved at, or omitting
+`--approve-digest`, is `FORBIDDEN` with code `5`, exactly as section 6 of the
+installation contract requires; a bare `axiom install` is a
+`VALIDATION_ERROR` with code `2` because these forms require a subcommand. The
+binding delegates to the module rather than re-implementing it - it resolves the
+install root from the resolved `AXIOM_HOME`, probes through the host probe and
+stages the declared payloads - and it invents no second digest or encoder. What
+the module guarantees:
 
 - **Probe before write.** `plan_ecosystem` probes all thirteen declared
   `(component, class)` rows — interpreter, toolchain, runtime, native dependency,
@@ -240,9 +245,23 @@ follows is what the module already guarantees for that command to use.
 
 Evidence status for this slice: Windows 11 x64 native is the primary verified
 leg (unit tests, the real probe over the local search path, and native
-positive/negative/partially-applied runs). The Linux leg could not execute the
-Rust suite: the WSL2 Ubuntu host carries no `cargo`/`rustc`, so only its raw
-host facts were observed and recorded (Ubuntu 26.04.1 LTS, glibc 2.43,
-`python3` 3.14.4 - outside the declared `>=3.13,<3.14` range - and no `python`),
-and the module itself stays `not_run` there. No macOS host exists in the
-environment, so the Apple rows stay `not_run`.
+positive/negative/partially-applied runs). The Linux leg is now executed for
+real too: a Rust toolchain was provisioned in the WSL2 Ubuntu 26.04.1 LTS distro
+(`x86_64-unknown-linux-gnu`, the workspace's pinned `1.85.0` channel), where the
+same 31 in-module tests pass and the operator surface was driven with the
+Linux-built binary. The host facts observed there are unchanged (Ubuntu 26.04.1
+LTS, glibc 2.43, `python3` 3.14.4 - outside the declared `>=3.13,<3.14` range -
+and no `python`), which is exactly why the refused-prerequisite leg reproduces
+there. No macOS host exists in the environment, so the Apple rows stay `not_run`.
+
+The composed operator surface is exercised with real runs on both hosts:
+`axiom install plan` exits `0` and writes one plan (thirteen prerequisite rows,
+one sealed component plan per contract position in contract order, one approval
+digest), `axiom install apply --plan ... --approve-digest ...` exits `0` with
+`status=installed`, the idempotent re-run exits `0` with
+`status=already-installed` and moves no bytes, a refused prerequisite exits `4`
+naming every blocking `(component, class)` row before any write, a stale or
+absent approval digest exits `5`, and a bare `axiom install` exits `2`. The
+installation mechanism itself requires no WSL, Docker, Bash, elevation or system
+service; WSL2 was used only as the Linux test host, and every generated plan
+requests no elevation.

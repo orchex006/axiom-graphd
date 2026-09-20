@@ -71,12 +71,18 @@ Refusals that are contract, not preference:
 
 ## 4. Install the core release
 
-Target procedure (Step 3, `pending`). The installer CLI is not part of this
-revision; see [reference/axiom-graphd](../reference/axiom-graphd.md).
+The installer CLI is composed in this revision (task I-004): the `axiom`
+entrypoint accepts `install plan` and `install apply` and delegates to the
+ecosystem orchestration module. Signing, archive and the user-service legs remain
+`pending`; see [reference/axiom-graphd](../reference/axiom-graphd.md). The two
+forms were exercised for this platform on WSL2 Ubuntu 26.04.1 LTS
+(`x86_64-unknown-linux-gnu`, the pinned rustc 1.85.0): `plan` and `apply` exit
+`0`, the re-run reports `already-installed`, and a host whose `python3` is
+outside the declared `>=3.13,<3.14` range is refused with exit `4`.
 
 ```text
 axiom install plan  --bundle <verified-local-bundle> --out install-plan.json
-axiom install apply --plan install-plan.json
+axiom install apply --plan install-plan.json --approve-digest <plan-sha256>
 ```
 
 - Install into a versioned directory under the user state home
@@ -230,7 +236,7 @@ pre-uninstall state.
 | `WRITER_ALREADY_RUNNING` (exit 10) | Another owner holds `run/daemon.lock` | Find the owning process; never delete the lock by guess. |
 | `SQLITE_NETWORK_STORAGE_UNSUPPORTED` (exit 9) | State on NFS/SMB or a sync folder | Move state to a local volume. |
 | `SQLITE_UNSUPPORTED_VERSION` (exit 9) | Linked runtime below the WAL baseline | Use the bundled/pinned runtime rather than a system library. |
-| `NOT_READY` (exit 4) | Requested capability not implemented in this build | Use the documented foreground/read-only path or wait for the owning work package. |
+| `NOT_READY` (exit 4) | A required prerequisite is unsatisfied or unknown, or the requested capability is not implemented in this build | Satisfy the named `(component, class)` row before writing; never bypass it. For an unbuilt capability, use the documented foreground/read-only path. |
 | Managed service unavailable | No `systemd --user` session | Stay in foreground mode; this is not a platform failure. |
 | Permission denied writing output | Source or output root not writable | Fix the real ownership/permission. Never redirect output elsewhere silently and never `chmod 777`. |
 
@@ -246,11 +252,14 @@ pre-uninstall state.
   signature, unit file, process or host handshake was exercised on any Linux
   host for this document, and no Linux distribution was tested for
   `systemd --user` detection. No Linux target is certified.
-- The `axiom install` and `axiom service` command shapes above document an
-  intended contract for a later work package; they are not accepted by any binary
-  in this revision. The `axiom-graphd solution` shape is the exception: task H-001
-  wired it into argv and task H-002 bound it to the registry, so `solution
-  register|list|remove` now executes against a machine-local store.
+- The `axiom service` command shapes above document an intended contract for a
+  later work package; they are not accepted by any binary in this revision. The
+  `axiom install plan` / `axiom install apply` forms are now accepted (task
+  I-004) and delegate to the ecosystem orchestration module; the signed archive,
+  user-service and trust-verification steps still are not. The `axiom-graphd
+  solution` shape is another exception: task H-001 wired it into argv and task
+  H-002 bound it to the registry, so `solution register|list|remove` now executes
+  against a machine-local store.
 
 ## 12. Related documents
 

@@ -24,14 +24,26 @@
 //!   internal error rather than a silent success.
 
 use std::io::Write;
+use std::path::{Path, PathBuf};
 
 use graph_core::error::{AxiomError, ErrorCode};
+use graph_core::paths::{
+    is_absolute_host_path, is_portable_id, AxiomHome, PathEnvironment, Platform,
+};
 use graph_core::redact;
 use serde::{Deserialize, Serialize};
 
 pub use graph_core::error::ExitCode;
 
-use crate::hosts::detect::HostKind;
+use crate::hosts::detect::{HostKind, LocalHostProbe};
+use crate::install::apply::{ApplyRequest, LocalFs};
+use crate::install::ecosystem::{
+    apply_ecosystem, plan_ecosystem, verify_ecosystem, EcosystemComponentPlan, EcosystemContext,
+    EcosystemPlan, EcosystemProbe, NativeProbe, CORE_COMPONENTS, RULE_APPROVAL,
+    RULE_STAGING_INCOMPLETE, SKILLS_DIRECTORY, SKILLS_PAYLOAD_DIRECTORY,
+};
+use crate::install::plan::{ComponentAction, InstallPlan};
+use crate::skills::install::{LocalInstallFs, LocalPayloadSource};
 use crate::version::VersionReport;
 
 /// Exit code that a successful command returns.
@@ -95,8 +107,6 @@ impl FormSpec {
     }
 }
 
-/// Why the `install` forms are reachable but do no work yet.
-const NOT_READY_INSTALL: &str = "the `crate::install` planner/apply slices are unit tested, but installing from the documented entrypoint is not composed in this build (task I-003 exposes the argv surface only)";
 /// Why the `service` forms are reachable but do no work yet.
 const NOT_READY_SERVICE: &str = "the `crate::service` adapters are unit tested, but installing or controlling an OS service from the documented entrypoint is not composed in this build (task I-003 exposes the argv surface only)";
 /// Why the `bootstrap` forms are reachable but do no work yet.
@@ -259,13 +269,13 @@ pub const VERBS: &[FormSpec] = &[
         verb: "install",
         subcommands: &["plan"],
         options: &[OPT_BUNDLE, OPT_OUT],
-        not_ready: Some(NOT_READY_INSTALL),
+        not_ready: None,
     },
     FormSpec {
         verb: "install",
         subcommands: &["apply"],
         options: &[OPT_PLAN, OPT_APPROVE_DIGEST],
-        not_ready: Some(NOT_READY_INSTALL),
+        not_ready: None,
     },
     FormSpec {
         verb: "service",
@@ -511,7 +521,6 @@ Exit codes:
 /// `pending_verbs_match_the_declared_surface` proves this list still names
 /// exactly the verbs whose declared forms are unbuilt.
 pub const PENDING_VERBS: &[&str] = &[
-    "install",
     "service",
     "bootstrap",
     "host",
@@ -548,6 +557,20 @@ pub enum Command {
     Version {
         /// Report every component this build can report, not only the CLI.
         all: bool,
+    },
+    /// `install plan`: probe the declared prerequisites and write one plan.
+    InstallPlan {
+        /// The verified local bundle directory the plan is built from.
+        bundle: String,
+        /// Plan document to write, when the operator named one with `--out`.
+        out: Option<String>,
+    },
+    /// `install apply`: activate one reviewed plan at its approved digest.
+    InstallApply {
+        /// The reviewed plan document to apply.
+        plan: String,
+        /// The digest the operator approved, from the plan document.
+        approve_digest: Option<String>,
     },
     /// A declared form whose production behaviour is not built yet.
     Slice {
@@ -739,13 +762,42 @@ fn resolve(arguments: &[String]) -> Result<Command, AxiomError> {
         validate_value(name, value.as_str())?;
     }
 
+    // A required option is present by construction above, so a miss here is
+    // an internal defect in this table rather than a caller error.
+    let required = |name: &str| -> Result<String, AxiomError> {
+        values
+            .iter()
+            .find(|(key, _)| *key == name)
+            .map(|(_, value)| value.clone())
+            .ok_or_else(|| {
+                AxiomError::new(
+                    ErrorCode::Internal,
+                    format!("the {} command is declared to require {name}", form.path()),
+                )
+            })
+    };
+    let optional = |name: &str| -> Option<String> {
+        values
+            .iter()
+            .find(|(key, _)| *key == name)
+            .map(|(_, value)| value.clone())
+    };
+
     match form.not_ready {
         Some(reason) => Ok(Command::Slice { form, reason }),
-        None => match form.verb {
+        None => match form.path().as_str() {
             "version" => Ok(Command::Version {
                 all: seen.contains(&"--all"),
             }),
             "help" => Ok(Command::Help),
+            "install plan" => Ok(Command::InstallPlan {
+                bundle: required("--bundle")?,
+                out: optional("--out"),
+            }),
+            "install apply" => Ok(Command::InstallApply {
+                plan: required("--plan")?,
+                approve_digest: optional("--approve-digest"),
+            }),
             other => Err(AxiomError::new(
                 ErrorCode::Internal,
                 format!("the {other} command is declared implemented but has no executor"),
@@ -902,9 +954,372 @@ fn execute(command: &Command, json: bool) -> Result<String, AxiomError> {
                 form.path()
             ),
         )),
+        Command::InstallPlan { bundle, out } => plan_installation(bundle, out.as_deref(), json),
+        Command::InstallApply {
+            plan,
+            approve_digest,
+        } => apply_installation(plan, approve_digest.as_deref(), json),
     }
 }
 
+/// The host identifier this build plans for, from [`Platform::current`].
+///
+/// The installation contract declares four host rows; a host this build cannot
+/// name stays `unknown`, and `plan_ecosystem` refuses it rather than guessing a
+/// native target.
+fn host_identifier() -> String {
+    match Platform::current() {
+        Platform::Windows => "windows-x64",
+        Platform::Linux => "linux-x64",
+        Platform::MacOs => "macos-arm64",
+        Platform::Unknown => "unknown",
+    }
+    .to_string()
+}
+
+/// Directory under `AXIOM_HOME` that owns one ecosystem installation.
+///
+/// It is derived from the resolved home, never generated: a re-run has to
+/// compute the same install root as the run it repeats, which is what makes the
+/// idempotent re-run of AC1(4) reachable at all.
+const ECOSYSTEM_INSTALL_DIRECTORY: &str = "ecosystem";
+
+/// The absolute install root `axiom install` targets.
+///
+/// `AXIOM_HOME` resolution is the same path policy the discovery slice uses, so
+/// an unsafe or unconfigurable home is refused with its own frozen code instead
+/// of being worked around here.
+fn ecosystem_install_root() -> Result<String, AxiomError> {
+    let home = AxiomHome::resolve(&PathEnvironment::for_current_process())?;
+    Ok(home
+        .installs_dir()
+        .join(ECOSYSTEM_INSTALL_DIRECTORY)
+        .to_string_lossy()
+        .into_owned())
+}
+
+/// A fresh portable identifier, `^[a-z][a-z0-9-]{0,62}$`.
+///
+/// `graph_core::paths::is_portable_id` is the only accepted spelling and the OS
+/// random source is the one the credentials slice already uses, so this adds no
+/// second identifier scheme. The caller supplies the prefix, so a plan and a
+/// transaction stay distinguishable in a journal.
+fn portable_id(prefix: &str) -> Result<String, AxiomError> {
+    use std::fmt::Write as _;
+
+    let mut bytes = [0_u8; 8];
+    getrandom::fill(&mut bytes).map_err(|error| {
+        AxiomError::new(
+            ErrorCode::Internal,
+            "the operating system random source is unavailable",
+        )
+        .with_detail("rule", "entropy_unavailable")
+        .with_detail("actual", error.to_string())
+    })?;
+    let mut entropy = String::with_capacity(bytes.len() * 2);
+    for byte in bytes {
+        let _ = write!(entropy, "{byte:02x}");
+    }
+    let seconds = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |elapsed| elapsed.as_secs());
+    let id = format!("{prefix}-{seconds}-{entropy}");
+    if !is_portable_id(&id) {
+        return Err(AxiomError::new(
+            ErrorCode::Internal,
+            "the generated identifier is not a portable Axiom identifier",
+        )
+        .with_detail("observed", id));
+    }
+    Ok(id)
+}
+
+/// Resolve one operator-supplied path against the current directory.
+fn host_path(path: &str) -> Result<PathBuf, AxiomError> {
+    if is_absolute_host_path(path) {
+        return Ok(PathBuf::from(path));
+    }
+    let current = std::env::current_dir().map_err(|error| {
+        AxiomError::new(
+            ErrorCode::Internal,
+            "the current directory could not be read",
+        )
+        .with_detail("actual", error.to_string())
+    })?;
+    Ok(current.join(path))
+}
+
+/// One host-path failure, with the path and the operating-system reason.
+fn host_io_error(action: &str, path: &Path, error: &std::io::Error) -> AxiomError {
+    AxiomError::new(ErrorCode::Internal, action)
+        .with_detail("observed", path.to_string_lossy())
+        .with_detail("actual", error.to_string())
+}
+
+/// Write one review artifact the operator named with `--out`.
+fn write_host_file(path: &str, bytes: &[u8]) -> Result<String, AxiomError> {
+    let resolved = host_path(path)?;
+    if let Some(parent) = resolved.parent() {
+        std::fs::create_dir_all(parent).map_err(|error| {
+            host_io_error("the plan directory could not be created", parent, &error)
+        })?;
+    }
+    std::fs::write(&resolved, bytes).map_err(|error| {
+        host_io_error("the plan document could not be written", &resolved, &error)
+    })?;
+    Ok(resolved.to_string_lossy().into_owned())
+}
+
+/// Read one plan document the operator named with `--plan`.
+fn read_host_file(path: &str) -> Result<Vec<u8>, AxiomError> {
+    let resolved = host_path(path)?;
+    std::fs::read(&resolved).map_err(|error| {
+        AxiomError::new(ErrorCode::NotFound, "the plan document could not be read")
+            .with_detail("observed", resolved.to_string_lossy())
+            .with_detail("actual", error.to_string())
+    })
+}
+
+/// Compose `axiom install plan`.
+fn plan_installation(bundle: &str, out: Option<&str>, json: bool) -> Result<String, AxiomError> {
+    let install_root = ecosystem_install_root()?;
+    let host = LocalHostProbe::for_current_process();
+    let probe = NativeProbe::new(&host, &install_root);
+    plan_with_probe(
+        &probe,
+        bundle,
+        out,
+        json,
+        &install_root,
+        &portable_id("install")?,
+        &graph_store::migrations::utc_timestamp(),
+    )
+}
+
+/// Probe, plan and render one installation plan over an injected probe.
+///
+/// The probe is a parameter so a test can plan over a deterministic matrix while
+/// the operator surface always passes the real [`NativeProbe`].
+fn plan_with_probe(
+    probe: &impl EcosystemProbe,
+    bundle: &str,
+    out: Option<&str>,
+    json: bool,
+    install_root: &str,
+    plan_id: &str,
+    created_at: &str,
+) -> Result<String, AxiomError> {
+    let context = EcosystemContext::new(plan_id, created_at, host_identifier(), install_root);
+    // The probe runs, and any blocking row refuses, before the bundle is opened
+    // and before `--out` is written, so clause 1 and clause 2 are one code path.
+    let plan = plan_ecosystem(probe, bundle, &context)?;
+    let document = plan.to_json()?;
+    let written = match out {
+        Some(requested) => Some(write_host_file(requested, document.as_bytes())?),
+        None => None,
+    };
+    if json {
+        return match &written {
+            Some(resolved) => serde_json::to_string(&serde_json::json!({
+                "status": "planned",
+                "plan_id": plan.plan_id,
+                "plan_digest": plan.plan_digest,
+                "plan_file": resolved,
+            }))
+            .map_err(|error| internal_serialisation(&error)),
+            None => Ok(document),
+        };
+    }
+    let mut text = plan.text().trim_end().to_string();
+    if let Some(resolved) = &written {
+        text.push_str(&format!("\nplan_file {resolved}"));
+    }
+    Ok(text)
+}
+
+/// Compose `axiom install apply`.
+fn apply_installation(
+    plan: &str,
+    approve_digest: Option<&str>,
+    json: bool,
+) -> Result<String, AxiomError> {
+    // Section 7 of `docs/16-CLI-AND-CONTROL-API.md`: merely supplying `--plan`
+    // is not approval, so an unbound digest refuses instead of installing.
+    let Some(approved) = approve_digest else {
+        return Err(AxiomError::new(
+            ErrorCode::Forbidden,
+            "applying an ecosystem installation needs the digest it was approved at; supplying --plan alone is not approval",
+        )
+        .with_detail("rule", RULE_APPROVAL)
+        .with_detail("observed", "no approved digest was bound to this run")
+        .with_detail("expected", "--approve-digest <the reviewed plan digest>"));
+    };
+    let bytes = read_host_file(plan)?;
+    let document: EcosystemPlan = serde_json::from_slice(&bytes).map_err(|error| {
+        AxiomError::new(
+            ErrorCode::ValidationError,
+            "the plan document is not a readable ecosystem installation plan",
+        )
+        .with_detail("rule", "plan_document")
+        .with_detail("observed", error.to_string())
+    })?;
+    apply_plan_document(
+        &document,
+        approved,
+        json,
+        &portable_id("ecosystem")?,
+        &graph_store::migrations::utc_timestamp(),
+    )
+}
+
+/// Verify approval, stage the planned payloads, then delegate to the engine.
+///
+/// The order is the point: the approved digest is re-verified before a single
+/// byte is staged, so a stale or wrong approval cannot mutate the host. Staging
+/// itself is the one piece of work this binding owns, because `plan_ecosystem`
+/// only *names* the staging path and `apply_ecosystem` refuses to activate
+/// planned bytes that are not there yet.
+fn apply_plan_document(
+    plan: &EcosystemPlan,
+    approved: &str,
+    json: bool,
+    transaction_id: &str,
+    applied_at: &str,
+) -> Result<String, AxiomError> {
+    verify_ecosystem(plan, approved)?;
+    stage_core_payloads(plan)?;
+    let skills_source = LocalPayloadSource::new(skills_payload_root(plan));
+    let skills_fs = LocalInstallFs::new(plan.target.install_root.as_str());
+    let request = ApplyRequest::new(transaction_id, approved, applied_at);
+    let applied = apply_ecosystem(
+        plan,
+        approved,
+        &request,
+        &LocalFs,
+        &skills_source,
+        &skills_fs,
+    )?;
+    if json {
+        applied.to_json()
+    } else {
+        Ok(applied.text().trim_end().to_string())
+    }
+}
+
+/// The verified skills payload root beside the bundle the plan was built from.
+fn skills_payload_root(plan: &EcosystemPlan) -> PathBuf {
+    Path::new(plan.bundle.location.as_str())
+        .join(SKILLS_DIRECTORY)
+        .join(SKILLS_PAYLOAD_DIRECTORY)
+}
+
+/// Read back one embedded core plan, without its two digest-excluded keys.
+fn embedded_core_plan(entry: &EcosystemComponentPlan) -> Result<InstallPlan, AxiomError> {
+    let mut body = entry.plan.clone();
+    let object = body.as_object_mut().ok_or_else(|| {
+        AxiomError::new(
+            ErrorCode::ValidationError,
+            "an embedded component plan is not a JSON object",
+        )
+        .with_detail("component", &entry.component)
+    })?;
+    for key in crate::plan::DIGEST_EXCLUDED {
+        object.remove(key);
+    }
+    serde_json::from_value(body).map_err(|error| {
+        AxiomError::new(
+            ErrorCode::ValidationError,
+            "an embedded component plan is not a readable install plan",
+        )
+        .with_detail("component", &entry.component)
+        .with_detail("observed", error.to_string())
+    })
+}
+
+/// The engine's staging refusal rule, reused rather than renamed.
+fn staging_refusal(component: &str, observed: &str, expected: &str) -> AxiomError {
+    AxiomError::new(
+        ErrorCode::Conflict,
+        "a planned payload is not staged as the plan declared, so nothing is activated",
+    )
+    .with_detail("rule", RULE_STAGING_INCOMPLETE)
+    .with_detail("component", component)
+    .with_detail("observed", observed)
+    .with_detail("expected", expected)
+}
+
+/// Copy every planned core payload to its planned staging path.
+///
+/// It fails closed: a payload whose size or digest disagrees with the plan is
+/// refused before it is written, and a destination that already holds the
+/// planned bytes is left untouched so the re-run of AC1(4) rewrites nothing.
+fn stage_core_payloads(plan: &EcosystemPlan) -> Result<(), AxiomError> {
+    for entry in &plan.component_plans[..CORE_COMPONENTS.len()] {
+        let child = embedded_core_plan(entry)?;
+        let planned = child.components.first().ok_or_else(|| {
+            staging_refusal(
+                &entry.component,
+                "no planned component",
+                "one planned component",
+            )
+        })?;
+        if planned.action == ComponentAction::Noop {
+            continue;
+        }
+        let destination = Path::new(planned.destination.as_str());
+        if destination.is_file() {
+            if let Ok(bytes) = std::fs::read(destination) {
+                if graph_export::sha256_hex(&bytes) == planned.source.sha256 {
+                    continue;
+                }
+            }
+        }
+        let source = std::fs::read(planned.source.location.as_str()).map_err(|error| {
+            AxiomError::new(
+                ErrorCode::NotFound,
+                "a planned payload is missing from the verified bundle",
+            )
+            .with_detail("rule", RULE_STAGING_INCOMPLETE)
+            .with_detail("component", &entry.component)
+            .with_detail("observed", planned.source.location.clone())
+            .with_detail("actual", error.to_string())
+        })?;
+        if source.len() as u64 != planned.source.size_bytes {
+            return Err(staging_refusal(
+                &entry.component,
+                &source.len().to_string(),
+                &planned.source.size_bytes.to_string(),
+            ));
+        }
+        let digest = graph_export::sha256_hex(&source);
+        if digest != planned.source.sha256 {
+            return Err(staging_refusal(
+                &entry.component,
+                &digest,
+                &planned.source.sha256,
+            ));
+        }
+        let staged = Path::new(planned.staged_destination.as_str());
+        if let Some(parent) = staged.parent() {
+            std::fs::create_dir_all(parent).map_err(|error| {
+                host_io_error("the staging directory could not be created", parent, &error)
+            })?;
+        }
+        std::fs::write(staged, &source).map_err(|error| {
+            host_io_error("the staged payload could not be written", staged, &error)
+        })?;
+    }
+    Ok(())
+}
+
+/// One internal serialisation defect.
+fn internal_serialisation(error: &serde_json::Error) -> AxiomError {
+    AxiomError::new(
+        ErrorCode::Internal,
+        "the command output is not serialisable",
+    )
+    .with_detail("actual", error.to_string())
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1117,8 +1532,32 @@ mod tests {
                     form.path()
                 );
                 assert!(stdout.is_empty(), "{} must print no payload", form.path());
-            } else {
-                assert_eq!(code, ExitCode::Success, "{} must succeed", form.path());
+                continue;
+            }
+            // A composed form is reachable from argv, but its sample argv
+            // cannot satisfy the inputs the form really needs: `install plan`
+            // is handed a relative bundle directory and `install apply` a plan
+            // file that does not exist. Refusing those is correct behaviour, so
+            // the honest contract is: succeed, or refuse with a real failure
+            // code, and never fabricate a payload or fall back to `NotReady`.
+            match code {
+                ExitCode::Success => {}
+                ExitCode::Validation | ExitCode::NotFound | ExitCode::Authorization => {
+                    assert!(
+                        stdout.is_empty(),
+                        "{} refused as {code:?}, so it must print no payload",
+                        form.path()
+                    );
+                    assert!(
+                        !stderr.is_empty(),
+                        "{} refused as {code:?}, so it must state why on stderr",
+                        form.path()
+                    );
+                }
+                other => panic!(
+                    "{} is dispatchable but answered {other:?} for argv {argv:?}",
+                    form.path()
+                ),
             }
         }
     }
@@ -1308,8 +1747,6 @@ mod tests {
         assert!(stdout.is_empty());
         assert!(stderr.contains("--bundle"));
 
-        // Exactly at the bound is accepted by the bound itself, so the form is
-        // then honestly reported as unbuilt instead of rejected.
         let boundary = "y".repeat(MAX_TOKEN_BYTES);
         let argv = [
             String::from("install"),
@@ -1319,8 +1756,14 @@ mod tests {
             String::from("--out"),
             String::from("plan.json"),
         ];
-        let (code, _, _) = run_argv(&argv);
-        assert_eq!(code, ExitCode::NotReady);
+        // Exactly at the bound is accepted by the bound itself, so the form is
+        // then composed for real. It probes before it writes and refuses the
+        // relative bundle root with the validation code, instead of inventing a
+        // plan for a path an operator never named acceptably.
+        let (code, stdout, stderr) = run_argv(&argv);
+        assert_eq!(code, ExitCode::Validation);
+        assert!(stdout.is_empty());
+        assert!(!stderr.is_empty());
 
         // A missing required option is the same validation code as a bad flag.
         let argv = [String::from("support-bundle"), String::from("--redact")];
@@ -1394,5 +1837,248 @@ mod tests {
 
         // The unmodified text must still match, so the guard is not vacuous.
         assert_eq!(parse_usage_commands(USAGE), declared);
+    }
+
+    /// Payloads the composed `axiom install` tests assemble, with every digest
+    /// computed from the bytes rather than written down.
+    const CLI_GRAPHD: &[u8] = b"the axiom-graphd binary payload (cli binding)";
+    const CLI_MCP: &[u8] = b"the axiom-mcp wheel payload (cli binding)";
+    const CLI_SKILL: &[u8] = b"# Axiom skill instructions (cli binding)\n";
+    const CLI_SKILL_PATH: &str = "instructions/axiom.md";
+    const CLI_GRAPHD_ARTIFACT: &str = "bin/axiom-graphd";
+    const CLI_MCP_ARTIFACT: &str = "python/axiom_mcp-0.0.0.dev0-py3-none-any.whl";
+    const CLI_VERSION: &str = "0.0.0-dev";
+    const CLI_CREATED_AT: &str = "2026-09-20T00:00:00Z";
+
+    /// Write one three-component bundle tree the composed forms can plan from.
+    fn cli_bundle() -> (tempfile::TempDir, String) {
+        use crate::install::plan::{
+            ArtifactKind, BundleComponent, BundleManifest, BUNDLE_MANIFEST_FILE,
+            BUNDLE_SCHEMA_VERSION,
+        };
+        use crate::skills::install::{DeclaredEntry, SkillBundle, MANIFEST_FILE};
+
+        let host = host_identifier();
+        let directory = tempfile::TempDir::new().expect("bundle tempdir");
+        let root = directory.path();
+        let component =
+            |name: &str, artifact: &str, kind: ArtifactKind, payload: &[u8]| BundleComponent {
+                component: name.to_string(),
+                version: CLI_VERSION.to_string(),
+                host: host.clone(),
+                artifact: artifact.to_string(),
+                kind,
+                sha256: graph_export::sha256_hex(payload),
+                size_bytes: payload.len() as u64,
+                permissions: vec!["read".to_string()],
+                service: None,
+                network_access: Vec::new(),
+            };
+        let manifest = BundleManifest {
+            schema_version: BUNDLE_SCHEMA_VERSION,
+            bundle_id: "axiom-core".to_string(),
+            channel: "stable".to_string(),
+            created_at: CLI_CREATED_AT.to_string(),
+            components: vec![
+                component(
+                    "axiom-graphd",
+                    CLI_GRAPHD_ARTIFACT,
+                    ArtifactKind::Binary,
+                    CLI_GRAPHD,
+                ),
+                component("axiom-mcp", CLI_MCP_ARTIFACT, ArtifactKind::Python, CLI_MCP),
+            ],
+        };
+        for (artifact, payload) in [
+            (CLI_GRAPHD_ARTIFACT, CLI_GRAPHD),
+            (CLI_MCP_ARTIFACT, CLI_MCP),
+        ] {
+            let path = root.join(artifact);
+            std::fs::create_dir_all(path.parent().expect("payload parent"))
+                .expect("payload directory");
+            std::fs::write(&path, payload).expect("core payload");
+        }
+        std::fs::write(
+            root.join(BUNDLE_MANIFEST_FILE),
+            serde_json::to_vec(&manifest).expect("manifest json"),
+        )
+        .expect("core manifest written");
+
+        let skills_root = root.join(SKILLS_DIRECTORY);
+        let payload_root = skills_root.join(SKILLS_PAYLOAD_DIRECTORY);
+        std::fs::create_dir_all(payload_root.join("instructions")).expect("skills directory");
+        let entry = DeclaredEntry::new(
+            CLI_SKILL_PATH,
+            "instruction",
+            graph_export::sha256_hex(CLI_SKILL),
+            CLI_SKILL.len() as u64,
+        );
+        let skills = SkillBundle::new(CLI_VERSION, "a".repeat(40), "b".repeat(40), vec![entry]);
+        std::fs::write(
+            skills_root.join(MANIFEST_FILE),
+            skills.manifest_bytes().expect("skills manifest"),
+        )
+        .expect("skills manifest written");
+        std::fs::write(payload_root.join(CLI_SKILL_PATH), CLI_SKILL).expect("skill payload");
+
+        let path = root.to_string_lossy().into_owned();
+        (directory, path)
+    }
+
+    /// The composed operator surface: plan, apply, re-run, and refuse.
+    #[test]
+    fn composed_install_plans_applies_and_re_runs_idempotently() {
+        use crate::install::ecosystem::{
+            EcosystemProbe, PrerequisiteDeclaration, PrerequisiteObservation, PrerequisiteStatus,
+            SatisfiedProbe, INSTALL_ORDER,
+        };
+
+        /// Reports one declared row undecided, so the plan must refuse it.
+        struct RefusingProbe;
+
+        impl EcosystemProbe for RefusingProbe {
+            fn observe(&self, row: &PrerequisiteDeclaration) -> PrerequisiteObservation {
+                if row.component == "axiom-mcp" && row.class.as_str() == "interpreter" {
+                    return PrerequisiteObservation {
+                        status: PrerequisiteStatus::Unknown,
+                        observed: "the cli fixture could not decide this row".to_string(),
+                    };
+                }
+                SatisfiedProbe.observe(row)
+            }
+        }
+
+        let (_bundle_dir, bundle_root) = cli_bundle();
+        let install_dir = tempfile::TempDir::new().expect("install tempdir");
+        let out_dir = tempfile::TempDir::new().expect("plan tempdir");
+        let install_root = install_dir.path().to_string_lossy().into_owned();
+        let plan_file = out_dir.path().join("install-plan.json");
+        let plan_file_arg = plan_file.to_string_lossy().into_owned();
+
+        // Clause 3: one plan covering all three components in contract order,
+        // behind one digest, written to the file the operator named.
+        let text = plan_with_probe(
+            &SatisfiedProbe,
+            &bundle_root,
+            Some(&plan_file_arg),
+            false,
+            &install_root,
+            "install-cli-0001",
+            CLI_CREATED_AT,
+        )
+        .expect("the composed plan succeeds");
+        assert!(
+            text.contains("axiom install plan install-cli-0001"),
+            "{text}"
+        );
+        assert!(text.contains(&plan_file_arg), "{text}");
+
+        let document: EcosystemPlan =
+            serde_json::from_slice(&std::fs::read(&plan_file).expect("the plan file was written"))
+                .expect("the plan file is one ecosystem plan");
+        assert_eq!(
+            document.install_order,
+            INSTALL_ORDER
+                .iter()
+                .map(|component| (*component).to_string())
+                .collect::<Vec<String>>(),
+            "one plan covers every component in contract order"
+        );
+        let digest = document.plan_digest.clone();
+        assert_eq!(digest.len(), 64, "one 64-hex approval digest");
+
+        // Machine-readable mode is still one JSON object on stdout.
+        let envelope = plan_with_probe(
+            &SatisfiedProbe,
+            &bundle_root,
+            Some(&plan_file_arg),
+            true,
+            &install_root,
+            "install-cli-0002",
+            CLI_CREATED_AT,
+        )
+        .expect("the composed plan succeeds in JSON mode");
+        let value = single_json_object(envelope.as_bytes());
+        assert_eq!(value["status"], "planned");
+        assert_eq!(value["plan_digest"].as_str().map(str::len), Some(64));
+
+        // Clause 4: the approved plan installs, and a re-run rewrites nothing.
+        let applied = apply_plan_document(
+            &document,
+            &digest,
+            false,
+            "ecosystem-cli-0001",
+            CLI_CREATED_AT,
+        )
+        .expect("the approved plan applies");
+        assert!(applied.contains("status=installed"), "{applied}");
+
+        let child = embedded_core_plan(&document.component_plans[0]).expect("embedded plan");
+        let destination = child.components[0].destination.clone();
+        let installed = std::fs::read(&destination).expect("the planned payload is installed");
+        assert_eq!(
+            installed, CLI_GRAPHD,
+            "the planned bytes landed at the planned path"
+        );
+
+        let re_run = apply_plan_document(
+            &document,
+            &digest,
+            false,
+            "ecosystem-cli-0002",
+            CLI_CREATED_AT,
+        )
+        .expect("the re-run reports already-installed");
+        assert!(re_run.contains("status=already-installed"), "{re_run}");
+        assert_eq!(
+            std::fs::read(&destination).expect("still installed"),
+            installed,
+            "the re-run rewrote nothing"
+        );
+
+        // Clauses 1 and 2: a blocking prerequisite refuses before a byte is
+        // written and names the row it refused.
+        let refused_plan = out_dir.path().join("refused-plan.json");
+        let refused_arg = refused_plan.to_string_lossy().into_owned();
+        let refusal = plan_with_probe(
+            &RefusingProbe,
+            &bundle_root,
+            Some(&refused_arg),
+            false,
+            &install_root,
+            "install-cli-0003",
+            CLI_CREATED_AT,
+        )
+        .expect_err("an undecided prerequisite must refuse");
+        assert_eq!(refusal.exit_code(), ExitCode::NotReady);
+        assert!(
+            refusal.to_string().contains("axiom-mcp/interpreter"),
+            "{refusal}"
+        );
+        assert!(
+            !refused_plan.exists(),
+            "a refused plan must not write the file the operator named"
+        );
+
+        // A stale or wrong approval digest never mutates the host.
+        let stale = apply_plan_document(
+            &document,
+            &"c".repeat(64),
+            false,
+            "ecosystem-cli-0003",
+            CLI_CREATED_AT,
+        )
+        .expect_err("a wrong approval digest must refuse");
+        assert_eq!(stale.exit_code(), ExitCode::Authorization);
+        assert!(stale.to_string().contains("not approved"), "{stale}");
+
+        // Supplying `--plan` without `--approve-digest` is not approval.
+        let unapproved = apply_installation(&plan_file_arg, None, false)
+            .expect_err("an unbound apply must refuse");
+        assert_eq!(unapproved.exit_code(), ExitCode::Authorization);
+        assert!(
+            unapproved.to_string().contains("not approval"),
+            "{unapproved}"
+        );
     }
 }

@@ -87,12 +87,15 @@ Refusals that are contract, not preference:
 
 ## 4. Install the core release
 
-Target procedure (Step 3, `pending`). The installer CLI is not part of this
-revision; see [reference/axiom-graphd](../reference/axiom-graphd.md).
+The installer CLI is composed in this revision (task I-004): the `axiom`
+entrypoint accepts `install plan` and `install apply` and delegates to the
+ecosystem orchestration module. Signing, archive and the LaunchAgent legs remain
+`pending`; see [reference/axiom-graphd](../reference/axiom-graphd.md). No macOS
+host exists in this environment, so neither form was executed for this document.
 
 ```text
 axiom install plan  --bundle <verified-local-bundle> --out install-plan.json
-axiom install apply --plan install-plan.json
+axiom install apply --plan install-plan.json --approve-digest <plan-sha256>
 ```
 
 - Install into a versioned directory under the user state home
@@ -239,7 +242,7 @@ pre-uninstall state.
 | `CONFIG_INVALID` (exit 2) | Registry or config rejected | Fix the named field; do not delete the database to silence it. |
 | `WRITER_ALREADY_RUNNING` (exit 10) | Another owner holds `run/daemon.lock` | Find the owning process; never delete the lock by guess. |
 | `SQLITE_NETWORK_STORAGE_UNSUPPORTED` (exit 9) | State on a network or sync volume | Move state to a local volume. |
-| `NOT_READY` (exit 4) | Requested capability not implemented in this build | Use the documented foreground/read-only path or wait for the owning work package. |
+| `NOT_READY` (exit 4) | A required prerequisite is unsatisfied or unknown, or the requested capability is not implemented in this build | Satisfy the named `(component, class)` row before writing; never bypass it. For an unbuilt capability, use the documented foreground/read-only path. |
 | `launchctl` load denied | Organisation policy or missing user session | Report it and stay in foreground mode. Do not request elevation automatically. |
 
 ## 11. What is verified, and what is not
@@ -254,9 +257,11 @@ pre-uninstall state.
   notarisation, LaunchAgent, process or host handshake was exercised on any macOS
   host for this document. Rosetta behaviour was not tested because it is not
   supported as a substitute for the native archive. No macOS target is certified.
-- The `axiom install` and `axiom service` command shapes above document an
-  intended contract for a later work package; they are not accepted by any
-  binary in this revision.
+- The `axiom service` command shapes above document an intended contract for a
+  later work package; they are not accepted by any binary in this revision. The
+  `axiom install plan` / `axiom install apply` forms are now accepted (task
+  I-004) and delegate to the ecosystem orchestration module; the signed archive,
+  LaunchAgent and trust/notarisation steps still are not.
 
 ## 12. Related documents
 
