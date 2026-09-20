@@ -11,8 +11,9 @@ halves exist: `crates/axiom-graphd/src/checkpoint/` holds the `staged`,
 `worktree` and `commit` source selections, the deterministic export and the
 merged-source verification (tasks B-088 to B-091), and `graph-watch` holds the
 input classification. Nothing exposes them on argv and no released runtime
-bundles them, and the operator surfaces this guide names are still `todo` in
-their task cards: E-023 (Git-ignore planning for live output), E-024 (optional
+bundles them, and the operator surfaces this guide names are recorded as `done`
+in the `axiom-specs` task ledger (`axiom-specs/tasks/tasks.json`) while no argv
+form binds them: E-023 (Git-ignore planning for live output), E-024 (optional
 scoped commit proposals) and E-025 (managed rollback). The F-021 staged and
 merged checkpoint accuracy fixtures now ship as `tests/git_checkpoint.py` - they
 exercise the real `git` program and argv, including the real `merge=union`

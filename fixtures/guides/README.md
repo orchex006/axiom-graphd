@@ -79,11 +79,11 @@ Exit `0` means every guide matched and every negative fixture was rejected,
 ## Status of the surfaced contracts
 
 These fixtures belong to a documentation lane. The three guides document
-contracts that **this revision does not implement**: the checkpoint argv surface,
-the bootstrap engine (tasks E-013 to E-034) and the updater (tasks E-035 to
-E-045) are still `todo` in `axiom-specs`. The guides say so in their own status
-sections, and `absent_paths` keeps the strongest of those statements
-machine-checked.
+contracts that **this revision does not surface as commands**: the checkpoint
+argv surface, the bootstrap engine (tasks E-013 to E-034) and the updater (tasks
+E-035 to E-045) are recorded as `done` in `axiom-specs` but no argv form here
+reaches them. The guides say so in their own status sections, and `absent_paths`
+keeps the strongest of those statements machine-checked.
 
 ## Relationship to a Rust oracle
 

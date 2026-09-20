@@ -89,10 +89,11 @@ carry release coverage. Re-record it against an owner-approved revision before
 any release or compatibility claim. `spec.lock.example.json` is a shape example
 only and is never a valid pin.
 
-Validate the pin offline against a checkout of the pinned content:
+Validate the pin offline against a checkout of the pinned content, with the
+checker that ships in the specification repository rather than in this one:
 
 ```bash
-python tools/spec-lock-check.py --lock spec.lock.json --spec-root <axiom-specs-checkout>
+python <axiom-specs-checkout>/tools/spec-lock-check.py --lock spec.lock.json --spec-root <axiom-specs-checkout>
 ```
 
 Default mode must accept (`immutable revision and pinned digests verified`).

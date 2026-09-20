@@ -8,9 +8,12 @@ not implemented yet.**
 
 **Status: the bootstrap engine's policy half is implemented and unit-tested; the
 operator command is not.** This page is the contract, not an observation. The
-modules for tasks E-013 to E-025 exist under `crates/axiom/src/bootstrap/`; the
-argv wiring, host adapters and skill bundles for E-026 to E-047 are still
-`todo`. Beyond the engine, what exists is the `axiom` argv layer that recognises
+modules for tasks E-013 to E-025 exist under `crates/axiom/src/bootstrap/`, the
+host, skills, update and support modules for E-026 to E-047 exist under
+`crates/axiom/src/`, and those cards are recorded as `done` in the `axiom-specs`
+task ledger (`axiom-specs/tasks/tasks.json`); the argv wiring that would bind
+them to a live solution bootstrap is still not composed in this build. Beyond
+the engine, what exists is the `axiom` argv layer that recognises
 the verb and refuses rather than pretending, the static bootstrap corpus under
 `fixtures/bootstrap/`, and the checker described in section 6. Section 8 records
 exactly what was executed and what was not.
