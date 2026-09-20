@@ -1,0 +1,6 @@
+# transient AXIOM_HOME scratch rebuilt by run_e2e.ps1 - not evidence
+home-e2e/
+home-mcp/
+# python bytecode
+__pycache__/
+*.pyc

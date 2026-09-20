@@ -1,0 +1,20 @@
+{
+  "label": "after-edit-the-new-symbol-is-visible",
+  "calls": [
+    {
+      "label": "1. is the extra generation pinned now?",
+      "tool": "graph_status",
+      "arguments": { "solution_id": "agmws-license", "project_id": "agmws-web-service" }
+    },
+    {
+      "label": "2. can the graph see the member that did not exist a minute ago?",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Shared.Extensions.DateTimeExtensions.ToUnixTimeTicks"
+      }
+    }
+  ]
+}

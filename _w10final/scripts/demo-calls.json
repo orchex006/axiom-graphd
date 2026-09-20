@@ -1,0 +1,30 @@
+{
+  "label": "ai-asks-graphd-through-mcp",
+  "calls": [
+    {
+      "label": "1. what does this solution have pinned?",
+      "tool": "graph_status",
+      "arguments": { "solution_id": "agmws-license", "project_id": "agmws-web-service" }
+    },
+    {
+      "label": "2. what is in DateTimeExtensions?",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Shared.Extensions.DateTimeExtensions"
+      }
+    },
+    {
+      "label": "3. what is directly connected to ToUnixTimeStamp?",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "neighbors",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Shared.Extensions.DateTimeExtensions.ToUnixTimeStamp"
+      }
+    }
+  ]
+}

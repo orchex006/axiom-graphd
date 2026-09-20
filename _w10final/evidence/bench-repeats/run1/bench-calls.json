@@ -1,0 +1,205 @@
+{
+  "label": "bench-with-graphd",
+  "calls": [
+    {
+      "label": "bench-0",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseRegistryRequestDto"
+      }
+    },
+    {
+      "label": "bench-1",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Infrastructure.InfrastructureDependencyInjection"
+      }
+    },
+    {
+      "label": "bench-2",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.XlsxImportFileParser.XlsxCell"
+      }
+    },
+    {
+      "label": "bench-3",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Tests.Infrastructure.Security.LoginThrottleServiceTests.FakeCacheService"
+      }
+    },
+    {
+      "label": "bench-4",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Infrastructure.Persistence.Interfaces.IImportFileParser"
+      }
+    },
+    {
+      "label": "bench-5",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Application.Interfaces.IImportUseCase"
+      }
+    },
+    {
+      "label": "bench-6",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Presentation.DTOs.Responses.LicenseImportCommitResponseDto"
+      }
+    },
+    {
+      "label": "bench-7",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseImportCommitRequestDto"
+      }
+    },
+    {
+      "label": "bench-8",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Domain.Entities.ImportPreviewRowInfo"
+      }
+    },
+    {
+      "label": "bench-9",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Presentation.DTOs.Responses.ErrorResponseDto"
+      }
+    },
+    {
+      "label": "bench-10",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvImportFileParser..IsBlank"
+      }
+    },
+    {
+      "label": "bench-11",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Tests.Infrastructure.Security.LoginThrottleServiceTests"
+      }
+    },
+    {
+      "label": "bench-12",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.AuthRepository"
+      }
+    },
+    {
+      "label": "bench-13",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Domain.Entities.LicenseRegistryBindingInfo"
+      }
+    },
+    {
+      "label": "bench-14",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Domain.Entities.ImportBatchDetailInfo"
+      }
+    },
+    {
+      "label": "bench-15",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Domain.Entities.UserPageInfo"
+      }
+    },
+    {
+      "label": "bench-16",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvImportFileParser..Fields.Count"
+      }
+    },
+    {
+      "label": "bench-17",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvRecordReader"
+      }
+    },
+    {
+      "label": "bench-18",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Presentation.DTOs.Responses.RoleListResponseDto"
+      }
+    },
+    {
+      "label": "bench-19",
+      "tool": "graph_query",
+      "arguments": {
+        "solution_id": "agmws-license",
+        "operation": "context",
+        "project_id": "agmws-web-service",
+        "target": "AgriMap.Web.Service.Presentation.DTOs.Responses.UserDeleteResponseDto"
+      }
+    }
+  ]
+}

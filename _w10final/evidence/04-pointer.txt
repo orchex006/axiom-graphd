@@ -1,0 +1,9 @@
+=== current.json bytes (both lanes) ===
+lane=live size=189
+lane=live text={"generation_id":"1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7","manifest_sha256":"1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7","schema_version":1}
+
+lane=live sha256=0a8006210f4b16ef64a43db79ea50414e0c9c09369f88ca37f0160edc223f612 ends_with_lf=True
+lane=checkpoint size=189
+lane=checkpoint text={"generation_id":"1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7","manifest_sha256":"1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7","schema_version":1}
+
+lane=checkpoint sha256=0a8006210f4b16ef64a43db79ea50414e0c9c09369f88ca37f0160edc223f612 ends_with_lf=True

@@ -1,0 +1,87 @@
+{
+  "mode": "measured-scan-scaling-on-real-files",
+  "repo": "D:\\SP-Billy\\axiom\\agmws-license-management-netcore",
+  "files_total": 156,
+  "leaf": "LicenseRegistryRequestDto",
+  "repeats": 5,
+  "points": [
+    {
+      "files": 16,
+      "median_ms": 11.01,
+      "samples_ms": [
+        11.01,
+        11.04,
+        11.36,
+        8.59,
+        10.57
+      ],
+      "ms_per_file": 0.6881
+    },
+    {
+      "files": 32,
+      "median_ms": 16.92,
+      "samples_ms": [
+        16.92,
+        14.3,
+        14.6,
+        20.78,
+        20.39
+      ],
+      "ms_per_file": 0.5288
+    },
+    {
+      "files": 64,
+      "median_ms": 29.0,
+      "samples_ms": [
+        31.66,
+        30.41,
+        29.0,
+        19.4,
+        16.21
+      ],
+      "ms_per_file": 0.4531
+    },
+    {
+      "files": 96,
+      "median_ms": 34.6,
+      "samples_ms": [
+        32.54,
+        54.0,
+        34.6,
+        36.35,
+        34.53
+      ],
+      "ms_per_file": 0.3604
+    },
+    {
+      "files": 128,
+      "median_ms": 53.84,
+      "samples_ms": [
+        53.84,
+        62.39,
+        59.34,
+        40.8,
+        48.46
+      ],
+      "ms_per_file": 0.4206
+    },
+    {
+      "files": 156,
+      "median_ms": 87.41,
+      "samples_ms": [
+        87.41,
+        70.7,
+        99.04,
+        93.57,
+        86.82
+      ],
+      "ms_per_file": 0.5603
+    }
+  ],
+  "median_ms_per_file": 0.43684999999999996,
+  "graphd_per_question_ms_measured": 87.9,
+  "break_even_files": 201,
+  "verdict_at_this_size": "graphd_query round trip is at/over parity because this repo sits at about the break-even file count",
+  "is_extrapolation": true,
+  "note": "points are REAL measured scans over real files at several prefix sizes; break_even_files is derived (graphd latency / measured slope) and is an extrapolation, not a scan of a 170+ file tree"
+}

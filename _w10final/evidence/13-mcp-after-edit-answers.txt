@@ -1,0 +1,319 @@
+=== MCP session: after-edit-the-new-symbol-is-visible ===
+
+server: {"name": "axiom-mcp-w10-deliverables", "version": "1.28.1"}
+protocol: "2025-11-25"
+
+tools advertised by the server:
+  - graph_status: Solution/project freshness, coverage, generations and capabilities
+      annotations={"readOnlyHint": true, "destructiveHint": false, "openWorldHint": false}
+  - graph_query: One bounded graph operation: search, context, neighbors, dependencies, callers, impact, path or changes
+      annotations={"readOnlyHint": true, "destructiveHint": false, "openWorldHint": false}
+
+--- call: 1. is the extra generation pinned now? (62.1 ms) ---
+request arguments: {"solution_id": "agmws-license", "project_id": "agmws-web-service"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "lane": "live",
+  "catalog_generation_id": "6ed34a63d702be77728f5612265cf939cc1a8fb6c851747332b27cb07176a0be",
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "projects": [
+    {
+      "project_id": "agmws-web-service",
+      "lane": "live",
+      "generation_id": "8b632b5da319dbf03de49f3370d391a5b0f8711d4890d480eb860a3abcfc91f2",
+      "analysis_profile": "default",
+      "records": 2584,
+      "bytes_copied": 1223734,
+      "source_fingerprint": "2fb2ab22f908da0a8000af08d1b3f7fb9c8e207fe3e409d0096e2194a5b5a526",
+      "verification": "manifest_hash",
+      "freshness": "unknown",
+      "coverage": "complete_for_profile",
+      "guard_held_during_copy": true,
+      "parsed_after_guard_release": true
+    }
+  ],
+  "capabilities": {
+    "checkpoint": false,
+    "read": true,
+    "reconcile": false
+  },
+  "daemon": null,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh"
+  ]
+}
+
+--- call: 2. can the graph see the member that did not exist a minute ago? (62.4 ms) ---
+request arguments: {"solution_id": "agmws-license", "operation": "context", "project_id": "agmws-web-service", "target": "AgriMap.Web.Service.Shared.Extensions.DateTimeExtensions.ToUnixTimeTicks"}
+{
+  "schema_version": 1,
+  "solution_id": "agmws-license",
+  "catalog_generation_id": "6ed34a63d702be77728f5612265cf939cc1a8fb6c851747332b27cb07176a0be",
+  "project_generations": [
+    {
+      "project_id": "agmws-web-service",
+      "generation_id": "8b632b5da319dbf03de49f3370d391a5b0f8711d4890d480eb860a3abcfc91f2"
+    }
+  ],
+  "freshness": "unknown",
+  "coverage": "complete_for_profile",
+  "verification": {
+    "mode": "none"
+  },
+  "nodes": [
+    {
+      "id": "1b4c420dbc13d5466d78e2995256c4b7e0862d0dc3d09345053a2a00109ff54f",
+      "project_id": "agmws-web-service",
+      "kind": "Namespace",
+      "name": "AgriMap.Web.Service.Shared.Extensions",
+      "qualified_name": "AgriMap.Web.Service.Shared.Extensions#2",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+        "start_line": 1,
+        "end_line": 1
+      }
+    },
+    {
+      "id": "28fb1b5a594afe22f0be6f1cae2456bafa14c772d901586ed20edf6bbe376f04",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "ToUnixTimeTicks",
+      "qualified_name": "AgriMap.Web.Service.Shared.Extensions.DateTimeExtensions.ToUnixTimeTicks",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+        "start_line": 30,
+        "end_line": 30
+      }
+    },
+    {
+      "id": "5f7d2080a4485d7916e3d795015727a966ae10ffe0339bb9c0f8604d6a5b6bee",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "ToUnixTimeStamp",
+      "qualified_name": "AgriMap.Web.Service.Shared.Extensions.DateTimeExtensions.ToUnixTimeStamp",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+        "start_line": 26,
+        "end_line": 26
+      }
+    },
+    {
+      "id": "ab1734c308c812dc1af1c7c14e6f6f5aa5b8df272a3961debc05a3ed1a1868c7",
+      "project_id": "agmws-web-service",
+      "kind": "Class",
+      "name": "DateTimeExtensions",
+      "qualified_name": "AgriMap.Web.Service.Shared.Extensions.DateTimeExtensions",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+        "start_line": 3,
+        "end_line": 3
+      }
+    },
+    {
+      "id": "bed3ffef6d04989049a6489715111e6175bc10a88670a89e6e7f1ef37bb9cf99",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "AddMinutes",
+      "qualified_name": "AgriMap.Web.Service.Shared.Extensions.DateTimeExtensions.AddMinutes",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+        "start_line": 13,
+        "end_line": 13
+      }
+    },
+    {
+      "id": "cd05109692768f0f450a2ea69b3a22ce819a6cc489433e480b0c7ceb404a32d2",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "ToUnixTimeMilliseconds",
+      "qualified_name": "AgriMap.Web.Service.Shared.Extensions.DateTimeExtensions.ToUnixTimeMilliseconds",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+        "start_line": 21,
+        "end_line": 21
+      }
+    },
+    {
+      "id": "cf6aafaef08a4f22ab3b8d158926d6caac883a317bda69cac4091a1247dfd94a",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "ToUnixTimeSeconds",
+      "qualified_name": "AgriMap.Web.Service.Shared.Extensions.DateTimeExtensions.ToUnixTimeSeconds",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+        "start_line": 16,
+        "end_line": 16
+      }
+    },
+    {
+      "id": "f1ca96921221642c7f905470960916c722a4809ca831149580295d0c932059f8",
+      "project_id": "agmws-web-service",
+      "kind": "Method",
+      "name": "GetNow",
+      "qualified_name": "AgriMap.Web.Service.Shared.Extensions.DateTimeExtensions.GetNow",
+      "language": "csharp",
+      "identity_quality": "semantic_key",
+      "source": {
+        "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+        "start_line": 11,
+        "end_line": 11
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "040d1a83ffd44a66500ade70eee8bb343105c40f76fff195fa482d17b9d4a108",
+      "source_id": "ab1734c308c812dc1af1c7c14e6f6f5aa5b8df272a3961debc05a3ed1a1868c7",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 21,
+            "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+            "start_line": 21
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "cd05109692768f0f450a2ea69b3a22ce819a6cc489433e480b0c7ceb404a32d2"
+    },
+    {
+      "id": "24fb15cba44440e92c6cbd91bd4e6b5fa3d511883f463500c4d8f22a070ea33c",
+      "source_id": "ab1734c308c812dc1af1c7c14e6f6f5aa5b8df272a3961debc05a3ed1a1868c7",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 26,
+            "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+            "start_line": 26
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "5f7d2080a4485d7916e3d795015727a966ae10ffe0339bb9c0f8604d6a5b6bee"
+    },
+    {
+      "id": "2f6a29ffab68acf57afe50cf01ddc2c4b7a09a63105e87a1b51f116625d36347",
+      "source_id": "1b4c420dbc13d5466d78e2995256c4b7e0862d0dc3d09345053a2a00109ff54f",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 3,
+            "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+            "start_line": 3
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "ab1734c308c812dc1af1c7c14e6f6f5aa5b8df272a3961debc05a3ed1a1868c7"
+    },
+    {
+      "id": "5b957f37dbf3b8ede22c5f9577fc27ca902fc650f27df4abea139132356d324c",
+      "source_id": "ab1734c308c812dc1af1c7c14e6f6f5aa5b8df272a3961debc05a3ed1a1868c7",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 16,
+            "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+            "start_line": 16
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "cf6aafaef08a4f22ab3b8d158926d6caac883a317bda69cac4091a1247dfd94a"
+    },
+    {
+      "id": "733f4de4234983731cc18516c45ea20b990b7a6102855a1c25b80f31486f5739",
+      "source_id": "ab1734c308c812dc1af1c7c14e6f6f5aa5b8df272a3961debc05a3ed1a1868c7",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 30,
+            "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+            "start_line": 30
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "28fb1b5a594afe22f0be6f1cae2456bafa14c772d901586ed20edf6bbe376f04"
+    },
+    {
+      "id": "e262566af3f6f23e3365c481cbfbc12c2a191b21c9eee4d63ce01ddea17444b2",
+      "source_id": "ab1734c308c812dc1af1c7c14e6f6f5aa5b8df272a3961debc05a3ed1a1868c7",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 11,
+            "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+            "start_line": 11
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "f1ca96921221642c7f905470960916c722a4809ca831149580295d0c932059f8"
+    },
+    {
+      "id": "ea8009ba930d24ffd20e0ae9b2d5b670d06d3970e547a0062e9a03e8e6eab7c5",
+      "source_id": "ab1734c308c812dc1af1c7c14e6f6f5aa5b8df272a3961debc05a3ed1a1868c7",
+      "target_project_id": "agmws-web-service",
+      "kind": "CONTAINS",
+      "resolution": "exact_static",
+      "evidence": [
+        {
+          "rule_id": "declaration-contains-v1",
+          "source": {
+            "end_line": 13,
+            "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+            "start_line": 13
+          }
+        }
+      ],
+      "analyzer_id": "csharp-declarations-v1",
+      "target_id": "bed3ffef6d04989049a6489715111e6175bc10a88670a89e6e7f1ef37bb9cf99"
+    }
+  ],
+  "truncated": false,
+  "warnings": [
+    "freshness was not reported, so it is unknown rather than fresh"
+  ]
+}
+

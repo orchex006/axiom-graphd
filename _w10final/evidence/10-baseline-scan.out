@@ -1,0 +1,41 @@
+{
+  "mode": "no-graphd-text-scan",
+  "symbol": "AgriMap.Web.Service.Shared.Extensions.DateTimeExtensions",
+  "files_scanned": 156,
+  "declaring_files": [
+    [
+      "Src/Shared/Extensions/DateTimeExtensions.cs",
+      3
+    ]
+  ],
+  "member_count": 5,
+  "members": [
+    {
+      "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+      "start_line": 9,
+      "signature": "public static DateTime DateTimeUtc { get; } = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);"
+    },
+    {
+      "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+      "start_line": 11,
+      "signature": "public static DateTime GetNow()"
+    },
+    {
+      "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+      "start_line": 16,
+      "signature": "public static long ToUnixTimeSeconds(DateTime dateTime)"
+    },
+    {
+      "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+      "start_line": 21,
+      "signature": "public static long ToUnixTimeMilliseconds(DateTime dateTime)"
+    },
+    {
+      "file": "Src/Shared/Extensions/DateTimeExtensions.cs",
+      "start_line": 26,
+      "signature": "public static long ToUnixTimeStamp(DateTime dateTime)"
+    }
+  ],
+  "elapsed_ms": 67.2,
+  "note": "untyped text hits only: no node ids, no kinds, no edges, no resolution and no evidence of what else in the repository depends on this symbol"
+}

@@ -1,0 +1,12 @@
+binary=D:\SP-Billy\axiom-worktrees\axiom-graphd-w10-final\target\release\axiom-graphd.exe
+binary_bytes=3736576
+binary_sha256=5c92ab426313a3beb407310d317b56938296b85619ac969808e97c90452da36d
+graphd_branch=feature/w10-deliverables
+graphd_revision=51782bb4337799b8479de1ea2ce4f29e1bbd038d
+cargo_profile=release
+repo=D:\SP-Billy\axiom\agmws-license-management-netcore
+repo_branch=feature/graphd
+repo_head=24410f3665447a7555c711e8aafe74f4c0f0ced7
+repo_status=?? .axiom/
+mcp_revision=cebd159e12b283e3638feffc4cecfa033070cf66
+python=Python 3.13.14

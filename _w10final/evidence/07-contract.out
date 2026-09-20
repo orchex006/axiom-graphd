@@ -1,0 +1,24 @@
+{
+  "ok": true,
+  "generation_dir": "D:\\SP-Billy\\axiom\\agmws-license-management-netcore\\.axiom\\graph\\agmws-license\\agmws-web-service\\live\\generations\\1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7",
+  "nodes_total": 1368,
+  "edges_total": 1213,
+  "shards": [
+    {
+      "path": "nodes/000000.json",
+      "bytes": 597010,
+      "records": 1368
+    },
+    {
+      "path": "edges/000000.json",
+      "bytes": 624413,
+      "records": 1213
+    }
+  ],
+  "reasons": [],
+  "evaluator": {
+    "module": "D:\\SP-Billy\\axiom-worktrees\\axiom-graphd-w10-final\\_w10final\\scripts\\graph_contract.py",
+    "spec_version_note": "Axiom V2 spec 2.0.0-draft.1"
+  },
+  "combined_payload": "D:\\SP-Billy\\axiom-worktrees\\axiom-graphd-w10-final\\_w10final\\evidence\\07b-contract-combined.json"
+}

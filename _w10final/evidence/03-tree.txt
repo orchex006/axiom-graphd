@@ -1,0 +1,13 @@
+=== every published file under the project's graph root ===
+checkpoint\current.json  bytes=189
+checkpoint\solution.lock  bytes=0
+checkpoint\generations\1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7\coverage.json  bytes=126
+checkpoint\generations\1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7\manifest.json  bytes=1090
+checkpoint\generations\1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7\edges\000000.json  bytes=624413
+checkpoint\generations\1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7\nodes\000000.json  bytes=597010
+live\current.json  bytes=189
+live\solution.lock  bytes=0
+live\generations\1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7\coverage.json  bytes=126
+live\generations\1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7\manifest.json  bytes=1090
+live\generations\1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7\edges\000000.json  bytes=624413
+live\generations\1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7\nodes\000000.json  bytes=597010

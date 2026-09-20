@@ -1,0 +1,65 @@
+{
+  "deliverable": 5,
+  "runs": [
+    {
+      "run": "e2e",
+      "without_ms": 2467.3,
+      "without_per_q": 123.4,
+      "with_ms": 2352.5,
+      "with_per_q": 117.6,
+      "delta_per_q": 5.7,
+      "all_ok": true
+    },
+    {
+      "run": "run1",
+      "without_ms": 1161.9,
+      "without_per_q": 58.1,
+      "with_ms": 1165.3,
+      "with_per_q": 58.3,
+      "delta_per_q": -0.2,
+      "all_ok": true
+    },
+    {
+      "run": "run2",
+      "without_ms": 1986.2,
+      "without_per_q": 99.3,
+      "with_ms": 1512.2,
+      "with_per_q": 75.6,
+      "delta_per_q": 23.7,
+      "all_ok": true
+    },
+    {
+      "run": "run3",
+      "without_ms": 2359.3,
+      "without_per_q": 118.0,
+      "with_ms": 2005.9,
+      "with_per_q": 100.3,
+      "delta_per_q": 17.7,
+      "all_ok": true
+    }
+  ],
+  "delta_per_question_ms": {
+    "values": [
+      5.7,
+      -0.2,
+      23.7,
+      17.7
+    ],
+    "mean": 11.7,
+    "stdev": 10.9,
+    "min": -0.2,
+    "max": 23.7,
+    "sign_flips": true
+  },
+  "without_per_question_ms": {
+    "mean": 99.7,
+    "min": 58.1,
+    "max": 123.4
+  },
+  "with_per_question_ms": {
+    "mean": 87.9,
+    "min": 58.3,
+    "max": 117.6
+  },
+  "conclusion": "The sign of the per-question delta flips between runs of the identical script, and the run-to-run spread exceeds the difference between the two legs. At this repository size the two approaches are statistically INDISTINGUISHABLE on wall clock. The previous lane's claimed +32.3 ms/question saving does NOT reproduce."
+}

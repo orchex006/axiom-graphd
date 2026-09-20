@@ -1,0 +1,208 @@
+{
+  "questions": 20,
+  "symbols": [
+    "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseRegistryRequestDto",
+    "AgriMap.Web.Service.Infrastructure.InfrastructureDependencyInjection",
+    "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.XlsxImportFileParser.XlsxCell",
+    "AgriMap.Web.Service.Tests.Infrastructure.Security.LoginThrottleServiceTests.FakeCacheService",
+    "AgriMap.Web.Service.Infrastructure.Persistence.Interfaces.IImportFileParser",
+    "AgriMap.Web.Service.Application.Interfaces.IImportUseCase",
+    "AgriMap.Web.Service.Presentation.DTOs.Responses.LicenseImportCommitResponseDto",
+    "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseImportCommitRequestDto",
+    "AgriMap.Web.Service.Domain.Entities.ImportPreviewRowInfo",
+    "AgriMap.Web.Service.Presentation.DTOs.Responses.ErrorResponseDto",
+    "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvImportFileParser..IsBlank",
+    "AgriMap.Web.Service.Tests.Infrastructure.Security.LoginThrottleServiceTests",
+    "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.AuthRepository",
+    "AgriMap.Web.Service.Domain.Entities.LicenseRegistryBindingInfo",
+    "AgriMap.Web.Service.Domain.Entities.ImportBatchDetailInfo",
+    "AgriMap.Web.Service.Domain.Entities.UserPageInfo",
+    "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvImportFileParser..Fields.Count",
+    "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvRecordReader",
+    "AgriMap.Web.Service.Presentation.DTOs.Responses.RoleListResponseDto",
+    "AgriMap.Web.Service.Presentation.DTOs.Responses.UserDeleteResponseDto"
+  ],
+  "without_graphd": {
+    "mode": "text-scan-per-question (no stored graph, no caching)",
+    "files_per_question": 156,
+    "total_ms": 2467.3,
+    "per_question_ms": 123.4,
+    "members_found": 111,
+    "note": "untyped text hits only: no node ids, kinds, edges, resolutions or evidence, and no answer to 'what depends on this' without scanning the whole tree again"
+  },
+  "with_graphd": {
+    "mode": "one real MCP stdio session, N tools/call graph_query (warm), shipped data plane",
+    "total_ms_of_calls": 2352.5,
+    "per_question_ms": 117.6,
+    "whole_session_ms_including_handshake": 4810.2,
+    "all_ok": true,
+    "per_query": [
+      {
+        "target": "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseRegistryRequestDto",
+        "mcp_elapsed_ms": 61.5,
+        "is_error": false,
+        "nodes": 6,
+        "edges": 5,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Infrastructure.InfrastructureDependencyInjection",
+        "mcp_elapsed_ms": 61.4,
+        "is_error": false,
+        "nodes": 4,
+        "edges": 11,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.XlsxImportFileParser.XlsxCell",
+        "mcp_elapsed_ms": 143.3,
+        "is_error": false,
+        "nodes": 0,
+        "edges": 14,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Tests.Infrastructure.Security.LoginThrottleServiceTests.FakeCacheService",
+        "mcp_elapsed_ms": 61.0,
+        "is_error": false,
+        "nodes": 0,
+        "edges": 14,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Infrastructure.Persistence.Interfaces.IImportFileParser",
+        "mcp_elapsed_ms": 82.0,
+        "is_error": false,
+        "nodes": 3,
+        "edges": 2,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Application.Interfaces.IImportUseCase",
+        "mcp_elapsed_ms": 123.3,
+        "is_error": false,
+        "nodes": 6,
+        "edges": 10,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Presentation.DTOs.Responses.LicenseImportCommitResponseDto",
+        "mcp_elapsed_ms": 123.2,
+        "is_error": false,
+        "nodes": 4,
+        "edges": 3,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Presentation.DTOs.Requests.LicenseImportCommitRequestDto",
+        "mcp_elapsed_ms": 61.4,
+        "is_error": false,
+        "nodes": 4,
+        "edges": 3,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Domain.Entities.ImportPreviewRowInfo",
+        "mcp_elapsed_ms": 122.5,
+        "is_error": false,
+        "nodes": 2,
+        "edges": 1,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Presentation.DTOs.Responses.ErrorResponseDto",
+        "mcp_elapsed_ms": 61.4,
+        "is_error": false,
+        "nodes": 2,
+        "edges": 1,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvImportFileParser..IsBlank",
+        "mcp_elapsed_ms": 122.9,
+        "is_error": false,
+        "nodes": 0,
+        "edges": 14,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Tests.Infrastructure.Security.LoginThrottleServiceTests",
+        "mcp_elapsed_ms": 204.7,
+        "is_error": false,
+        "nodes": 0,
+        "edges": 14,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.AuthRepository",
+        "mcp_elapsed_ms": 122.6,
+        "is_error": false,
+        "nodes": 0,
+        "edges": 14,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Domain.Entities.LicenseRegistryBindingInfo",
+        "mcp_elapsed_ms": 81.1,
+        "is_error": false,
+        "nodes": 2,
+        "edges": 1,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Domain.Entities.ImportBatchDetailInfo",
+        "mcp_elapsed_ms": 123.0,
+        "is_error": false,
+        "nodes": 2,
+        "edges": 1,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Domain.Entities.UserPageInfo",
+        "mcp_elapsed_ms": 163.7,
+        "is_error": false,
+        "nodes": 2,
+        "edges": 1,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvImportFileParser..Fields.Count",
+        "mcp_elapsed_ms": 163.2,
+        "is_error": false,
+        "nodes": 0,
+        "edges": 14,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Infrastructure.Persistence.Repositories.CsvRecordReader",
+        "mcp_elapsed_ms": 143.6,
+        "is_error": false,
+        "nodes": 5,
+        "edges": 10,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Presentation.DTOs.Responses.RoleListResponseDto",
+        "mcp_elapsed_ms": 204.4,
+        "is_error": false,
+        "nodes": 2,
+        "edges": 1,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      },
+      {
+        "target": "AgriMap.Web.Service.Presentation.DTOs.Responses.UserDeleteResponseDto",
+        "mcp_elapsed_ms": 122.3,
+        "is_error": false,
+        "nodes": 2,
+        "edges": 1,
+        "catalog_generation_id": "4869b499eb6ef4328c5e61f53149b7278b9a3f7a6930cfa209bc76742dcdca55"
+      }
+    ]
+  },
+  "graph_build_cost_ms": 9227.0,
+  "saving": {
+    "per_question_ms": 5.7,
+    "total_ms_over_questions": 114.8,
+    "note": "with_graphd excludes the one-off `serve` (graph_build_cost_ms) that built the graph; that cost is paid once and amortises over every question after it"
+  }
+}

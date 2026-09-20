@@ -1,0 +1,74 @@
+=== W10-DELIVERABLES deliverable 5 : before/after cost : FINAL CORRECTED VERDICT ===
+
+measured_at_graphd_revision = 51782bb4337799b8479de1ea2ce4f29e1bbd038d  (axiom-graphd)
+measured_binary_sha256      = 5c92ab426313a3beb407310d317b56938296b85619ac969808e97c90452da36d
+cargo_profile               = release
+measured_project            = D:\SP-Billy\axiom\agmws-license-management-netcore @ 24410f3665447a7555c711e8aafe74f4c0f0ced7
+measured_generation         = 1d7891525f028ecff06a6b8d7a8ac8a4ee3b31cc8067f1431e900b0cf7cdf6f7
+raw_outputs                 = evidence/11-bench.out, evidence/bench-repeats/run{1,2,3}/bench.out,
+                              evidence/22-bench-repeats-summary.out, evidence/21-scan-scaling-r{1,2}.out
+
+WHAT WAS MEASURED
+  one question = "find this symbol and tell me its incident relationships"
+  WITHOUT graphd : read all 156 .cs files from disk per question, regex for the declaration,
+                   read the declaring file again for members. No caching between questions.
+  WITH graphd    : ONE `serve` built the graph; each question is one real `tools/call`
+                   graph_query inside a real MCP stdio session. Build cost reported separately.
+
+--- RESULTS OVER 4 RUNS OF THE IDENTICAL SCRIPT ---
+run      without_ms  without/q  with_ms  with/q   delta/q
+e2e        2467.3     123.4     2352.5   117.6    +5.7
+run1       1161.9      58.1     1165.3    58.3    -0.2
+run2       1986.2      99.3     1512.2    75.6   +23.7
+run3       2359.3     118.0     2005.9   100.3   +17.7
+
+delta per question (ms): values [5.7, -0.2, 23.7, 17.7]  mean +11.7  stdev 10.9  min -0.2  max +23.7
+  -> THE SIGN FLIPS between runs, and the run-to-run spread (stdev 10.9, range 23.9) is the same
+     order as the difference between the two legs.
+  -> CONCLUSION: at this repository size the two approaches are STATISTICALLY
+     INDISTINGUISHABLE on wall clock. Do NOT claim a per-question speed win here.
+  -> why both legs move together: warm vs cold OS page cache and machine load shift BOTH legs by
+     roughly the same factor (e.g. 58 -> 123 ms/question). It is not a graphd effect.
+
+--- CORRECTION vs THE PREVIOUS W10 LANE (must not be silently copied) ---
+previous claim : without 1864.4 ms / 93.2 ms per question ; with 1217.3 ms / 60.9 ms per question
+                 => "+32.3 ms per question saved"
+re-measured    : see table above; mean +11.7 ms/question with stdev 10.9 and a sign flip
+                 => the previous +32.3 ms/question does NOT reproduce. It is inside (above) the
+                    run-to-run spread and cannot be supported.
+                 => the previous lane also measured a DEBUG build (sha 2c499f81...); every number
+                    here is from the RELEASE build at 51782bb.
+                 => observed generation id, node/edge counts and result.html bytes/sha DID reproduce
+                    exactly, so the graph content is stable - only the timing claim changes.
+
+--- MEASUREMENT CAVEAT (real, from our own tooling) ---
+mcp_stdio_client.py collects responses with a time.sleep(0.02) poll loop, so each per-query
+elapsed_ms is quantised into ~20 ms buckets. Single-query latency is only good to about +/-20 ms.
+
+--- ONE-OFF COSTS (so amortisation is explicit, not hidden) ---
+cold first `serve`, full analysis (inventory_added=473, analyzed_files=473, nodes=1368, edges=1213)
+      = 16720 ms   (first ever build, cold page cache)
+warm full `serve` on the same tree            = 9227 ms   (re-run, warm cache)
+incremental `serve` after a ONE-file edit      = 445 ms
+incremental `serve` after restoring that file  = 313 ms
+=> re-analysing after a small edit is ~0.3-0.5 s, i.e. ~20-50x cheaper than the cold build.
+
+--- WHERE THE REAL WIN IS (measured slope + clearly-flagged extrapolation) ---
+The no-graphd leg is a full text scan, so its cost is LINEAR in the number of source files.
+Measured on real files at several prefix sizes (evidence/21-scan-scaling-r{1,2}.out):
+   run r1: slope 0.228 ms/file -> break_even 386 files
+   run r2: slope 0.437 ms/file -> break_even 201 files
+   (earlier sample:        0.372 ms/file -> break_even 186 files)
+=> break_even_files ~= 200..390 source files, in EVERY sample ABOVE this repository's 156 files.
+   That is exactly why the two legs are at parity here: the repo sits below the break-even point.
+   Above ~200-390 source files the scan cost keeps growing while one graph_query round trip stays
+   roughly constant, so graphd starts to win.
+NOTE: break_even_files is a DERIVATION from a measured slope, NOT a scan of a 200+ file tree.
+
+--- WHAT GRAPHD SAVES AT THIS SIZE (honest) ---
+Not seconds of latency. The text leg can only list members; it cannot answer "what depends on
+this", and it has no node identity, no kinds, no resolution and no evidence. Answering those by
+scanning needs further full-tree greps. graphd answers them in ONE ~58-118 ms call from a stored
+graph, plus a 0.3-0.5 s incremental refresh after an edit instead of a rescan.
+
+=== end deliverable-5 verdict ===
