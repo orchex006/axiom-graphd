@@ -1301,6 +1301,28 @@ fn solution_command(command: &SolutionCommand) -> Result<String, AxiomError> {
             } else {
                 let record =
                     solution::apply_register(context.store.connection_mut(), &plan, &declaration)?;
+                let mut repositories: Vec<&str> = declaration
+                    .projects()
+                    .iter()
+                    .map(|project| project.repo_id())
+                    .collect();
+                repositories.sort_unstable();
+                repositories.dedup();
+                let catalog_host = declaration
+                    .catalog_host_repo()
+                    .or_else(|| (repositories.len() == 1).then_some(repositories[0]))
+                    .ok_or_else(|| {
+                        AxiomError::new(
+                            ErrorCode::ConfigInvalid,
+                            "a multi-repository solution requires catalog_host_repo",
+                        )
+                    })?;
+                runtime::write_catalog_host_metadata(
+                    &context.home,
+                    declaration.id(),
+                    &plan.config_hash,
+                    catalog_host,
+                )?;
                 report_json(&record)
             }
         }

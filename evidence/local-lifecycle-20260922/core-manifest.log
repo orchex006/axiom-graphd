@@ -1,0 +1,13 @@
+release: name=axiom-core version=0.1.0 revision=unpinned publication=not_published
+component: axiom-graphd role=daemon version=0.1.0 revision=unpinned
+component: axiom role=cli version=0.1.0 revision=unpinned
+host: os=macos arch=x86_64 -> outside the build matrix
+publication: state=not_published publishable=False first_refusal=revision is not pinned
+not_run: host identity macos/x86_64 is outside the declared build matrix, so the per-host target row is not exercised on this machine
+not_run: signing, tagging and publishing: revision is not pinned (the release gate is closed for this workstream: no tag, no release, no publish)
+not_run: building and hashing the three per-target archives (no release artifact is built in this workstream)
+not_run: producing and hashing the per-target SBOMs
+not_run: signing the release and each archive with the release key
+not_run: clean-user installation evidence from a signed artifact: every target records installation_evidence.state = not_run with the command it would run
+not_run: cargo test --locked -p axiom-graphd (the real release code; the Rust gate runs in the Docker lane, not here)
+ok: E-048/V2-021 one core release carries axiom-graphd and axiom from the same version and revision, with per-target provenance, executable metadata and honest installation evidence; 3 positive legs hold and 12 negative legs were rejected as required

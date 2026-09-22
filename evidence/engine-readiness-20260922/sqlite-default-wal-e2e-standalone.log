@@ -1,0 +1,17 @@
+command=version
+argv=AXIOM_HOME=<scoped-home> <primary-native-axiom-graphd> version --json
+exit_code=0
+{"component":"axiom-graphd","version":"0.1.0","spec_version":"2.0.0-draft.1","graph_schema":1,"control_api":1,"queue_schema":1,"build_revision":"unknown","update_status":"unconfigured","sqlite_version":"3.51.3","sqlite_wal_baseline":"3.51.3","sqlite_wal_supported":true,"analyzers":[]}
+command=register
+argv=AXIOM_HOME=<scoped-home> <primary-native-axiom-graphd> solution register --config <scoped-temp-root>/solution.json --apply --json
+exit_code=0
+{"id":"demo-solution","profile":"default","config_hash":"e29677b5f8c9e482a467951f32a5784bb586d6876271fd8b0afc22e24e472e46","projects":1}
+command=serve
+argv=AXIOM_HOME=<scoped-home> <primary-native-axiom-graphd> serve --json
+exit_code=0
+{"level":"info","message":"instance lock acquired; running one bounded reconcile pass","target":"daemon"}
+{"instance_id":"default","solutions":1,"projects":1,"dirty_before":0,"dirty_after":0,"published_generations":1,"recoveries":[],"outcomes":[{"solution_id":"demo-solution","project_id":"demo-project","project_root":"<scoped-temp-root>/repo/src","lane_root":"<scoped-temp-root>/repo/src/.axiom/graph/demo-solution/demo-project/live","inventory_generation":1,"inventory_added":1,"inventory_changed":0,"inventory_deleted":0,"analyzed_files":1,"nodes":2,"edges":1,"published":true,"generation_id":"62166763f544c7adfb6787cd8265284487f32764978c36d0046069d3a27526c8","manifest_hash":"62166763f544c7adfb6787cd8265284487f32764978c36d0046069d3a27526c8","current_generation":"62166763f544c7adfb6787cd8265284487f32764978c36d0046069d3a27526c8"}],"shutdown":"Running"}
+command=query
+argv=AXIOM_HOME=<scoped-home> <primary-native-axiom-graphd> query context --solution demo-solution --symbol Demo.TokenSource --json
+exit_code=0
+{"solution_id":"demo-solution","generation_id":"62166763f544c7adfb6787cd8265284487f32764978c36d0046069d3a27526c8","kind":"context","target":"Demo.TokenSource","limits":{"max_bytes":8192,"max_nodes":64,"depth":1},"records":[{"key":"5ed32a07153e5e3efd3d79f33d3c71477146508ca746e48efe6f4be1d41d91ef","kind":"node","body":{"attributes":{},"id":"5ed32a07153e5e3efd3d79f33d3c71477146508ca746e48efe6f4be1d41d91ef","identity_quality":"semantic_key","kind":"Class","language":"csharp","name":"TokenSource","project_id":"demo-project","qualified_name":"Demo.TokenSource","source":{"end_line":2,"file":"Demo.cs","start_line":2}}},{"key":"cb02838f2cf0bb9378b2a6cf6fc8e9bb4fa3f2add902c80fbcdc2cf596876761","kind":"edge","body":{"analyzer_id":"csharp-declarations-v1","evidence":[{"rule_id":"declaration-contains-v1","source":{"end_line":2,"file":"Demo.cs","start_line":2}}],"id":"cb02838f2cf0bb9378b2a6cf6fc8e9bb4fa3f2add902c80fbcdc2cf596876761","kind":"CONTAINS","resolution":"exact_static","source_id":"1542e38038fdd83ae5e7143f290521134f5f23aea2795fc6af9239ca0854d259","target_id":"5ed32a07153e5e3efd3d79f33d3c71477146508ca746e48efe6f4be1d41d91ef","target_project_id":"demo-project"}}],"omitted":0,"truncated":false,"reasons":[],"bytes":949}

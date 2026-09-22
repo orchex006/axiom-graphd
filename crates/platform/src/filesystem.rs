@@ -394,6 +394,18 @@ pub fn preserves_bytes(source: &[u8], staged: &[u8]) -> bool {
 
 /// Refuse a path that redirects out of the bound project root through a link.
 ///
+/// The comparison is made in one spelling space: `EntryFacts::resolved_target`
+/// is always canonical, and the bound `root` is an operator spelling that may
+/// itself be an alias of a real directory. On macOS `/var` is a symlink to
+/// `/private/var`, so a temporary or home root that reaches the project through
+/// a symlinked ancestor would otherwise refuse a link that never left the root.
+/// The root is therefore resolved with the same host operation that resolved
+/// the link; a root the host cannot resolve keeps the caller's spelling, which
+/// is the comparison this function made before.
+///
+/// Resolving the root can only admit targets that really are inside the
+/// resolved root, so it removes false refusals and never admits a real escape.
+///
 /// # Errors
 /// * [`ErrorCode::UnsafePortablePath`] when `path` is not a canonical portable
 ///   relative path (the shared `validate_portable_relative_path` policy).
@@ -414,7 +426,12 @@ pub fn check_link_boundary(root: &str, path: &str, facts: &EntryFacts) -> Result
         .with_detail("link_kind", kind.as_str())
         .with_detail("root", root)),
         Some(target) => {
-            if is_within_root(root, target) {
+            let resolved_root = std::fs::canonicalize(root.replace('\\', "/"))
+                .ok()
+                .map(|resolved| resolved.display().to_string().replace('\\', "/"));
+            let inside = is_within_root(root, target)
+                || resolved_root.is_some_and(|resolved| is_within_root(&resolved, target));
+            if inside {
                 Ok(())
             } else {
                 Err(AxiomError::new(
@@ -1015,10 +1032,22 @@ mod tests {
         let link_facts = probe.entry_facts(&link).expect("observed");
         assert_eq!(link_facts.link_kind(), Some(SymlinkKind::Symlink));
         let target = link_facts.resolved_target().expect("resolved");
+        // `resolved_target` is canonical, so the containment question is asked
+        // against the canonical root. On macOS the temporary root itself is
+        // reached through `/var` -> `/private/var`, so comparing it against the
+        // unresolved spelling is a false refusal, not a real escape.
+        let canonical_root = root
+            .canonicalize()
+            .expect("the temporary root resolves")
+            .display()
+            .to_string()
+            .replace('\\', "/");
         assert!(
-            super::is_within_root(&root_spelling, target),
+            super::is_within_root(&canonical_root, target),
             "a link to a file inside the root must resolve inside it: {target}"
         );
+        // The product check takes the operator's spelling and still accepts the
+        // link, because it resolves the root before comparing.
         assert_eq!(
             check_link_boundary(&root_spelling, "src/Link.cs", &link_facts),
             Ok(())

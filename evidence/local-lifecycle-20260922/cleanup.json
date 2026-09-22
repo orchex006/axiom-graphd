@@ -1,0 +1,14 @@
+{
+  "removed_generated_paths": [
+    "axiom-mcp/build",
+    "axiom-mcp/src/axiom_mcp.egg-info"
+  ],
+  "removed_task_service_temp_roots": 6,
+  "preserved_existing_development_bundle": "pre-existing external development bundle was not removed",
+  "worktrees": {
+    "axiom-cli": "worktree <workspace>/axiom-cli\nHEAD e20aeca6313bb078b4e3b7ae11015e807dc45ceb\nbranch refs/heads/feature/j-005-local-macos-delivery\n\n",
+    "axiom-graphd": "worktree <workspace>/axiom-graphd\nHEAD 5e436500a02ffb7b176099612c5fce71591469ac\nbranch refs/heads/feature/v2-021-local-macos-delivery\n\n",
+    "axiom-mcp": "worktree <workspace>/axiom-mcp\nHEAD bdd13da084152ef8a66b035ad451e205e88cf9ed\nbranch refs/heads/feature/v2-031-macos-x64\n\n",
+    "axiom-specs": "worktree <workspace>/axiom-specs\nHEAD 1faecdefc1303d069290c708eb7525035b22833c\nbranch refs/heads/feature/v2-031-certification-coordination\n\n"
+  }
+}

@@ -77,6 +77,43 @@ pub const REASON_FOREIGN_AGENT: &str = "foreign-agent";
 
 /// Reason recorded when `launchctl` exits non-zero.
 pub const REASON_CONTROLLER_EXIT: &str = "controller-exit";
+/// Reason recorded when a launchd user domain is not a concrete user identity.
+pub const REASON_UNSAFE_USER_ID: &str = "unsafe-user-id";
+
+/// Engine-owned identity of the launchd user domain an operation may affect.
+///
+/// This is intentionally separate from paths and labels: a caller cannot
+/// select a launchd domain by spelling a home directory or a service name.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LaunchdIdentity {
+    /// Numeric effective user id of the active per-user launchd domain.
+    pub user_id: u32,
+}
+
+impl LaunchdIdentity {
+    /// Construct one non-root per-user launchd identity.
+    ///
+    /// The CLI must compare this value with the current effective UID before
+    /// executing it; this constructor only makes an invalid domain impossible.
+    pub fn new(user_id: u32) -> Result<Self, AxiomError> {
+        if user_id == 0 {
+            return Err(refuse(
+                ErrorCode::ValidationError,
+                REASON_UNSAFE_USER_ID,
+                "0",
+                "a managed LaunchAgent cannot target the root launchd domain",
+            ));
+        }
+        Ok(Self { user_id })
+    }
+
+    /// The launchctl domain argument for this identity.
+    #[must_use]
+    pub fn domain(self) -> String {
+        format!("gui/{}", self.user_id)
+    }
+}
 
 /// What one registration needs.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -212,6 +249,102 @@ impl LaunchAgent {
     }
 }
 
+/// Render the modern launchd registration command for an owned agent.
+#[must_use]
+pub fn bootstrap_operation(agent: &LaunchAgent, identity: LaunchdIdentity) -> ServiceOperation {
+    ServiceOperation {
+        description: "bootstrap".to_owned(),
+        program: LAUNCHCTL_PROGRAM.to_owned(),
+        args: vec![
+            "bootstrap".to_owned(),
+            identity.domain(),
+            agent.plist_path.clone(),
+        ],
+    }
+}
+
+/// Render the modern launchd removal command for an owned plist.
+pub fn bootout_operation(
+    label: &str,
+    plist_path: &str,
+    home: &str,
+    identity: LaunchdIdentity,
+) -> Result<ServiceOperation, AxiomError> {
+    let removal = plan_removal(label, plist_path, home)?;
+    Ok(ServiceOperation {
+        description: "bootout".to_owned(),
+        program: LAUNCHCTL_PROGRAM.to_owned(),
+        args: vec!["bootout".to_owned(), identity.domain(), removal.plist_path],
+    })
+}
+
+/// Remove a live owned label when its plist was already removed by a partial
+/// cleanup. The label is validated before it is placed in the GUI target.
+pub fn bootout_target_operation(
+    label: &str,
+    identity: LaunchdIdentity,
+) -> Result<ServiceOperation, AxiomError> {
+    owned_label(label)?;
+    Ok(ServiceOperation {
+        description: "bootout".to_owned(),
+        program: LAUNCHCTL_PROGRAM.to_owned(),
+        args: vec![
+            "bootout".to_owned(),
+            format!("{}/{}", identity.domain(), label),
+        ],
+    })
+}
+
+/// Render status for an owned agent in one explicit user domain.
+pub fn status_operation_for_user(
+    label: &str,
+    identity: LaunchdIdentity,
+) -> Result<ServiceOperation, AxiomError> {
+    owned_label(label)?;
+    Ok(ServiceOperation {
+        description: "status".to_owned(),
+        program: LAUNCHCTL_PROGRAM.to_owned(),
+        args: vec![
+            "print".to_owned(),
+            format!("{}/{}", identity.domain(), label),
+        ],
+    })
+}
+
+/// Start an owned agent in its explicit per-user launchd domain.
+pub fn kickstart_operation(
+    label: &str,
+    identity: LaunchdIdentity,
+) -> Result<ServiceOperation, AxiomError> {
+    owned_label(label)?;
+    Ok(ServiceOperation {
+        description: "kickstart".to_owned(),
+        program: LAUNCHCTL_PROGRAM.to_owned(),
+        args: vec![
+            "kickstart".to_owned(),
+            "-k".to_owned(),
+            format!("{}/{}", identity.domain(), label),
+        ],
+    })
+}
+
+/// Request graceful termination of an owned agent in its explicit user domain.
+pub fn kill_operation(
+    label: &str,
+    identity: LaunchdIdentity,
+) -> Result<ServiceOperation, AxiomError> {
+    owned_label(label)?;
+    Ok(ServiceOperation {
+        description: "kill".to_owned(),
+        program: LAUNCHCTL_PROGRAM.to_owned(),
+        args: vec![
+            "kill".to_owned(),
+            "SIGTERM".to_owned(),
+            format!("{}/{}", identity.domain(), label),
+        ],
+    })
+}
+
 /// A removal that is proven to touch only this adapter's own agent.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -277,15 +410,16 @@ fn owned_label(label: &str) -> Result<(), AxiomError> {
 }
 
 /// Render the property list for one per-user agent.
-fn render_plist(
-    label: &str,
-    executable: &str,
-    args: &[String],
-    working_directory: &str,
-    log_file: &str,
-    install_root: &str,
-    restart: RestartPolicy,
-) -> String {
+fn render_plist(label: &str, request: &MacosServiceRequest, axiom_home: &str) -> String {
+    let MacosServiceRequest {
+        executable,
+        args,
+        working_directory,
+        log_file,
+        install_root,
+        restart,
+        ..
+    } = request;
     let mut lines: Vec<String> = Vec::new();
     lines.push(r#"<?xml version="1.0" encoding="UTF-8"?>"#.to_owned());
     lines.push(
@@ -329,6 +463,8 @@ fn render_plist(
     lines.push("  <dict>".to_owned());
     lines.push("    <key>AXIOM_INSTALL_ROOT</key>".to_owned());
     lines.push(format!("    <string>{}</string>", xml_escape(install_root)));
+    lines.push("    <key>AXIOM_HOME</key>".to_owned());
+    lines.push(format!("    <string>{}</string>", xml_escape(axiom_home)));
     lines.push("  </dict>".to_owned());
     lines.push("</dict>".to_owned());
     lines.push("</plist>".to_owned());
@@ -411,15 +547,20 @@ pub fn plan_agent(request: &MacosServiceRequest) -> Result<LaunchAgent, AxiomErr
             "the restart policy is out of range",
         ));
     }
-    let plist = render_plist(
-        &label,
-        &request.executable,
-        &request.args,
-        &request.working_directory,
-        &request.log_file,
-        &request.install_root,
-        request.restart,
-    );
+    let axiom_home = std::path::Path::new(&request.install_root)
+        .parent()
+        .and_then(std::path::Path::parent)
+        .ok_or_else(|| {
+            refuse(
+                ErrorCode::ValidationError,
+                REASON_UNSAFE_PATH,
+                &request.install_root,
+                "install root cannot derive AXIOM_HOME",
+            )
+        })?
+        .to_string_lossy()
+        .into_owned();
+    let plist = render_plist(&label, request, &axiom_home);
     Ok(LaunchAgent {
         component: request.component.clone(),
         label,
@@ -667,10 +808,57 @@ mod tests {
     }
 
     #[test]
+    fn explicit_user_domain_operations_never_use_legacy_load_or_unload() {
+        let agent = plan_agent(&sample()).expect("a per-user agent is accepted");
+        let identity = LaunchdIdentity::new(501).expect("a non-root user is accepted");
+        assert_eq!(
+            bootstrap_operation(&agent, identity).args,
+            vec!["bootstrap", "gui/501", agent.plist_path.as_str()]
+        );
+        assert_eq!(
+            bootout_operation(&agent.label, &agent.plist_path, HOME, identity)
+                .expect("owned plist is removable")
+                .args,
+            vec!["bootout", "gui/501", agent.plist_path.as_str()]
+        );
+        assert_eq!(
+            status_operation_for_user(&agent.label, identity)
+                .expect("owned label is accepted")
+                .args,
+            vec!["print", "gui/501/com.axiom.axiom-graphd"]
+        );
+        assert_eq!(
+            rule(&LaunchdIdentity::new(0).expect_err("root must be refused")),
+            REASON_UNSAFE_USER_ID
+        );
+    }
+
+    #[test]
     fn the_agent_is_serialisable_and_carries_its_label() {
         let agent = plan_agent(&sample()).expect("a per-user agent is accepted");
         let json = agent.to_json().expect("the agent serialises");
         assert!(json.contains("\"label\": \"com.axiom.axiom-graphd\""));
+    }
+
+    #[test]
+    fn modern_start_and_stop_are_bound_to_one_gui_user_domain() {
+        let identity = LaunchdIdentity::new(501).unwrap();
+        let label = agent_label("axiom-graphd").unwrap();
+        let start = kickstart_operation(&label, identity).unwrap();
+        let stop = kill_operation(&label, identity).unwrap();
+        let bootout = bootout_target_operation(&label, identity).unwrap();
+        assert_eq!(
+            start.args,
+            vec!["kickstart", "-k", "gui/501/com.axiom.axiom-graphd"]
+        );
+        assert_eq!(
+            stop.args,
+            vec!["kill", "SIGTERM", "gui/501/com.axiom.axiom-graphd"]
+        );
+        assert_eq!(
+            bootout.args,
+            vec!["bootout", "gui/501/com.axiom.axiom-graphd"]
+        );
     }
 
     #[test]

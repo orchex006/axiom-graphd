@@ -25,6 +25,7 @@ serde.workspace = true
 serde_json.workspace = true
 axiom-platform = { version = "0.1.0", path = "../platform" }
 getrandom.workspace = true
+tempfile.workspace = true
 
 [dev-dependencies]
 # The daemon is the other half of the core release; tests compare both halves
@@ -32,4 +33,3 @@ getrandom.workspace = true
 axiom-graphd = { version = "0.1.0", path = "../axiom-graphd" }
 # Fixture trees for the read-only discovery tests (E-003): tests build a home
 # in a temporary directory so nothing under the real AXIOM_HOME is touched.
-tempfile.workspace = true

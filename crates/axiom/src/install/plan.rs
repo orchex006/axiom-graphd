@@ -44,7 +44,7 @@ use std::io::Read as _;
 use std::path::{Path, PathBuf};
 
 use graph_core::error::{AxiomError, ErrorCode};
-use graph_core::paths::{is_absolute_host_path, validate_portable_relative_path};
+use graph_core::paths::{is_absolute_host_path, validate_portable_relative_path, Platform};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -59,6 +59,44 @@ pub const PLAN_KIND: &str = "install";
 
 /// Host identifiers a plan may declare, in the order the CLI reports them.
 pub const HOSTS: [&str; 4] = ["windows-x64", "linux-x64", "macos-arm64", "macos-x64"];
+
+/// Host identifier for one already-detected platform/architecture pair.
+///
+/// [`HOSTS`] is the only accepted spelling and this is the only place the
+/// mapping lives, so the planner, the daemon and the `install_plan_probe`
+/// example cannot drift apart about which host they plan for.
+///
+/// A pair this build cannot name stays `"unknown"`: `plan_ecosystem` refuses an
+/// undeclared host with its own frozen code, which is the honest outcome. Both
+/// macOS architectures are declared, so the macOS answer depends on the
+/// architecture and not on the OS alone.
+#[must_use]
+pub fn host_identifier_for(platform: Platform, architecture: &str) -> &'static str {
+    match (platform, architecture) {
+        (Platform::Windows, "x86_64") => "windows-x64",
+        (Platform::Linux, "x86_64") => "linux-x64",
+        (Platform::MacOs, "aarch64") => "macos-arm64",
+        (Platform::MacOs, "x86_64") => "macos-x64",
+        _ => "unknown",
+    }
+}
+
+/// Host identifier this build plans for, from the compiled-in target facts.
+///
+/// The architecture comes from `cfg!` rather than a runtime probe: a plan has
+/// to name the host the running binary was built for, and a runtime probe would
+/// let a cross-built binary plan for the machine that merely launched it.
+#[must_use]
+pub fn host_identifier() -> String {
+    let architecture = if cfg!(target_arch = "aarch64") {
+        "aarch64"
+    } else if cfg!(target_arch = "x86_64") {
+        "x86_64"
+    } else {
+        "unknown"
+    };
+    host_identifier_for(Platform::current(), architecture).to_string()
+}
 
 /// Components the `axiom` CLI installs and services.
 ///
@@ -1937,5 +1975,91 @@ mod tests {
         }
         assert!(ServiceMechanism::SystemService.is_system());
         assert!(!ServiceMechanism::PerUserStartup.is_system());
+    }
+
+    #[test]
+    fn macos_host_depends_on_the_architecture_not_the_os() {
+        // Regression: this used to answer `macos-arm64` for every macOS build,
+        // so an x86_64 MacIntel binary planned for a host row the running
+        // machine is not, and `plan_ecosystem` then refused a bundle it had
+        // itself been built to accept.
+        assert_eq!(host_identifier_for(Platform::MacOs, "x86_64"), "macos-x64");
+        assert_eq!(
+            host_identifier_for(Platform::MacOs, "aarch64"),
+            "macos-arm64"
+        );
+        assert_ne!(
+            host_identifier_for(Platform::MacOs, "x86_64"),
+            host_identifier_for(Platform::MacOs, "aarch64")
+        );
+    }
+
+    /// The combinations a release set can be built for, or refuse.
+    const ARCHITECTURES: [&str; 4] = ["x86_64", "aarch64", "i686", "unknown"];
+    const PLATFORMS: [Platform; 4] = [
+        Platform::Windows,
+        Platform::Linux,
+        Platform::MacOs,
+        Platform::Unknown,
+    ];
+
+    #[test]
+    fn every_host_identifier_is_a_declared_row_or_unknown() {
+        for platform in PLATFORMS {
+            for architecture in ARCHITECTURES {
+                let identifier = host_identifier_for(platform, architecture);
+                assert!(
+                    identifier == "unknown" || HOSTS.contains(&identifier),
+                    "{} / {} produced undeclared host {identifier}",
+                    platform.as_str(),
+                    architecture
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn every_declared_row_is_reachable() {
+        // A row no platform/architecture pair can produce is a declaration the
+        // planner can never satisfy, which is the drift this function exists to
+        // prevent.
+        let reachable: Vec<&str> = PLATFORMS
+            .iter()
+            .flat_map(|platform| {
+                ARCHITECTURES
+                    .iter()
+                    .map(move |architecture| host_identifier_for(*platform, architecture))
+            })
+            .filter(|identifier| *identifier != "unknown")
+            .collect();
+        for host in HOSTS {
+            assert!(reachable.contains(&host), "{host} is unreachable");
+        }
+    }
+
+    #[test]
+    fn this_build_names_the_host_it_was_compiled_for() {
+        let identifier = host_identifier();
+        assert!(
+            HOSTS.contains(&identifier.as_str()) || identifier == "unknown",
+            "this build names undeclared host {identifier}"
+        );
+        let architecture = if cfg!(target_arch = "aarch64") {
+            "aarch64"
+        } else if cfg!(target_arch = "x86_64") {
+            "x86_64"
+        } else {
+            "unknown"
+        };
+        assert_eq!(
+            identifier,
+            host_identifier_for(Platform::current(), architecture)
+        );
+        if cfg!(all(target_os = "macos", target_arch = "x86_64")) {
+            assert_eq!(identifier, "macos-x64");
+        }
+        if cfg!(all(target_os = "macos", target_arch = "aarch64")) {
+            assert_eq!(identifier, "macos-arm64");
+        }
     }
 }

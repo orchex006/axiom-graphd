@@ -227,7 +227,7 @@ fn plan_repo(
         Some(owner) => {
             let (start, finish) =
                 span.ok_or_else(|| "Managed AGENTS block was removed or edited".to_owned())?;
-            if sha256_hex(agents[start..finish].as_bytes()) != owner.managed_block_sha256 {
+            if sha256_hex(&agents.as_bytes()[start..finish]) != owner.managed_block_sha256 {
                 return Err("Managed AGENTS block was edited".to_owned());
             }
             match &policy_raw {
@@ -264,7 +264,7 @@ fn plan_repo(
     let after_text = decode(after_agents.as_bytes())?;
     let (block_start, block_end) = managed_span(after_text, begin, end)?
         .ok_or_else(|| "Planned content lost its managed block".to_owned())?;
-    let block_hash = sha256_hex(after_text[block_start..block_end].as_bytes());
+    let block_hash = sha256_hex(&after_text.as_bytes()[block_start..block_end]);
     let policy_hash = sha256_hex(policy);
 
     let mut writes = Vec::new();

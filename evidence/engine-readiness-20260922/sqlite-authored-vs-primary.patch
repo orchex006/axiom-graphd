@@ -1,0 +1,253 @@
+diff --git a/../axiom-graphd/Cargo.toml b/Cargo.toml
+index bcbe01c..2c5cac7 100644
+--- a/../axiom-graphd/Cargo.toml
++++ b/Cargo.toml
+@@ -53,7 +53,7 @@ notify = "8.0.0"
+ serde = { version = "1.0.210", features = ["derive"] }
+ serde_json = "1.0.128"
+ sha2 = "0.10.8"
+-rusqlite = { version = "0.37.0", features = ["bundled", "backup"] }
++rusqlite = { version = "0.39.0", features = ["bundled", "backup"] }
+ libc = "0.2.159"
+ windows-sys = { version = "0.60.2", features = ["Win32_Foundation", "Win32_System_Threading", "Win32_Storage_FileSystem"] }
+ tempfile = "3.13.0"
+diff --git a/../axiom-graphd/Cargo.lock b/Cargo.lock
+index 4ca2474..29f515e 100644
+--- a/../axiom-graphd/Cargo.lock
++++ b/Cargo.lock
+@@ -89,6 +89,12 @@ dependencies = [
+  "generic-array",
+ ]
+ 
++[[package]]
++name = "bumpalo"
++version = "3.20.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "72f5acc6cb2ba439de613abc23857ec3d78374d8ed5ac84e9d11336e87da8649"
++
+ [[package]]
+ name = "cc"
+ version = "1.4.6"
+@@ -170,9 +176,9 @@ checksum = "3e0f1c7c3a72c66fd80abe965175f7523475c0489a87d3ff9d6e8c87d87a9d2d"
+ 
+ [[package]]
+ name = "foldhash"
+-version = "0.1.5"
++version = "0.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
++checksum = "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb"
+ 
+ [[package]]
+ name = "fsevent-sys"
+@@ -270,18 +276,18 @@ dependencies = [
+ 
+ [[package]]
+ name = "hashbrown"
+-version = "0.15.5"
++version = "0.16.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
++checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
+ dependencies = [
+  "foldhash",
+ ]
+ 
+ [[package]]
+ name = "hashlink"
+-version = "0.10.0"
++version = "0.11.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "7382cf6263419f2d8df38c55d7da83da5c18aef87fc7a7fc1fb1e344edfe14c1"
++checksum = "824e001ac4f3012dd16a264bec811403a67ca9deb6c102fc5049b32c4574b35f"
+ dependencies = [
+  "hashbrown",
+ ]
+@@ -312,6 +318,16 @@ version = "1.0.18"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
+ 
++[[package]]
++name = "js-sys"
++version = "0.3.105"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ce57d20d1ea864ce2ac172ab472d409214f4fd359f0b2a2775abdf522e2af99e"
++dependencies = [
++ "cfg-if",
++ "wasm-bindgen",
++]
++
+ [[package]]
+ name = "kqueue"
+ version = "1.2.1"
+@@ -340,9 +356,9 @@ checksum = "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"
+ 
+ [[package]]
+ name = "libsqlite3-sys"
+-version = "0.35.0"
++version = "0.37.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "133c182a6a2c87864fe97778797e46c7e999672690dc9fa3ee8e241aa4a9c13f"
++checksum = "b1f111c8c41e7c61a49cd34e44c7619462967221a6443b0ec299e0ac30cfb9b1"
+ dependencies = [
+  "cc",
+  "pkg-config",
+@@ -442,11 +458,21 @@ version = "6.0.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
+ 
++[[package]]
++name = "rsqlite-vfs"
++version = "0.1.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c51c9ae4df8a7fba42103df5c621fa3c37eccf3a3c650879e90fc48b11cc192c"
++dependencies = [
++ "hashbrown",
++ "thiserror",
++]
++
+ [[package]]
+ name = "rusqlite"
+-version = "0.37.0"
++version = "0.39.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "165ca6e57b20e1351573e3729b958bc62f0e48025386970b6e4d29e7a7e71f3f"
++checksum = "a0d2b0146dd9661bf67bb107c0bb2a55064d556eeb3fc314151b957f313bcd4e"
+ dependencies = [
+  "bitflags",
+  "fallible-iterator",
+@@ -454,6 +480,7 @@ dependencies = [
+  "hashlink",
+  "libsqlite3-sys",
+  "smallvec",
++ "sqlite-wasm-rs",
+ ]
+ 
+ [[package]]
+@@ -469,6 +496,12 @@ dependencies = [
+  "windows-sys 0.61.2",
+ ]
+ 
++[[package]]
++name = "rustversion"
++version = "1.0.23"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f"
++
+ [[package]]
+ name = "same-file"
+ version = "1.0.6"
+@@ -544,6 +577,18 @@ version = "1.16.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "ba467056f1b547ed52077911161fc86985becbc60e8e1857c8a144dab0def891"
+ 
++[[package]]
++name = "sqlite-wasm-rs"
++version = "0.5.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "dc3efc0da82635d7e1ced0053bbbfa8c7ab9645d0bf36ceb4f7127bb85315d75"
++dependencies = [
++ "cc",
++ "js-sys",
++ "rsqlite-vfs",
++ "wasm-bindgen",
++]
++
+ [[package]]
+ name = "syn"
+ version = "3.0.6"
+@@ -568,6 +613,26 @@ dependencies = [
+  "windows-sys 0.61.2",
+ ]
+ 
++[[package]]
++name = "thiserror"
++version = "2.0.20"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ec86235f5fcc2a73650310756d2ac5b138a5780bbbdfae3eeccec992c435ba4f"
++dependencies = [
++ "thiserror-impl",
++]
++
++[[package]]
++name = "thiserror-impl"
++version = "2.0.20"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "bc04cd3e1236dd4a98afca4569f2deb3f120e5422a4023be2cb683f8486292af"
++dependencies = [
++ "proc-macro2",
++ "quote",
++ "syn",
++]
++
+ [[package]]
+ name = "typenum"
+ version = "1.20.1"
+@@ -608,6 +673,51 @@ version = "0.11.1+wasi-snapshot-preview1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b"
+ 
++[[package]]
++name = "wasm-bindgen"
++version = "0.2.128"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "aecb87a33d3b0c5e3b7aa46336eaf486cffafbd281b195e4c8b80d50df2351bf"
++dependencies = [
++ "cfg-if",
++ "once_cell",
++ "rustversion",
++ "wasm-bindgen-macro",
++ "wasm-bindgen-shared",
++]
++
++[[package]]
++name = "wasm-bindgen-macro"
++version = "0.2.128"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "a690d511e3c1a8b3a55e33511e3c2c00c78415cd23650f32b808627f5696b9ed"
++dependencies = [
++ "quote",
++ "wasm-bindgen-macro-support",
++]
++
++[[package]]
++name = "wasm-bindgen-macro-support"
++version = "0.2.128"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "411e4887f0071ef2d2164a9d5fdf2d20efbef78fccd3a78b0c10a1dc5295e48a"
++dependencies = [
++ "bumpalo",
++ "proc-macro2",
++ "quote",
++ "syn",
++ "wasm-bindgen-shared",
++]
++
++[[package]]
++name = "wasm-bindgen-shared"
++version = "0.2.128"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "81941cd78d0c92026c33e5e01312845a4cb1e9af3407f9134b100dd03144103e"
++dependencies = [
++ "unicode-ident",
++]
++
+ [[package]]
+ name = "winapi-util"
+ version = "0.1.11"
+diff --git a/../axiom-graphd/release/core-manifest.json b/release/core-manifest.json
+index 11fc4d5..b0f99c0 100644
+--- a/../axiom-graphd/release/core-manifest.json
++++ b/release/core-manifest.json
+@@ -32,9 +32,9 @@
+     "bootstrap_note": "Bootstrap and installer behaviour live inside this same workspace and ship in this same core release; there is no second component, no second version and no second publication for them.",
+     "source": {
+       "workspace_toml": "Cargo.toml",
+-      "workspace_toml_sha256": "135f029a9bbf1d822d9725587db0d54d3d53e5b8374f5f1acdc3c75da1ab8359",
++      "workspace_toml_sha256": "1a4bd1b99815e65e78e5eb472cef67b5d04066ded94348ed8a6c6c55330583eb",
+       "lockfile": "Cargo.lock",
+-      "lockfile_sha256": "89a2b780061658f1f7ad0d41e0aa37daf30c12940196bd80e46968d5549f6489",
++      "lockfile_sha256": "9616cc9c09fca1534c5bf87a5cf8072e3703239ba16a74d24ce20ef84e23b6c6",
+       "lockfile_state": "checked_in"
+     },
+     "targets": [

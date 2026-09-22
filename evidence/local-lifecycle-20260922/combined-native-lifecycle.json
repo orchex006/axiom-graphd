@@ -1,0 +1,55 @@
+{
+  "catalog_after": "43d63d056960904c4c198bb222ff677ffc27ec7d9d43e37e5862d15896848bd8",
+  "catalog_before": "cca002b56cc28518d492e4574ebf54141a13770e09131a86dc651aa29d8633cf",
+  "events": [
+    [
+      "install-dry-run",
+      0
+    ],
+    [
+      "install-apply",
+      0
+    ],
+    [
+      "register",
+      0
+    ],
+    [
+      "service-install",
+      0
+    ],
+    [
+      "update-apply",
+      0
+    ],
+    [
+      "update-rollback",
+      0
+    ],
+    [
+      "engine-uninstall",
+      0
+    ]
+  ],
+  "installed_graphd_sha256": "1dc1cbebf904bcff6756b250b4cffbe221bd174edd188093f837b9d358061808",
+  "installed_wheel_import_verified": true,
+  "installed_wheel_sha256": "d1775e039cd83fdf834836e94747f432a0021ff8b8ce531a48485a3265f201e0",
+  "launchagent": "com.axiom.axiom-graphd",
+  "mcp_after_nodes": 1,
+  "mcp_before_nodes": 2,
+  "schema_version": 1,
+  "scope": "temporary home/install root",
+  "commands_exit_code": 0,
+  "update_fixture": "same runnable development graphd bytes in different version directories; not two released artifacts",
+  "runtime_environment": "prepared CPython 3.13 dependencies; query code loaded from installed wheel",
+  "service_checks": [
+    "running Program matches updated executable",
+    "running Program matches original executable after rollback",
+    "canonical label absent after uninstall (launchctl exit 113)"
+  ],
+  "preservation_checks": [
+    "user file retained",
+    "all recorded graphd version files removed",
+    "exact original core and skills pointers restored on rollback"
+  ]
+}

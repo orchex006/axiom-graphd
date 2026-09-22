@@ -878,8 +878,7 @@ fn has_percent_reference(value: &str) -> bool {
 fn has_dollar_env_reference(value: &str) -> bool {
     let mut rest = value;
     while let Some(offset) = rest.find("$env:") {
-        if rest[offset + 5..]
-            .as_bytes()
+        if rest.as_bytes()[offset + 5..]
             .first()
             .copied()
             .is_some_and(is_identifier_start)

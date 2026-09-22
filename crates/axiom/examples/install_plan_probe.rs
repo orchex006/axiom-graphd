@@ -27,10 +27,10 @@ use std::path::Path;
 use std::process::ExitCode;
 
 use axiom::install::plan::{
-    plan_install, read_bundle_manifest, sealed, DryRun, ObservedComponent, PlanContext,
+    host_identifier, plan_install, read_bundle_manifest, sealed, DryRun, ObservedComponent,
+    PlanContext,
 };
 use graph_core::error::AxiomError;
-use graph_core::paths::Platform;
 use graph_core::redact;
 
 const USAGE: &str = "\
@@ -135,17 +135,6 @@ fn main() -> ExitCode {
         println!("plan_digest {digest}");
     }
     ExitCode::SUCCESS
-}
-
-/// The host identifier this build plans for, from [`Platform::current`].
-fn host_identifier() -> String {
-    match Platform::current() {
-        Platform::Windows => "windows-x64",
-        Platform::Linux => "linux-x64",
-        Platform::MacOs => "macos-arm64",
-        Platform::Unknown => "unknown",
-    }
-    .to_string()
 }
 
 /// Report one refusal with its contract exit code.

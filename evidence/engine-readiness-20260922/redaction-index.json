@@ -1,0 +1,45 @@
+{
+  "note": "Portable review copies. Only local checkout, home and task temp paths redacted; original hashes retained. These copies are not original-byte logs.",
+  "artifacts": [
+    {
+      "path": "native-e2e.md",
+      "original_sha256": "2c0c7f4f61e4cad432226ce85d7f8c79325528695e4a9b676f956c091c46b12e",
+      "redacted_sha256": "9fb60ef8f05b7984da7e8110bcb02e52ce33c419c15b2e6d746cec509e020ae8"
+    },
+    {
+      "path": "patches/primary-to-engine-apply.patch",
+      "original_sha256": "f6e2c6fb668fe43509354e3a37c1cc870657832bb7d640b57ae818eca70ecf4f",
+      "redacted_sha256": "3a44fc0a18abc29204ccc9fb0c0874e9e0ad7853d0f61473a7b5230d8236985b"
+    },
+    {
+      "path": "patches/primary-to-engine-ecosystem.patch",
+      "original_sha256": "970b92165c555abe8b3dc7d4986bcce2b2f2f779e963301c85c47b3117de0872",
+      "redacted_sha256": "516e55a168e1b5f4b3ea3a3081bb117c1951685cf6c7344c96d149439857cab4"
+    },
+    {
+      "path": "sqlite-build-graphd.log",
+      "original_sha256": "efa433fd1a1ee2ff58717146b21f981a50f479ce6bdab663579695840a418bbd",
+      "redacted_sha256": "678239ac554a7c5bbdc56ba014dd0c95fe25650390b1e1724f504af069ad8f67"
+    },
+    {
+      "path": "sqlite-clippy-workspace.log",
+      "original_sha256": "0eb75434136f790312c3c0b5f74e70a9cacc88dc35539378e538103fd48d422a",
+      "redacted_sha256": "996fe8d75e52424d53b1178a4c15ccb0150e3fa58f3b0555da0a75022d20d3d0"
+    },
+    {
+      "path": "sqlite-default-wal-e2e.log",
+      "original_sha256": "c3fb8e5d7b9623bbaf9ab1b8fa0e910da64b93494a6afe6aada190453ebd2fb3",
+      "redacted_sha256": "32eaf6407aa517833acd61216766f013760fe97c2f1fd16f6c02d6afac6d1317"
+    },
+    {
+      "path": "sqlite-e2e-temp-path.txt",
+      "original_sha256": "dd9d482d5e3fece5c082bc6d67d918b328462dfd4991ec62d94751e5f0b1ce78",
+      "redacted_sha256": "b1e65d48447a873dab2d19f3d2b838a58bcd2f2d9debb96304c4440e88e3ba75"
+    },
+    {
+      "path": "sqlite-test-workspace.log",
+      "original_sha256": "4c14d2e7bbe25e746474bd333d31bd094be23857783054f23d5ec1266d25c0c6",
+      "redacted_sha256": "964726a6caec74e629be11e98f17a63e59cd65cbcfb07031e5948e9cab4fe2c1"
+    }
+  ]
+}

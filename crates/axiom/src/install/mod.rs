@@ -30,6 +30,7 @@
 pub mod apply;
 pub mod credentials;
 pub mod ecosystem;
+pub mod ecosystem_uninstall;
 pub mod plan;
 pub mod uninstall;
 pub mod verify;

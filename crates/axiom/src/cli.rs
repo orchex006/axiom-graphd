@@ -27,9 +27,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use graph_core::error::{AxiomError, ErrorCode};
-use graph_core::paths::{
-    is_absolute_host_path, is_portable_id, AxiomHome, PathEnvironment, Platform,
-};
+use graph_core::paths::{is_absolute_host_path, is_portable_id, AxiomHome, PathEnvironment};
 use graph_core::redact;
 use serde::{Deserialize, Serialize};
 
@@ -107,8 +105,6 @@ impl FormSpec {
     }
 }
 
-/// Why the `service` forms are reachable but do no work yet.
-const NOT_READY_SERVICE: &str = "the `crate::service` adapters are unit tested, but installing or controlling an OS service from the documented entrypoint is not composed in this build (task I-003 exposes the argv surface only)";
 /// Why the `bootstrap` forms are reachable but do no work yet.
 const NOT_READY_BOOTSTRAP: &str = "the `crate::bootstrap` engine is unit tested, but bootstrapping a solution from the documented entrypoint is not composed in this build (task I-003 exposes the argv surface only)";
 /// Why the `host` forms are reachable but do no work yet.
@@ -117,8 +113,6 @@ const NOT_READY_HOSTS: &str = "the `crate::hosts` detector is unit tested, but c
 const NOT_READY_SKILLS: &str = "the `crate::skills` engine is unit tested, but checking or updating skills from the documented entrypoint is not composed in this build (task I-003 exposes the argv surface only)";
 /// Why the `specs` forms are reachable but do no work yet.
 const NOT_READY_SPECS: &str = "the managed specification bundle slice is not composed into the `axiom` entrypoint in this build (task I-003 exposes the argv surface only)";
-/// Why the `update` forms are reachable but do no work yet.
-const NOT_READY_UPDATE: &str = "the `crate::update` engine is unit tested, but checking, applying or rolling back an update from the documented entrypoint is not composed in this build (task I-003 exposes the argv surface only)";
 /// Why the `doctor` form is reachable but does no work yet.
 const NOT_READY_DOCTOR: &str = "the diagnostics slice is not composed into the `axiom` entrypoint in this build (task I-003 exposes the argv surface only)";
 /// Why the `support-bundle` form is reachable but does no work yet.
@@ -278,34 +272,46 @@ pub const VERBS: &[FormSpec] = &[
         not_ready: None,
     },
     FormSpec {
+        verb: "uninstall",
+        subcommands: &["plan"],
+        options: &[OPT_OUT_REQUIRED],
+        not_ready: None,
+    },
+    FormSpec {
+        verb: "uninstall",
+        subcommands: &["apply"],
+        options: &[OPT_PLAN, OPT_APPROVE_DIGEST],
+        not_ready: None,
+    },
+    FormSpec {
         verb: "service",
         subcommands: &["install"],
         options: &[OPT_COMPONENT, OPT_USER],
-        not_ready: Some(NOT_READY_SERVICE),
+        not_ready: None,
     },
     FormSpec {
         verb: "service",
         subcommands: &["start"],
         options: &[OPT_COMPONENT],
-        not_ready: Some(NOT_READY_SERVICE),
+        not_ready: None,
     },
     FormSpec {
         verb: "service",
         subcommands: &["stop"],
         options: &[OPT_COMPONENT],
-        not_ready: Some(NOT_READY_SERVICE),
+        not_ready: None,
     },
     FormSpec {
         verb: "service",
         subcommands: &["status"],
         options: &[OPT_COMPONENT],
-        not_ready: Some(NOT_READY_SERVICE),
+        not_ready: None,
     },
     FormSpec {
         verb: "service",
         subcommands: &["uninstall"],
         options: &[OPT_COMPONENT],
-        not_ready: Some(NOT_READY_SERVICE),
+        not_ready: None,
     },
     FormSpec {
         verb: "bootstrap",
@@ -395,25 +401,32 @@ pub const VERBS: &[FormSpec] = &[
         verb: "update",
         subcommands: &["check"],
         options: &[OPT_ALL],
-        not_ready: Some(NOT_READY_UPDATE),
+        not_ready: None,
     },
     FormSpec {
         verb: "update",
         subcommands: &["plan"],
-        options: &[OPT_TO, OPT_OUT],
-        not_ready: Some(NOT_READY_UPDATE),
+        options: &[
+            OptionSpec {
+                required: true,
+                ..OPT_TO
+            },
+            OPT_BUNDLE,
+            OPT_OUT_REQUIRED,
+        ],
+        not_ready: None,
     },
     FormSpec {
         verb: "update",
         subcommands: &["apply"],
         options: &[OPT_PLAN, OPT_APPROVE_DIGEST],
-        not_ready: Some(NOT_READY_UPDATE),
+        not_ready: None,
     },
     FormSpec {
         verb: "update",
         subcommands: &["rollback"],
         options: &[OPT_TRANSACTION],
-        not_ready: Some(NOT_READY_UPDATE),
+        not_ready: None,
     },
     FormSpec {
         verb: "doctor",
@@ -470,6 +483,8 @@ Commands:
   skills version  print the managed skills bundle version
   install plan --bundle <signed-bundle> [--out <file>]  plan an installation from a signed bundle
   install apply --plan <file> [--approve-digest <sha256>]  apply an approved installation plan
+  uninstall plan --out <file>  review removal of owned runtime while preserving user data
+  uninstall apply --plan <file> --approve-digest <sha256>  remove the exact approved installation
   service install --component <id> [--user]  install the managed service for one component
   service start --component <id>  start the managed service
   service stop --component <id>  stop the managed service
@@ -490,7 +505,7 @@ Commands:
   specs update plan [--to <version>]  plan a specification update
   specs update apply --plan <file>  apply an approved specification update plan
   update check [--all]  check every updatable component
-  update plan [--to <target>] [--out <file>]  plan a core update
+  update plan --to <version> --bundle <dir> --out <file>  plan a local ecosystem update
   update apply --plan <file> [--approve-digest <sha256>]  apply an approved core update plan
   update rollback --transaction <id>  roll back one recorded update transaction
   doctor [--all]  run diagnostics
@@ -521,12 +536,10 @@ Exit codes:
 /// `pending_verbs_match_the_declared_surface` proves this list still names
 /// exactly the verbs whose declared forms are unbuilt.
 pub const PENDING_VERBS: &[&str] = &[
-    "service",
     "bootstrap",
     "host",
     "skills",
     "specs",
-    "update",
     "doctor",
     "support-bundle",
     "migrate",
@@ -571,6 +584,50 @@ pub enum Command {
         plan: String,
         /// The digest the operator approved, from the plan document.
         approve_digest: Option<String>,
+    },
+    /// Inspect the active local ecosystem.
+    UpdateCheck,
+    /// Plan an update from a verified local bundle.
+    UpdatePlan {
+        /// Exact target core version.
+        to: String,
+        /// Local bundle directory.
+        bundle: String,
+        /// Reviewed plan destination.
+        out: String,
+    },
+    /// Apply a reviewed ecosystem update.
+    UpdateApply {
+        /// Reviewed plan document.
+        plan: String,
+        /// Explicit digest approval.
+        approve_digest: Option<String>,
+    },
+    /// Restore an exact recorded ecosystem transaction.
+    UpdateRollback {
+        /// Recorded transaction identifier.
+        transaction: String,
+    },
+    /// Review removal of one owned ecosystem installation.
+    UninstallPlan {
+        /// Destination for the reviewed plan.
+        out: String,
+    },
+    /// Apply an approved removal plan.
+    UninstallApply {
+        /// Reviewed plan path.
+        plan: String,
+        /// Explicit approval digest.
+        approve_digest: Option<String>,
+    },
+    /// Operate one owned per-user service.
+    Service {
+        /// Declared lifecycle action.
+        action: String,
+        /// Component identity.
+        component: String,
+        /// Explicit per-user registration consent.
+        user: bool,
     },
     /// A declared form whose production behaviour is not built yet.
     Slice {
@@ -798,6 +855,31 @@ fn resolve(arguments: &[String]) -> Result<Command, AxiomError> {
                 plan: required("--plan")?,
                 approve_digest: optional("--approve-digest"),
             }),
+            "update check" => Ok(Command::UpdateCheck),
+            "update plan" => Ok(Command::UpdatePlan {
+                to: required("--to")?,
+                bundle: required("--bundle")?,
+                out: required("--out")?,
+            }),
+            "update apply" => Ok(Command::UpdateApply {
+                plan: required("--plan")?,
+                approve_digest: optional("--approve-digest"),
+            }),
+            "update rollback" => Ok(Command::UpdateRollback {
+                transaction: required("--transaction")?,
+            }),
+            "uninstall plan" => Ok(Command::UninstallPlan {
+                out: required("--out")?,
+            }),
+            "uninstall apply" => Ok(Command::UninstallApply {
+                plan: required("--plan")?,
+                approve_digest: optional("--approve-digest"),
+            }),
+            path if path.starts_with("service ") => Ok(Command::Service {
+                action: form.subcommands[0].to_owned(),
+                component: required("--component")?,
+                user: seen.contains(&"--user"),
+            }),
             other => Err(AxiomError::new(
                 ErrorCode::Internal,
                 format!("the {other} command is declared implemented but has no executor"),
@@ -954,6 +1036,66 @@ fn execute(command: &Command, json: bool) -> Result<String, AxiomError> {
                 form.path()
             ),
         )),
+        Command::UpdateCheck => {
+            let root = ecosystem_install_root()?;
+            let value: serde_json::Value = serde_json::from_slice(&read_host_file(
+                &Path::new(&root).join("current").to_string_lossy(),
+            )?)
+            .map_err(|e| internal_serialisation(&e))?;
+            render_lifecycle(
+                &serde_json::json!({"status":"installed", "current":value, "update_source":"explicit-local-bundle"}),
+                json,
+            )
+        }
+        Command::UpdatePlan { to, bundle, out } => plan_update(to, bundle, out, json),
+        Command::UpdateApply {
+            plan,
+            approve_digest,
+        } => apply_update(plan, approve_digest.as_deref(), json),
+        Command::UpdateRollback { transaction } => rollback_update(transaction, json),
+        Command::UninstallPlan { out } => {
+            let root = ecosystem_install_root()?;
+            let value = crate::install::ecosystem_uninstall::plan(Path::new(&root))?;
+            let bytes =
+                serde_json::to_vec_pretty(&value).map_err(|e| internal_serialisation(&e))?;
+            let written = write_host_file(out, &bytes)?;
+            render_lifecycle(
+                &serde_json::json!({"status":"planned", "plan_digest":value["plan_digest"], "plan_file":written}),
+                json,
+            )
+        }
+        Command::UninstallApply {
+            plan,
+            approve_digest,
+        } => {
+            let approval = approve_digest.as_deref().ok_or_else(|| {
+                AxiomError::new(
+                    ErrorCode::Forbidden,
+                    "uninstall apply requires --approve-digest",
+                )
+            })?;
+            let value = serde_json::from_slice(&read_host_file(plan)?)
+                .map_err(|e| internal_serialisation(&e))?;
+            let root = ecosystem_install_root()?;
+            let value = crate::install::ecosystem_uninstall::apply(
+                Path::new(&root),
+                value,
+                approval,
+                || crate::service::runtime::remove(Path::new(&root)),
+            )?;
+            render_lifecycle(&value, json)
+        }
+        Command::Service {
+            action,
+            component,
+            user,
+        } => {
+            let root = ecosystem_install_root()?;
+            render_lifecycle(
+                &crate::service::runtime::run(action, component, *user, Path::new(&root))?,
+                json,
+            )
+        }
         Command::InstallPlan { bundle, out } => plan_installation(bundle, out.as_deref(), json),
         Command::InstallApply {
             plan,
@@ -962,19 +1104,113 @@ fn execute(command: &Command, json: bool) -> Result<String, AxiomError> {
     }
 }
 
-/// The host identifier this build plans for, from [`Platform::current`].
-///
-/// The installation contract declares four host rows; a host this build cannot
-/// name stays `unknown`, and `plan_ecosystem` refuses it rather than guessing a
-/// native target.
-fn host_identifier() -> String {
-    match Platform::current() {
-        Platform::Windows => "windows-x64",
-        Platform::Linux => "linux-x64",
-        Platform::MacOs => "macos-arm64",
-        Platform::Unknown => "unknown",
+struct NativeLifecycle;
+impl crate::update::ecosystem_runtime::ServiceLifecycle for NativeLifecycle {
+    fn is_owned(&self, root: &Path) -> Result<bool, AxiomError> {
+        Ok(
+            crate::install::ecosystem_uninstall::checked_path(root, "state/service-v1.json")?
+                .exists(),
+        )
     }
-    .to_string()
+    fn drain(&self, root: &Path) -> Result<(), AxiomError> {
+        crate::service::runtime::remove(root)
+    }
+    fn reinstall(&self, root: &Path) -> Result<(), AxiomError> {
+        crate::service::runtime::run_with_exec(
+            "install",
+            "axiom-graphd",
+            true,
+            root,
+            &crate::service::SysExec,
+        )
+        .map(|_| ())
+    }
+}
+
+fn plan_update(to: &str, bundle: &str, out: &str, json: bool) -> Result<String, AxiomError> {
+    let root = ecosystem_install_root()?;
+    let context = EcosystemContext::new(
+        portable_id("update")?,
+        graph_store::migrations::utc_timestamp(),
+        host_identifier(),
+        &root,
+    );
+    let host = LocalHostProbe::for_current_process();
+    let probe = NativeProbe::new(&host, &root);
+    let plan = crate::update::ecosystem_runtime::plan(&probe, Path::new(bundle), &context, to)?;
+    if plan
+        .ecosystem
+        .component_plans
+        .first()
+        .map(|entry| entry.version.as_str())
+        != Some(to)
+    {
+        return Err(validation(
+            "--to must equal the verified bundle core version".into(),
+        ));
+    }
+    crate::update::ecosystem_runtime::write_plan(Path::new(out), &plan)?;
+    render_lifecycle(
+        &serde_json::json!({"status":"planned", "plan_digest":plan.plan_digest, "plan_file":out}),
+        json,
+    )
+}
+
+fn apply_update(path: &str, approval: Option<&str>, json: bool) -> Result<String, AxiomError> {
+    let approval = approval.ok_or_else(|| {
+        AxiomError::new(
+            ErrorCode::Forbidden,
+            "update apply requires --approve-digest",
+        )
+    })?;
+    let plan = crate::update::ecosystem_runtime::read_plan(Path::new(path))?;
+    if plan.ecosystem.target.install_root != ecosystem_install_root()? {
+        return Err(validation(
+            "update plan belongs to another installation root".into(),
+        ));
+    }
+    let result = crate::update::ecosystem_runtime::apply(
+        &plan,
+        approval,
+        &portable_id("update")?,
+        &graph_store::migrations::utc_timestamp(),
+        &NativeLifecycle,
+    )?;
+    render_lifecycle(
+        &serde_json::to_value(result).map_err(|e| internal_serialisation(&e))?,
+        json,
+    )
+}
+
+fn rollback_update(transaction: &str, json: bool) -> Result<String, AxiomError> {
+    let root = ecosystem_install_root()?;
+    let result = crate::update::ecosystem_runtime::rollback(
+        Path::new(&root),
+        transaction,
+        &NativeLifecycle,
+    )?;
+    render_lifecycle(
+        &serde_json::to_value(result).map_err(|e| internal_serialisation(&e))?,
+        json,
+    )
+}
+
+fn render_lifecycle(value: &serde_json::Value, json: bool) -> Result<String, AxiomError> {
+    if json {
+        serde_json::to_string(value)
+    } else {
+        serde_json::to_string_pretty(value)
+    }
+    .map_err(|error| internal_serialisation(&error))
+}
+
+/// The host identifier this build plans for.
+///
+/// The mapping lives in [`crate::install::plan::host_identifier`], next to the
+/// [`crate::install::plan::HOSTS`] rows it has to agree with, so this module
+/// cannot answer a different host than the planner validates against.
+fn host_identifier() -> String {
+    crate::install::plan::host_identifier()
 }
 
 /// Directory under `AXIOM_HOME` that owns one ecosystem installation.
@@ -1187,6 +1423,11 @@ fn apply_plan_document(
     applied_at: &str,
 ) -> Result<String, AxiomError> {
     verify_ecosystem(plan, approved)?;
+    let root = Path::new(&plan.target.install_root);
+    std::fs::create_dir_all(root)
+        .map_err(|error| host_io_error("create installation root", root, &error))?;
+    let _maintenance = crate::install::ecosystem_uninstall::maintenance_lock(root)?;
+    crate::install::ecosystem_uninstall::prepare_install(root)?;
     stage_core_payloads(plan)?;
     let skills_source = LocalPayloadSource::new(skills_payload_root(plan));
     let skills_fs = LocalInstallFs::new(plan.target.install_root.as_str());
@@ -1539,7 +1780,7 @@ mod tests {
             // is handed a relative bundle directory and `install apply` a plan
             // file that does not exist. Refusing those is correct behaviour, so
             // the honest contract is: succeed, or refuse with a real failure
-            // code, and never fabricate a payload or fall back to `NotReady`.
+            // code, and never fabricate a payload.
             match code {
                 ExitCode::Success => {}
                 ExitCode::Validation | ExitCode::NotFound | ExitCode::Authorization => {
@@ -1551,6 +1792,27 @@ mod tests {
                     assert!(
                         !stderr.is_empty(),
                         "{} refused as {code:?}, so it must state why on stderr",
+                        form.path()
+                    );
+                }
+                // A composed form may also refuse as `NotReady` when the
+                // host's own prerequisite matrix blocks the run: the module
+                // doc of `install::ecosystem` places `prerequisite_refusal`
+                // *before* the bundle is read, so a host without Python 3.13
+                // legitimately cannot produce a plan. That is a stated refusal
+                // from a real probe, not the empty fallback this test exists to
+                // forbid, so it is accepted only when it names the prerequisite
+                // the form reported.
+                ExitCode::NotReady => {
+                    assert!(
+                        stdout.is_empty(),
+                        "{} refused as {code:?}, so it must print no payload",
+                        form.path()
+                    );
+                    let text = String::from_utf8_lossy(&stderr);
+                    assert!(
+                        text.contains("prerequisite"),
+                        "{} is declared composed, so its only NotReady is the host prerequisite matrix; observed: {text}",
                         form.path()
                     );
                 }
@@ -1756,14 +2018,26 @@ mod tests {
             String::from("--out"),
             String::from("plan.json"),
         ];
-        // Exactly at the bound is accepted by the bound itself, so the form is
-        // then composed for real. It probes before it writes and refuses the
-        // relative bundle root with the validation code, instead of inventing a
-        // plan for a path an operator never named acceptably.
         let (code, stdout, stderr) = run_argv(&argv);
-        assert_eq!(code, ExitCode::Validation);
-        assert!(stdout.is_empty());
-        assert!(!stderr.is_empty());
+        // Exactly at the bound is accepted by the bound itself, so the form is
+        // then composed for real. It probes before it writes, so on a host whose
+        // prerequisite matrix blocks the run the refusal is `NotReady` and names
+        // the unsatisfied prerequisite; where the matrix passes it refuses the
+        // relative bundle root with the validation code. Either way it must not
+        // invent a plan for a path an operator never named acceptably.
+        assert!(stdout.is_empty(), "a refused plan must print no payload");
+        assert!(!stderr.is_empty(), "a refused plan must state why");
+        match code {
+            ExitCode::Validation => assert!(
+                stderr.contains("--bundle"),
+                "a validation refusal must name the option it rejected"
+            ),
+            ExitCode::NotReady => assert!(
+                stderr.contains("prerequisite"),
+                "the only NotReady for this form is the host prerequisite matrix"
+            ),
+            other => panic!("the boundary bundle path answered {other:?}"),
+        }
 
         // A missing required option is the same validation code as a bad flag.
         let argv = [String::from("support-bundle"), String::from("--redact")];

@@ -63,10 +63,11 @@ pub const DEFAULT_MAX_DEBOUNCE_MS: u64 = 3_000;
 pub const DEFAULT_DEBOUNCE_MS: u64 = 750;
 
 /// Which foreground entry point the process is running.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum DaemonMode {
     /// Long-running per-user daemon.
+    #[default]
     Serve,
     /// One-shot diagnostics.
     Doctor,
@@ -86,12 +87,6 @@ impl DaemonMode {
     }
 }
 
-impl Default for DaemonMode {
-    fn default() -> Self {
-        Self::Serve
-    }
-}
-
 impl fmt::Display for DaemonMode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
@@ -99,10 +94,11 @@ impl fmt::Display for DaemonMode {
 }
 
 /// SQLite `synchronous` pragma. `FULL` is the durable-state baseline.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum SyncMode {
     /// Fsync on every commit.
+    #[default]
     Full,
     /// Fsync at checkpoints only; not the durable-state baseline.
     Normal,
@@ -119,17 +115,12 @@ impl SyncMode {
     }
 }
 
-impl Default for SyncMode {
-    fn default() -> Self {
-        Self::Full
-    }
-}
-
 /// SQLite `journal_mode` pragma.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum JournalMode {
     /// Write-ahead logging; requires local storage.
+    #[default]
     Wal,
     /// Rollback journal; the only mode supported on shared/network storage.
     Delete,
@@ -146,14 +137,8 @@ impl JournalMode {
     }
 }
 
-impl Default for JournalMode {
-    fn default() -> Self {
-        Self::Wal
-    }
-}
-
 /// Diagnostic level.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum LogLevel {
     /// Failures only.
@@ -161,6 +146,7 @@ pub enum LogLevel {
     /// Failures and degraded behaviour.
     Warn,
     /// Normal lifecycle events.
+    #[default]
     Info,
     /// Per-operation detail.
     Debug,
@@ -194,17 +180,12 @@ impl LogLevel {
     }
 }
 
-impl Default for LogLevel {
-    fn default() -> Self {
-        Self::Info
-    }
-}
-
 /// Diagnostic record encoding.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum LogFormat {
     /// One JSON object per line (the machine-readable default).
+    #[default]
     Json,
     /// Human-readable single line.
     Text,
@@ -218,12 +199,6 @@ impl LogFormat {
             Self::Json => "json",
             Self::Text => "text",
         }
-    }
-}
-
-impl Default for LogFormat {
-    fn default() -> Self {
-        Self::Json
     }
 }
 

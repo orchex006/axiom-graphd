@@ -1,0 +1,39 @@
+diff --git a<WORKSPACE>/axiom-graphd/crates/axiom/src/install/ecosystem.rs b/crates/axiom/src/install/ecosystem.rs
+index 03e3960..523de20 100644
+--- a<WORKSPACE>/axiom-graphd/crates/axiom/src/install/ecosystem.rs
++++ b/crates/axiom/src/install/ecosystem.rs
+@@ -2385,7 +2385,11 @@ mod tests {
+             kind,
+             sha256: graph_export::sha256_hex(payload),
+             size_bytes: payload.len() as u64,
+-            permissions: vec!["read".to_string()],
++            permissions: if kind == ArtifactKind::Binary {
++                vec!["read".to_string(), "execute".to_string()]
++            } else {
++                vec!["read".to_string()]
++            },
+             service: None,
+             network_access: Vec::new(),
+         }
+@@ -3596,6 +3600,21 @@ mod tests {
+             std::fs::read(destination(&plan, 1)).expect("mcp bytes"),
+             MCP.to_vec()
+         );
++        #[cfg(unix)]
++        {
++            use std::os::unix::fs::PermissionsExt as _;
++
++            let graphd_mode = std::fs::metadata(destination(&plan, 0))
++                .expect("the installed binary metadata is readable")
++                .permissions()
++                .mode();
++            let mcp_mode = std::fs::metadata(destination(&plan, 1))
++                .expect("the installed wheel metadata is readable")
++                .permissions()
++                .mode();
++            assert_ne!(graphd_mode & 0o111, 0, "the installed binary is runnable");
++            assert_eq!(mcp_mode & 0o111, 0, "the wheel remains non-executable");
++        }
+         assert!(!Path::new(&staged(&plan, 0)).exists());
+         assert!(!Path::new(&staged(&plan, 1)).exists());
+         assert!(Path::new(&plan.rollback.current_pointer).exists());

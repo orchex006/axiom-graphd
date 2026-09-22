@@ -47,9 +47,13 @@ use graph_store::outbox::{self, AnalysisCommit, Operation, OutboxState, PublishI
 use graph_watch::ignore::IgnorePolicy;
 use graph_watch::input_policy::InputPolicy;
 use graph_watch::inventory::{plan_inventory, KnownInventory, StdDirentSource};
+use graph_watch::poll::{FileStamp, PollingWatcher, SnapshotSource};
 use rusqlite::{Connection, OptionalExtension};
 use serde::Serialize;
+use signal_hook::consts::signal::{SIGINT, SIGTERM};
+use signal_hook::iterator::{Handle as SignalHandle, Signals};
 
+use crate::catalog_runtime::{self, CatalogMember, CatalogPublication};
 use crate::instance_lock::DaemonLock;
 use crate::lifecycle::ShutdownToken;
 use crate::payload::{self, Payload};
@@ -90,6 +94,14 @@ pub struct ProjectOutcome {
     pub generation_id: Option<String>,
     /// SHA-256 of the published manifest, when one was.
     pub manifest_hash: Option<String>,
+    /// Source fingerprint from the exact sealed project manifest.  A solution
+    /// catalog pins this value rather than re-deriving it from mutable rows.
+    #[serde(skip_serializing)]
+    pub source_fingerprint: Option<String>,
+    /// Exact sealed live-manifest path for this publication.  This is runtime
+    /// metadata only; it is never serialized in the public report contract.
+    #[serde(skip_serializing)]
+    pub sealed_manifest_path: Option<PathBuf>,
     /// The generation `current.json` points at after this pass.
     pub current_generation: Option<String>,
 }
@@ -140,14 +152,184 @@ pub fn serve(config: &ServiceConfig, telemetry: &mut Telemetry) -> Result<ServeR
     let _ = telemetry.record(
         LogLevel::Info,
         "daemon",
-        "instance lock acquired; running one bounded reconcile pass",
+        "instance lock acquired; running persistent foreground reconcile loop",
     );
     let token = ShutdownToken::generate(Duration::from_millis(
         config.runtime().shutdown_deadline_ms(),
     ));
-    let report = run_bounded(config, &home, &token, &Selection::default())?;
+    let signal_listener = install_signal_drain(token.clone())?;
+    let interval = Duration::from_millis(config.runtime().debounce_ms().max(100));
+    // A polling hint reduces latency; the fallback below remains necessary
+    // because timestamps and directory observations are advisory.  Keep it
+    // bounded so a quiet daemon never spins or repeatedly inventories a tree.
+    const FULL_RECONCILE_FALLBACK: Duration = Duration::from_secs(30);
+    let result = (|| -> Result<ServeReport, AxiomError> {
+        let mut report = run_bounded(config, &home, &token, &Selection::default())?;
+        let mut polls = BTreeMap::new();
+        // Establish watcher baselines after startup inventory.  A first poll
+        // deliberately reports no changes, so it must not be mistaken for an
+        // empty source tree.
+        for root in project_roots(config, &home)? {
+            polls
+                .entry(root.clone())
+                .or_insert_with(PollingWatcher::new)
+                .poll(&FilesystemSnapshot, &root)?;
+        }
+        let mut last_full_pass = std::time::Instant::now();
+        while !token.is_shutting_down() {
+            std::thread::sleep(interval);
+            if token.is_shutting_down() {
+                break;
+            }
+            let roots = project_roots(config, &home)?;
+            let mut changed = false;
+            for root in roots {
+                let watcher = polls
+                    .entry(root.clone())
+                    .or_insert_with(PollingWatcher::new);
+                let outcome = watcher.poll(&FilesystemSnapshot, &root)?;
+                changed |= !outcome.is_empty();
+            }
+            let fallback_due = last_full_pass.elapsed() >= FULL_RECONCILE_FALLBACK;
+            if changed || fallback_due {
+                report = run_bounded(config, &home, &token, &Selection::default())?;
+                last_full_pass = std::time::Instant::now();
+            }
+        }
+        report.shutdown = format!("{:?}", token.drain_state(std::time::Instant::now()));
+        Ok(report)
+    })();
+    // Closing the iterator wakes the handler thread, so success and every
+    // error path join it before the daemon lock is released.
+    signal_listener.stop();
     drop(lock);
-    Ok(report)
+    result
+}
+
+struct FilesystemSnapshot;
+impl SnapshotSource for FilesystemSnapshot {
+    fn snapshot(&self, root: &Path) -> Result<Vec<(String, FileStamp)>, AxiomError> {
+        fn visit(
+            root: &Path,
+            dir: &Path,
+            out: &mut Vec<(String, FileStamp)>,
+        ) -> Result<(), AxiomError> {
+            for entry in std::fs::read_dir(dir).map_err(|e| {
+                AxiomError::new(ErrorCode::Internal, "watch snapshot failed")
+                    .with_detail("observed", e.to_string())
+            })? {
+                let entry = entry.map_err(|e| {
+                    AxiomError::new(ErrorCode::Internal, "watch entry failed")
+                        .with_detail("observed", e.to_string())
+                })?;
+                let path = entry.path();
+                if path.file_name().and_then(|n| n.to_str()) == Some(".axiom") {
+                    continue;
+                }
+                let metadata = entry.metadata().map_err(|e| {
+                    AxiomError::new(ErrorCode::Internal, "watch metadata failed")
+                        .with_detail("observed", e.to_string())
+                })?;
+                if metadata.is_dir() {
+                    visit(root, &path, out)?;
+                } else if metadata.is_file() {
+                    let rel = path
+                        .strip_prefix(root)
+                        .map_err(|_| {
+                            AxiomError::new(ErrorCode::Internal, "watch path escaped root")
+                        })?
+                        .to_string_lossy()
+                        .replace('\\', "/");
+                    let modified = metadata
+                        .modified()
+                        .ok()
+                        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                        .map_or(0, |d| d.as_nanos() as i128);
+                    out.push((rel, FileStamp::new(metadata.len(), modified)));
+                }
+            }
+            Ok(())
+        }
+        let mut out = Vec::new();
+        visit(root, root, &mut out)?;
+        Ok(out)
+    }
+}
+
+fn project_roots(config: &ServiceConfig, home: &AxiomHome) -> Result<Vec<PathBuf>, AxiomError> {
+    let store = runtime::open_store(config, home)?;
+    let bindings = runtime::load_bindings(home)?;
+    let mut roots = Vec::new();
+    for solution in runtime::solutions(store.connection())? {
+        let projects = runtime::projects(store.connection(), &solution.id)?;
+        let catalog: Vec<CatalogRepoReference> = projects
+            .iter()
+            .map(|p| CatalogRepoReference::new(p.repo_id.clone()))
+            .collect();
+        for project in projects {
+            let binding = resolve_binding(
+                &bindings,
+                &catalog,
+                &project.repo_id,
+                &graph_core::bindings::NoSymlinkProbe,
+            )?;
+            roots.push(PathBuf::from(resolve_project_root(
+                &binding,
+                &project.relative_path,
+                &graph_core::bindings::NoSymlinkProbe,
+            )?));
+        }
+    }
+    Ok(roots)
+}
+
+/// Translate process termination into the existing cooperative drain token.
+///
+/// The maintained signal-hook crate owns the platform signal registration; no
+/// unsafe handler is installed by this crate. The worker loop observes the
+/// token before each new bounded pass, while an in-flight pass retains its
+/// existing claim guards and drains at their file boundaries.
+struct SignalDrainListener {
+    handle: SignalHandle,
+    thread: Option<std::thread::JoinHandle<()>>,
+}
+
+impl SignalDrainListener {
+    fn stop(mut self) {
+        self.handle.close();
+        if let Some(thread) = self.thread.take() {
+            let _ = thread.join();
+        }
+    }
+}
+
+fn install_signal_drain(token: ShutdownToken) -> Result<SignalDrainListener, AxiomError> {
+    let mut signals = Signals::new([SIGINT, SIGTERM]).map_err(|error| {
+        AxiomError::new(
+            ErrorCode::Internal,
+            "the foreground signal handler could not start",
+        )
+        .with_detail("observed", error.to_string())
+    })?;
+    let handle = signals.handle();
+    let thread = std::thread::Builder::new()
+        .name("axiom-graphd-signal-drain".to_owned())
+        .spawn(move || {
+            for _ in signals.forever() {
+                token.request_shutdown();
+            }
+        })
+        .map_err(|error| {
+            AxiomError::new(
+                ErrorCode::Internal,
+                "the foreground signal listener could not start",
+            )
+            .with_detail("observed", error.to_string())
+        })?;
+    Ok(SignalDrainListener {
+        handle,
+        thread: Some(thread),
+    })
 }
 
 /// Run one bounded reconcile pass for a single solution.
@@ -243,6 +425,9 @@ fn run_bounded(
             outcomes.push(outcome);
         }
         if scanned_every_project {
+            publish_solution_catalog(
+                config, home, solution, &projects, &bindings, &catalog, &outcomes,
+            )?;
             runtime::clear_full_scan(store.connection(), &solution.id)?;
         }
         mark_solution_jobs_succeeded(store.connection_mut(), &solution.id)?;
@@ -306,8 +491,13 @@ fn reconcile_project(
         &probe,
     )?;
     let project_root = resolve_project_root(&resolved, &project.relative_path, &probe)?;
-    let live_lane = runtime::live_root(&project_root, &solution.id, &project.id);
-    let checkpoint_lane = runtime::checkpoint_root(&project_root, &solution.id, &project.id);
+    // Analysis walks the project membership root, while generated output belongs
+    // to the trusted repository binding. SOURCE-OF-TRUST §4 fixes
+    // `<repository>/.axiom/graph/<solution>/<project>` even when a member's
+    // source lives in a repository subdirectory.
+    let live_lane = runtime::live_root(resolved.resolved_root(), &solution.id, &project.id);
+    let checkpoint_lane =
+        runtime::checkpoint_root(resolved.resolved_root(), &solution.id, &project.id);
     let lane_display = live_lane.to_string_lossy().to_string();
 
     // Recovery runs before anything else writes, so a crashed publication is
@@ -398,6 +588,8 @@ fn reconcile_project(
         published: false,
         generation_id: None,
         manifest_hash: None,
+        source_fingerprint: None,
+        sealed_manifest_path: None,
         current_generation: None,
     };
 
@@ -412,7 +604,7 @@ fn reconcile_project(
     let checkpoint_before = pointer::read(&checkpoint_lane).map_err(runtime::export_error)?;
     let has_new_work = inventory.queued > 0 || analyzed > 0;
     if !has_new_work && live_before.is_some() && checkpoint_before.is_some() {
-        outcome.current_generation = live_before.map(|pointer| pointer.generation_id);
+        hydrate_published_outcome(&mut outcome, &live_lane)?;
         return Ok(outcome);
     }
 
@@ -428,8 +620,103 @@ fn reconcile_project(
     outcome.published = true;
     outcome.generation_id = Some(published.generation_id);
     outcome.manifest_hash = Some(published.manifest_hash);
+    outcome.source_fingerprint = Some(published.source_fingerprint);
+    outcome.sealed_manifest_path = Some(published.manifest_path);
     outcome.current_generation = current_generation(&live_lane)?;
     Ok(outcome)
+}
+
+fn hydrate_published_outcome(outcome: &mut ProjectOutcome, lane: &Path) -> Result<(), AxiomError> {
+    let pointer = pointer::read(lane)
+        .map_err(runtime::export_error)?
+        .ok_or_else(|| {
+            AxiomError::new(
+                ErrorCode::NotFound,
+                "published project generation is missing",
+            )
+        })?;
+    let manifest_path = lane
+        .join("generations")
+        .join(&pointer.generation_id)
+        .join(MANIFEST_NAME);
+    let bytes = std::fs::read(&manifest_path)
+        .map_err(|error| runtime::storage_error("published project manifest", &error))?;
+    let manifest: serde_json::Value = serde_json::from_slice(&bytes)
+        .map_err(|error| runtime::storage_error("published project manifest", &error))?;
+    let source_fingerprint = manifest
+        .get("source_fingerprint")
+        .and_then(serde_json::Value::as_str)
+        .ok_or_else(|| {
+            AxiomError::new(
+                ErrorCode::Internal,
+                "published project manifest has no source fingerprint",
+            )
+        })?;
+    outcome.current_generation = Some(pointer.generation_id.clone());
+    outcome.generation_id = Some(pointer.generation_id);
+    outcome.manifest_hash = Some(graph_export::sha256_hex(&bytes));
+    outcome.source_fingerprint = Some(source_fingerprint.to_owned());
+    outcome.sealed_manifest_path = Some(manifest_path);
+    Ok(())
+}
+
+fn publish_solution_catalog(
+    config: &ServiceConfig,
+    home: &AxiomHome,
+    solution: &runtime::SolutionRow,
+    projects: &[runtime::ProjectRow],
+    bindings: &[graph_core::bindings::LocalBinding],
+    catalog: &[CatalogRepoReference],
+    outcomes: &[ProjectOutcome],
+) -> Result<(), AxiomError> {
+    let members: Vec<CatalogMember> = outcomes
+        .iter()
+        .filter(|outcome| outcome.solution_id == solution.id)
+        .map(|outcome| {
+            Ok(CatalogMember {
+                project_id: outcome.project_id.clone(),
+                generation_id: outcome.generation_id.clone().ok_or_else(|| {
+                    AxiomError::new(
+                        ErrorCode::NotReady,
+                        "a complete solution batch has an unpublished project",
+                    )
+                })?,
+                source_fingerprint: outcome.source_fingerprint.clone().ok_or_else(|| {
+                    AxiomError::new(
+                        ErrorCode::NotReady,
+                        "a published project has no sealed source fingerprint",
+                    )
+                })?,
+                manifest_path: outcome.sealed_manifest_path.clone().ok_or_else(|| {
+                    AxiomError::new(
+                        ErrorCode::NotReady,
+                        "a published project has no sealed manifest",
+                    )
+                })?,
+            })
+        })
+        .collect::<Result<_, AxiomError>>()?;
+    if members.len() != projects.len() {
+        return Ok(());
+    }
+    let host_repo = runtime::catalog_host_repo(home, solution, projects)?;
+    let binding = resolve_binding(bindings, catalog, &host_repo, &runtime::symlink_probe())?;
+    let lane_root = PathBuf::from(binding.resolved_root())
+        .join(".axiom")
+        .join("graph")
+        .join(&solution.id)
+        .join("_catalog")
+        .join(runtime::LIVE_LANE);
+    let guard_root = home.instance_guard(config.daemon().instance_id())?;
+    catalog_runtime::publish_catalog(&CatalogPublication {
+        solution_id: solution.id.clone(),
+        analysis_profile: solution.profile.clone(),
+        coverage: "complete_for_profile".to_owned(),
+        members,
+        lane_root,
+        guard_root,
+    })?;
+    Ok(())
 }
 
 /// The identity of one published generation.
@@ -437,6 +724,8 @@ fn reconcile_project(
 struct PublishedGeneration {
     generation_id: String,
     manifest_hash: String,
+    source_fingerprint: String,
+    manifest_path: PathBuf,
 }
 
 /// Stage, seal and publish one generation under the exclusive guard.
@@ -542,9 +831,14 @@ fn publish(
             .map_err(|error| runtime::storage_error("published generation record", &error))?;
     }
 
+    let manifest_path = live_layout
+        .generation_dir(&generation_id)
+        .join(MANIFEST_NAME);
     Ok(PublishedGeneration {
         generation_id,
         manifest_hash,
+        source_fingerprint: header.source_fingerprint,
+        manifest_path,
     })
 }
 
@@ -1330,6 +1624,7 @@ namespace Demo
             id: "demo".to_owned(),
             profile: "default".to_owned(),
             event_seq: 1,
+            config_hash: "0".repeat(64),
             full_scan_required: false,
         }
     }

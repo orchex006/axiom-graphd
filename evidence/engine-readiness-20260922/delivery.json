@@ -1,0 +1,21 @@
+{
+  "scope": "Executable activation and bundled SQLite local repair",
+  "branch": "feature/v2-021-local-macos-delivery",
+  "base_revision": "5e436500a02ffb7b176099612c5fce71591469ac",
+  "working_tree_delivery": true,
+  "main_integrated": false,
+  "delivery_state": "blocked",
+  "reason": "Reviewed delta depends on inherited uncommitted installation changes; preserve that baseline instead of attributing it to this lane. Parent lifecycle remains incomplete.",
+  "checks": {
+    "fmt_exit": 0,
+    "clippy_exit": 0,
+    "workspace_tests_passed": 1392,
+    "workspace_tests_failed": 0,
+    "native_default_wal_register_serve_query_exit": 0
+  },
+  "certified": false,
+  "artifacts": {
+    "axiom": "5ba785d9f01c707f73a15204e0ab8657909811b5f60689fdc8b7f361a59ada99",
+    "axiom-graphd": "bc5767916d195afc5425b4704da8ced43451d65467ba6b3c3fe80abffc4e601e"
+  }
+}

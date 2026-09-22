@@ -25,7 +25,7 @@ rejects or cannot complete it.
 | help | available | Accepted positional; also `--help` and `-h`. |
 | version | available | Accepted positional; also `--version` and `-V`. |
 | doctor | available | `doctor [--solution <id>]` executes against the open store and prints a diagnostic report. |
-| serve | available | Takes the instance lock and runs one bounded reconcile pass over every registered solution, publishing a generation. |
+| serve | available | Takes the instance lock, reconciles registered solutions, then polls for source changes until cooperative signal drain. |
 | status | available | `status --solution <id>` executes against the open store and prints queue, freshness and coverage state. |
 | solution | available | `solution register\|list\|remove` executes against the registry in the open store. |
 | changed | available | Wired in task H-001: accepts the explicit-hint and `--from-json` forms and answers `NOT_READY`. |
@@ -209,7 +209,11 @@ axiom-graphd serve --json --registry <path>
   element and is never concatenated into a shell command.
 - Behaviour: resolves `AXIOM_HOME`, verifies the destination, loads the service
   config, takes the single-owner instance lock at `AXIOM_HOME/run/daemon.lock`,
-  then runs **one bounded reconcile pass** over every registered solution: it
+  then runs an initial bounded reconcile pass and remains in the foreground.
+  A polling watcher observes registered project roots, with a periodic full
+  reconcile fallback; `SIGINT` and `SIGTERM` request the existing cooperative
+  drain and the process exits only after the claimed work reaches its boundary.
+  Each pass
   resumes both publication lanes, plans a stat-based inventory delta, analyses
   the changed files and publishes the closed generation through the publication
   barrier (staging seal, analysis commit, event-sequence bump, exclusive
@@ -227,8 +231,18 @@ axiom-graphd serve --json --registry <path>
   inventory delta, the analysed files, the node and edge counts, whether a
   generation was published and the published `generation_id`/`manifest_hash`;
   `lane_root` names the live lane, because that is the lane a query resolves.
-  One pass is not a daemon loop: `serve` installs no `SIGINT`/`SIGTERM` handler
-  and exits after the pass, so the `lifecycle.rs` drain stays a design target.
+  Source inventory remains rooted at the registered project membership path;
+  publication is rooted at its trusted repository binding, so the live lane is
+  `<repository>/.axiom/graph/<solution>/<project>/live` even when source lives
+  in a repository subdirectory.
+
+  After a full solution batch, `serve` validates each sealed project manifest
+  and publishes one canonical `_catalog/live` generation in the registered
+  `catalog_host_repo`. The catalog pins every `(project_id, generation_id,
+  source_fingerprint)`, is installed before its pointer moves, and takes the
+  native guard in admission-then-data exclusive order for that bounded install
+  and pointer replacement. A partial project selection does not publish a new
+  catalog vector.
 - Example response (captured run, Windows 11 x64, task H-002):
 
 ```json
@@ -246,30 +260,11 @@ axiom-graphd serve --json --registry <path>
 | Lock held but unusable | Retryable; bounded retry | Retry with a bounded wait, then report. |
 | `--registry` supplied for another command | `2` (`VALIDATION_ERROR`) | Remove the flag; it applies only to `serve`. |
 
-- Known limitation (W10 lane publication): a `serve` publication is now readable
-  at the *pointer* and *lane* level by `axiom-mcp`, but the published generation
-  **payload** is still `axiom-graphd`'s native form, which the shipped
-  `axiom-mcp` data plane does not yet accept. `serve` writes a single canonical
-  JSONL shard (`bucket-000`) holding `{key, kind, body}` records and a
-  `manifest.json` of
-  `{generation_id, entries[], record_count, total_bytes}`, while
-  `docs/11-GRAPH-DATA-CONTRACT.md` section 6 and
-  `contracts/schemas/project-manifest.schema.json` require role-sharded JSON
-  (`nodes/`, `edges/`, `indexes/{symbols,outgoing,incoming}/`,
-  `architecture/summary.json`, `coverage.json`) described by a manifest of
-  `{schema_version, solution_id, project_id, analysis_profile, generator_version,
-  analyzer_set_hash, source_fingerprint, config_fingerprint,
-  dependency_fingerprint, coverage, files[]}` that must not carry its own hash.
-  The reader therefore stops with `ManifestInvalid: manifest <id> schema_version
-  is not an integer` before any shard is read. Closing that gap changes the
-  published payload layout and the generation-identity rule, which is a
-  `graph_payload_schema`/layout decision that `AGENTS.md` and `Development.md`
-  route through `axiom-specs` coordination; it is not a local implementation
-  change and is recorded here as a blocker rather than worked around.
-
-- `SIGINT`/`SIGTERM` are not handled in this revision: a pass runs to its
-  bounded end and exits. The `lifecycle.rs` design target is a bounded graceful
-  drain, not queue deletion.
+- The published role-sharded payload and catalog are accepted by the shipped
+  `axiom-mcp` reader. `graph_query` reads the catalog pointer once, then opens
+  only its exact pinned member generations; a newer project `current.json` is
+  not a substitute. A missing or corrupt pinned member is reported unavailable
+  rather than falling back to latest.
 - Only one writer per bound output namespace and one daemon per OS user is
   allowed; the instance lock is how that is enforced.
 
@@ -315,7 +310,12 @@ axiom-graphd solution remove --solution <id> (--dry-run|--apply)
 - Behaviour: `register` parses the solution configuration, resolves each
   project's binding (from `--bindings` or `AXIOM_HOME/config/bindings.json`) and,
   with `--apply`, writes the solution and project rows into the registry in the
-  open store; `--dry-run` prints the same plan without writing. `list` reads the
+  open store. It also atomically records the chosen `catalog_host_repo` and the
+  accepted `config_hash` in
+  `AXIOM_HOME/config/registered-solutions/<solution-id>.json`; a later catalog
+  publication refuses metadata that no longer matches the persisted solution.
+  A legacy solution with exactly one repository remains unambiguous; a
+  multi-repository solution without matching metadata is refused. `--dry-run` prints the same plan without writing. `list` reads the
   registered solutions; `remove --apply` deletes one. A `--apply` really mutates
   the user-owned registry, so `--dry-run` is the review step.
 - Example response (captured run, Windows 11 x64, task H-002):
@@ -477,27 +477,31 @@ axiom-graphd render --solution <id> [--project <id>]... --out <dir>
 
 ## 13. `update`
 
+The persistent daemon's `axiom-graphd update check` remains a status check. The
+local installation transaction is provided by the trusted `axiom` CLI:
+
 ```text
-axiom-graphd update check
-axiom-graphd update apply --plan <plan.json> [--approve-digest <sha256>]
+axiom update plan --to <graphd-version> --bundle <directory> --out <plan.json>
+axiom update apply --plan <plan.json> --approve-digest <sha256>
+axiom update rollback --transaction <id>
 ```
 
-- Arguments: `check` takes no arguments; `apply` takes required `--plan <path>`
-  and optional `--approve-digest <sha256>`, which must be 64 lowercase hex
-  characters (`--approve-digest abc` is rejected).
-- Behaviour: accepts both documented forms, then answers `NOT_READY`. The verb
-  never applies an update it cannot verify: delegated update apply has no trusted
-  `axiom` CLI path in this build. It is a wired slice (task H-001), not an
-  implemented one.
-- Exit codes: `4` (`NOT_READY`) with the reason that delegated update apply has
-  no trusted `axiom` CLI path. A malformed digest or missing plan is `2`
-  (`VALIDATION_ERROR`). With `--json`, stdout is exactly the error envelope; in
-  text mode stdout stays empty and the reason goes to stderr.
-- Failure recovery: the trusted `axiom` CLI path is owned by a later work
-  package. Until it lands, follow the platform installation runbooks
-  ([install-windows](../guides/install-windows.md), [install-linux](../guides/install-linux.md),
-  [install-macos](../guides/install-macos.md)) for a manual update. Never
-  fabricate an approval digest.
+`plan` verifies the local bundle and binds the sealed update plan to the current
+core pointer, optional skills pointer, and the binary's runtime host. `apply`
+requires that exact approval digest, re-reads those pointers while holding the
+installer maintenance lock, verifies every payload before activation, and keeps
+a durable journal. A host-mismatched, stale, or differently approved plan is
+refused before mutation.
+
+If an owned host service participates, its adapter drains it before activation
+and reinstalls it afterwards. A failed activation or service recovery restores
+both core and skills pointers; its incomplete journal blocks a later update
+until `rollback` has re-verified the retained artifacts and completed recovery.
+Repeated completed rollback is idempotent. This is a local filesystem path, not
+a remote update channel or a release-signing claim. The macOS x64 development
+run is recorded in
+`evidence/local-lifecycle-20260922/ecosystem-update-rollback-e2e.json`; it uses
+synthetic development payloads and does not certify a release or another host.
 
 `--json` is the only global option and applies to every verb above. In text mode
 stdout stays empty and the reason goes to stderr; with `--json` stdout is exactly

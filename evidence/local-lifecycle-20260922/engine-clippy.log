@@ -1,0 +1,4 @@
+    Blocking waiting for file lock on build directory
+    Checking axiom v0.1.0 (<workspace>/axiom-graphd/crates/axiom)
+    Checking axiom-cli v0.1.0 (<workspace>/axiom-graphd/crates/axiom-cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 19.00s

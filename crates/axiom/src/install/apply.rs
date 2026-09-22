@@ -75,6 +75,14 @@ pub trait InstallFs {
     /// # Errors
     /// [ErrorCode::Internal] when the move cannot be completed.
     fn rename(&self, from: &str, to: &str) -> Result<(), AxiomError>;
+    /// Mark one installed payload executable when its reviewed plan declares it.
+    ///
+    /// In-memory transaction doubles intentionally leave this as a no-op. The
+    /// production adapter owns the host permission boundary, and callers only
+    /// invoke it for an artifact explicitly declared with `execute`.
+    fn set_executable(&self, _path: &str) -> Result<(), AxiomError> {
+        Ok(())
+    }
 }
 
 /// The real filesystem, and the only implementation that touches a disk.
@@ -127,6 +135,42 @@ impl InstallFs for LocalFs {
                 .with_detail("expected", to)
                 .with_detail("actual", error.kind().to_string())
         })
+    }
+
+    fn set_executable(&self, path: &str) -> Result<(), AxiomError> {
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt as _;
+
+            let metadata = std::fs::metadata(path).map_err(|error| {
+                AxiomError::new(
+                    ErrorCode::Internal,
+                    "the installed executable could not be inspected",
+                )
+                .with_detail("rule", "set_executable")
+                .with_detail("observed", path)
+                .with_detail("actual", error.kind().to_string())
+            })?;
+            let mode = metadata.permissions().mode();
+            // Mirror every read bit as an execute bit. A regular 0644 release
+            // artifact becomes 0755, while an owner-only 0600 artifact remains
+            // owner-only at 0700; the installer never widens group or world
+            // access beyond what the staged payload already allowed.
+            let executable_mode = mode | ((mode & 0o444) >> 2);
+            std::fs::set_permissions(path, std::fs::Permissions::from_mode(executable_mode))
+                .map_err(|error| {
+                    AxiomError::new(
+                        ErrorCode::Internal,
+                        "the installed executable could not be marked executable",
+                    )
+                    .with_detail("rule", "set_executable")
+                    .with_detail("observed", path)
+                    .with_detail("actual", error.kind().to_string())
+                })?;
+        }
+        #[cfg(not(unix))]
+        let _ = path;
+        Ok(())
     }
 }
 
@@ -269,18 +313,26 @@ fn parent_of(path: &str) -> Option<String> {
         .map(|parent| parent.to_string_lossy().into_owned())
 }
 
-/// The pointer content for one activation.
-fn pointer_document(
-    plan: &InstallPlan,
-    request: &ApplyRequest,
+/// The pointer content for one activation record.
+///
+/// One record names one approval: the plan that was activated, the digest it
+/// was approved at, the transaction that performed the activation and the
+/// artifacts that are now installed. The ecosystem activation writes a single
+/// record for the whole core install, so the identity fields stay parameters
+/// instead of being read from a single component plan.
+pub(crate) fn pointer_document(
+    plan_id: &str,
+    approved_digest: &str,
+    transaction_id: &str,
+    applied_at: &str,
     activated: &[ActivatedArtifact],
 ) -> Result<Vec<u8>, AxiomError> {
     let document = serde_json::json!({
         "schema_version": JOURNAL_SCHEMA_VERSION,
-        "plan_id": plan.plan_id,
-        "plan_digest": request.approved_digest,
-        "transaction_id": request.transaction_id,
-        "applied_at": request.applied_at,
+        "plan_id": plan_id,
+        "plan_digest": approved_digest,
+        "transaction_id": transaction_id,
+        "applied_at": applied_at,
         "activated": activated,
     });
     let mut bytes = serde_json::to_vec_pretty(&document).map_err(|error| {
@@ -352,7 +404,8 @@ pub fn apply_install(
 
     // Phase 1: check every payload. No mutation happens in this loop.
     let mut activated: Vec<ActivatedArtifact> = Vec::new();
-    let mut to_move: Vec<(String, String)> = Vec::new();
+    let mut to_move: Vec<(String, String, bool)> = Vec::new();
+    let mut to_repair: Vec<String> = Vec::new();
     for component in &plan.components {
         if component.action == ComponentAction::Noop {
             continue;
@@ -404,8 +457,18 @@ pub fn apply_install(
                 .with_detail("component", &component.component));
             }
         }
+        let executable = component
+            .permissions
+            .iter()
+            .any(|permission| permission == "execute");
         if !already_present {
-            to_move.push((staged, component.destination.clone()));
+            to_move.push((staged, component.destination.clone(), executable));
+        } else if executable {
+            // The prior defect could have left verified bytes at the destination
+            // with mode 0644. Repair that declared capability before publishing
+            // a pointer, so an idempotent retry cannot bless a non-runnable
+            // binary merely because its digest already matches.
+            to_repair.push(component.destination.clone());
         }
         activated.push(ActivatedArtifact {
             component: component.component.clone(),
@@ -438,7 +501,21 @@ pub fn apply_install(
 
     // Phase 3: activate. Every check has already passed.
     let mut created: BTreeSet<String> = BTreeSet::new();
-    for (from, to) in &to_move {
+    // Repair a verified destination before activating any other component. A
+    // mode failure therefore cannot publish a pointer or advance an unrelated
+    // component while the declared executable is still non-runnable.
+    for destination in &to_repair {
+        fs.set_executable(destination)?;
+    }
+    // Mark staged executable payloads before moving them. If this host operation
+    // fails, no destination or pointer was published and retry keeps the staged
+    // input available for the same reviewed plan.
+    for (from, _, executable) in &to_move {
+        if *executable {
+            fs.set_executable(from)?;
+        }
+    }
+    for (from, to, _) in &to_move {
         if let Some(parent) = parent_of(to) {
             if created.insert(parent.clone()) {
                 fs.create_dir_all(&parent)?;
@@ -477,7 +554,13 @@ pub fn apply_install(
     let pointer_temp = format!("{pointer_path}{POINTER_TEMP_SUFFIX}");
     fs.write(
         &pointer_temp,
-        &pointer_document(plan, request, &applied.activated)?,
+        &pointer_document(
+            &plan.plan_id,
+            &request.approved_digest,
+            &request.transaction_id,
+            &request.applied_at,
+            &applied.activated,
+        )?,
     )?;
     fs.rename(&pointer_temp, &pointer_path)?;
     let mut record = applied.to_json()?.into_bytes();
@@ -510,7 +593,7 @@ mod tests {
     //! production [`LocalFs`] under a temporary root so the real adapter that
     //! touches a disk is covered too.
 
-    use std::cell::RefCell;
+    use std::cell::{Cell, RefCell};
     use std::collections::{BTreeMap, BTreeSet};
 
     use graph_export::sha256_hex;
@@ -666,6 +749,60 @@ mod tests {
             self.renames
                 .borrow_mut()
                 .push((from.to_string(), to.to_string()));
+            Ok(())
+        }
+    }
+
+    /// A host adapter that rejects the first executable-mode operation, then
+    /// behaves like the normal in-memory filesystem on retry.
+    struct FailOnceExecutableFs {
+        inner: MemoryFs,
+        fail_next: Cell<bool>,
+        executable_calls: Cell<u32>,
+    }
+
+    impl Default for FailOnceExecutableFs {
+        fn default() -> Self {
+            Self {
+                inner: MemoryFs::default(),
+                fail_next: Cell::new(true),
+                executable_calls: Cell::new(0),
+            }
+        }
+    }
+
+    impl InstallFs for FailOnceExecutableFs {
+        fn exists(&self, path: &str) -> bool {
+            self.inner.exists(path)
+        }
+
+        fn read(&self, path: &str) -> Result<Vec<u8>, AxiomError> {
+            self.inner.read(path)
+        }
+
+        fn create_dir_all(&self, path: &str) -> Result<(), AxiomError> {
+            self.inner.create_dir_all(path)
+        }
+
+        fn write(&self, path: &str, bytes: &[u8]) -> Result<(), AxiomError> {
+            self.inner.write(path, bytes)
+        }
+
+        fn rename(&self, from: &str, to: &str) -> Result<(), AxiomError> {
+            self.inner.rename(from, to)
+        }
+
+        fn set_executable(&self, path: &str) -> Result<(), AxiomError> {
+            self.executable_calls
+                .set(self.executable_calls.get().saturating_add(1));
+            if self.fail_next.replace(false) {
+                return Err(AxiomError::new(
+                    ErrorCode::Internal,
+                    "the host refused the executable mode change",
+                )
+                .with_detail("rule", "set_executable")
+                .with_detail("observed", path));
+            }
             Ok(())
         }
     }
@@ -889,6 +1026,67 @@ mod tests {
     }
 
     #[test]
+    fn an_executable_mode_failure_keeps_staging_for_a_retry() {
+        let plan = plan_for("/tmp/axiom-home", GRAPHD, MCP);
+        let fs = FailOnceExecutableFs::default();
+        stage(&fs.inner, &plan, &[GRAPHD, MCP]);
+        let (_, digest) = sealed(&plan).expect("the plan seals");
+        let request = ApplyRequest::new("tx-executable-retry", &digest, "2026-09-19T00:05:00Z");
+
+        let error = apply_install(&plan, &request, &fs)
+            .expect_err("a failed chmod must stop before the rename");
+        assert_eq!(error.code(), ErrorCode::Internal);
+        assert_eq!(
+            error.details().get("rule").map(String::as_str),
+            Some("set_executable")
+        );
+        assert_eq!(fs.executable_calls.get(), 1);
+        for component in &plan.components {
+            assert!(fs.inner.exists(&component.staged_destination));
+            assert!(!fs.inner.exists(&component.destination));
+        }
+        assert!(!fs.inner.exists(&plan.rollback.current_pointer));
+        assert!(!fs.inner.exists(&journal_path(&plan, "tx-executable-retry")));
+
+        let applied = apply_install(&plan, &request, &fs)
+            .expect("the same staged plan retries after the host refusal");
+        assert_eq!(applied.activated.len(), 2);
+        assert_eq!(fs.executable_calls.get(), 2);
+        for component in &plan.components {
+            assert!(!fs.inner.exists(&component.staged_destination));
+            assert!(fs.inner.exists(&component.destination));
+        }
+        assert!(fs.inner.exists(&plan.rollback.current_pointer));
+    }
+
+    #[test]
+    fn an_existing_executable_mode_repair_failure_publishes_no_pointer() {
+        let plan = plan_for("/tmp/axiom-home", GRAPHD, MCP);
+        let fs = FailOnceExecutableFs::default();
+        stage(&fs.inner, &plan, &[GRAPHD, MCP]);
+        fs.inner.put(&plan.components[0].destination, GRAPHD);
+        let (_, digest) = sealed(&plan).expect("the plan seals");
+        let request = ApplyRequest::new("tx-existing-mode", &digest, "2026-09-19T00:05:00Z");
+
+        let error = apply_install(&plan, &request, &fs)
+            .expect_err("a failed existing-payload repair must refuse");
+        assert_eq!(error.code(), ErrorCode::Internal);
+        assert_eq!(
+            error.details().get("rule").map(String::as_str),
+            Some("set_executable")
+        );
+        assert!(fs.inner.exists(&plan.components[0].destination));
+        assert!(fs.inner.exists(&plan.components[1].staged_destination));
+        assert!(!fs.inner.exists(&plan.components[1].destination));
+        assert!(!fs.inner.exists(&plan.rollback.current_pointer));
+
+        apply_install(&plan, &request, &fs)
+            .expect("the unchanged staged plan retries after the refusal");
+        assert!(fs.inner.exists(&plan.components[1].destination));
+        assert!(fs.inner.exists(&plan.rollback.current_pointer));
+    }
+
+    #[test]
     fn a_second_activation_records_the_pointer_it_replaced() {
         let plan = plan_for("/tmp/axiom-home", GRAPHD, MCP);
         let fs = MemoryFs::default();
@@ -958,5 +1156,104 @@ mod tests {
         ] {
             assert!(std::path::Path::new(path).exists(), "{path} exists");
         }
+
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt as _;
+
+            let graphd_mode = std::fs::metadata(&plan.components[0].destination)
+                .expect("the executable metadata is readable")
+                .permissions()
+                .mode()
+                & 0o777;
+            let mcp_mode = std::fs::metadata(&plan.components[1].destination)
+                .expect("the wheel metadata is readable")
+                .permissions()
+                .mode()
+                & 0o777;
+            let pointer_mode = std::fs::metadata(&plan.rollback.current_pointer)
+                .expect("the pointer metadata is readable")
+                .permissions()
+                .mode()
+                & 0o777;
+            assert_eq!(graphd_mode & 0o111, 0o111, "the binary is executable");
+            assert_eq!(
+                mcp_mode & 0o111,
+                0,
+                "the non-executable wheel was untouched"
+            );
+            assert_eq!(
+                pointer_mode & 0o111,
+                0,
+                "the activation record was untouched"
+            );
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn an_idempotent_apply_repairs_a_declared_executable_left_non_runnable() {
+        use std::os::unix::fs::PermissionsExt as _;
+
+        let root = TempDir::new().expect("a temporary install root");
+        let install_root = root.path().to_string_lossy().into_owned();
+        let plan = plan_for(&install_root, GRAPHD, MCP);
+        let (_, digest) = sealed(&plan).expect("the plan seals");
+        for (component, payload) in plan.components.iter().zip([GRAPHD, MCP]) {
+            let staged = std::path::Path::new(&component.staged_destination);
+            std::fs::create_dir_all(staged.parent().expect("a staging parent"))
+                .expect("the staging directory is created");
+            std::fs::write(staged, payload).expect("the payload is staged");
+        }
+        let request = ApplyRequest::new("tx-0010", &digest, "2026-09-19T00:05:00Z");
+        apply_install(&plan, &request, &LocalFs).expect("the first activation succeeds");
+
+        let executable = &plan.components[0];
+        std::fs::set_permissions(
+            &executable.destination,
+            std::fs::Permissions::from_mode(0o644),
+        )
+        .expect("simulate the pre-fix non-runnable install");
+        for (component, payload) in plan.components.iter().zip([GRAPHD, MCP]) {
+            let staged = std::path::Path::new(&component.staged_destination);
+            std::fs::create_dir_all(staged.parent().expect("a staging parent"))
+                .expect("the staging directory is recreated");
+            std::fs::write(staged, payload).expect("the retry payload is staged");
+        }
+
+        let reapplied = apply_install(&plan, &request, &LocalFs)
+            .expect("an idempotent run repairs declared executable access");
+        assert!(reapplied
+            .activated
+            .iter()
+            .all(|entry| entry.already_present));
+        let mode = std::fs::metadata(&executable.destination)
+            .expect("the installed executable metadata is readable")
+            .permissions()
+            .mode()
+            & 0o777;
+        assert_eq!(mode, 0o755);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn executable_mode_preserves_an_owner_only_payload_boundary() {
+        use std::os::unix::fs::PermissionsExt as _;
+
+        let root = TempDir::new().expect("a temporary root");
+        let payload = root.path().join("owner-only-binary");
+        std::fs::write(&payload, GRAPHD).expect("the payload is written");
+        std::fs::set_permissions(&payload, std::fs::Permissions::from_mode(0o600))
+            .expect("the payload becomes owner-only");
+
+        LocalFs
+            .set_executable(&payload.to_string_lossy())
+            .expect("the declared executable mode is applied");
+        let mode = std::fs::metadata(&payload)
+            .expect("the payload metadata is readable")
+            .permissions()
+            .mode()
+            & 0o777;
+        assert_eq!(mode, 0o700, "group and world access remain absent");
     }
 }

@@ -28,6 +28,8 @@ use crate::discovery::ServiceKind;
 pub mod control;
 pub mod linux;
 pub mod macos;
+pub mod owned_state;
+pub mod runtime;
 pub mod startup;
 pub mod windows;
 

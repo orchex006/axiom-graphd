@@ -1,11 +1,70 @@
 # Changelog — axiom-graphd
 
 ## Unreleased
+
+- ADR-0014 local uninstall now binds pointer-reachable activation history, exact
+  service ownership and skill manifests to approval; preserves edited/unowned
+  files, rejects injected unrelated journals, and retains recovery evidence.
+- Completed removal evidence is archived before reinstall; incomplete removal
+  blocks a new installation. Service rendering shares its validated request
+  fields and passes workspace clippy without suppressing warnings.
+
+### Local ecosystem update and rollback runtime
+
+- `axiom update plan`, `axiom update apply`, and `axiom update rollback` now
+  implement a local filesystem transaction over the installed ecosystem. The
+  sealed approval binds the graphd target version, the runtime host, and the
+  exact core and skills pointers observed at planning time. Apply holds the
+  installer maintenance lock, verifies every staged artifact before mutation,
+  records a durable recovery journal, and restores both pointers plus an owned
+  service when activation or service recovery fails. Rollback re-verifies the
+  journal and retained prior artifacts before it restores them; incomplete
+  recovery journals block new updates until explicit rollback succeeds.
+- `evidence/local-lifecycle-20260922/run-ecosystem-update-rollback-e2e.py`
+  exercises the real local CLI with synthetic development bundles on macOS x64:
+  initial install, approved update, wrong-approval refusal, exact core and
+  skills rollback, and idempotent repeated rollback. It is local development
+  evidence, not a signed-release or cross-platform certification.
+
+### Local catalog lifecycle and persistent serve
+
+- `serve` now keeps its foreground instance alive after the first reconcile,
+  polls registered project roots with a bounded periodic fallback, and converts
+  `SIGINT`/`SIGTERM` into the existing cooperative drain. Source inventory uses
+  the project membership root; published lanes use the trusted repository root
+  required by the V2 layout.
+- A complete solution batch validates the sealed manifest of every member,
+  publishes a canonical `_catalog/live` generation in the registered catalog
+  host, then atomically advances its pointer under the admission/data native
+  guard order. `solution register --apply` persists the selected host plus the
+  accepted configuration hash under `AXIOM_HOME/config/registered-solutions/`;
+  stale or multi-repository-unselected metadata is refused.
+- macOS local evidence in `evidence/local-lifecycle-20260922/` exercises real
+  C# analysis, catalog publication, MCP query, source edit without restarting
+  the daemon, SIGTERM drain and bounded lock reacquisition. The MCP reader pins
+  the catalog vector and refuses missing members instead of falling back to a
+  newer project pointer.
+
+### Local macOS executable activation (V2-021 / J-005 support)
+
+- Align bundled SQLite with the existing WAL safety floor: rusqlite 0.39.0 / libsqlite3-sys 0.37.0 supplies SQLite 3.51.3. The minimum and default journal policy remain intact. Native default-WAL register, bounded serve and query succeed; workspace fmt, clippy and 1,392 tests pass.
+
+- Apply declared executable mode to staged payloads before rename, preserve owner-only access, and repair verified existing binaries before publishing the activation pointer. Native tests cover permission failure/retry and executable activation. Inherited installation changes remain preserved separately from this repair.
+
+### macos-x64 host identification, macOS link-boundary spelling and workspace lint gates (2026-09-22)
+- `crates/axiom/src/install/plan.rs`, `crates/axiom/src/cli.rs`, `crates/axiom/examples/install_plan_probe.rs` - a plan on macOS always named `macos-arm64`, because the mapping matched the OS and ignored the architecture. The declared `macos-x64` row was therefore unreachable and an x86_64 MacIntel build planned for a host it is not. The mapping now lives next to `HOSTS` as `host_identifier_for(platform, architecture)` plus `host_identifier()`, and takes the architecture from `cfg!(target_arch = ...)` - a compile-time fact, so a cross-built binary plans for the host it was built for rather than the machine that launched it. `cli.rs` and the `install_plan_probe` example delegate to it instead of keeping a second copy. Four unit tests pin the macOS split, that every platform/architecture pair answers a declared row or `unknown`, that every declared row is reachable, and that this build names its own host.
+- `crates/platform/src/filesystem.rs` - `check_link_boundary` compared a canonical `resolved_target` against the operator's root spelling, so a root reached through a symlink (macOS `/var` to `/private/var`, a symlinked home) refused a link that never left the root with `UnsafePortablePath`. The root is now resolved with the same host operation that resolved the link, and an unresolvable root keeps the caller's spelling exactly as before. Resolving the root can only admit targets that are really inside the resolved root, so false refusals are removed and no real escape is admitted.
+- Two `axiom` unit tests were red on a clean macOS checkout because they asserted that `install plan` can never answer `NotReady`, while `install/ecosystem.rs` deliberately runs `prerequisite_refusal` before it opens the bundle. They now accept `NotReady` only when stderr names the prerequisite matrix and stdout stays empty, which keeps the anti-fabrication guard intact. The engine's gate order is unchanged and still needs an owner decision.
+- Five pre-existing `clippy -D warnings` sites were fixed so the workspace gate is green: `derivable_impls` in `graph-core/src/config.rs` (`#[derive(Default)]` with `#[default]` on the default variant), `unnecessary_clone` in `graph-export/src/canonical.rs` and `graph-export/src/gc.rs`, and `sliced_string_as_bytes` in `config/src/solution.rs` and `axiom-graphd/tests/bootstrap_fixtures.rs`.
+- Evidence on macOS 26.6.2, x86_64, rustc 1.98.0: `cargo fmt --check --all` exit 0; `cargo clippy --workspace --all-targets -- -D warnings` exit 0; `cargo test --workspace --no-fail-fast` 1,386 passed / 0 failed across 46 targets. `target/release/axiom install plan --bundle <missing dir> --json` still answers `NOT_READY` exit 4 naming `axiom-mcp/interpreter`, because this host's interpreter is Python 3.9.6 and the contract requires `>=3.13,<3.14`; engine gates 3-9 are therefore still unverified by observation and stay recorded that way.
+
 ### 0.1.0 experimental Windows release
 - Set the core workspace, daemon and CLI to `0.1.0` for an unsigned Windows x64
   experiment. The `axiom install` path remains not ready, the Windows suite has
   44 known failures, and the tested SQLite reports WAL support below its baseline.
-  macOS Intel has not been tested.
+  macOS Intel has since been exercised for the build, lint and test gates and for
+  host identification (see the entry above); the install path is still not ready
+  on any host.
 V2 seed adopts `2.0.0-draft.1`, `.axiom` workspace layout and component-owned docs/tests. Runtime implementation and platform certification are pending.
 
 ### lane-publication (W10)

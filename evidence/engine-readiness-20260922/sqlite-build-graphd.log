@@ -1,0 +1,11 @@
+   Compiling libsqlite3-sys v0.37.0
+   Compiling foldhash v0.2.0
+   Compiling hashbrown v0.16.1
+   Compiling hashlink v0.11.1
+   Compiling notify-types v2.1.0
+   Compiling notify v8.2.0
+   Compiling graph-watch v0.1.0 (<ENGINE_WORKTREE>/crates/graph-watch)
+   Compiling rusqlite v0.39.0
+   Compiling graph-store v0.1.0 (<ENGINE_WORKTREE>/crates/graph-store)
+   Compiling axiom-graphd v0.1.0 (<ENGINE_WORKTREE>/crates/axiom-graphd)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 20.89s

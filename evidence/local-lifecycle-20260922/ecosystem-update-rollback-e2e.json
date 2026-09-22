@@ -1,0 +1,19 @@
+{
+  "after_core_pointer_sha256": "8a20a5eaa16a6ce38c5f376e15f6deabc00f2207ec59003c10b6d62cf9ed5a79",
+  "after_skills_pointer_sha256": "571c390eb6f6ea18796d1830e242f54b6358e1efcd904863f7d2dbba618cdfe9",
+  "before_core_pointer_sha256": "8a20a5eaa16a6ce38c5f376e15f6deabc00f2207ec59003c10b6d62cf9ed5a79",
+  "before_skills_pointer_sha256": "571c390eb6f6ea18796d1830e242f54b6358e1efcd904863f7d2dbba618cdfe9",
+  "during_core_pointer_sha256": "77856d5e38ff7dfc207e23d35a0691b9056eea9b0557fe2f5ce31bc773cdd539",
+  "during_skills_pointer_sha256": "45f2f7e44159827494af148aba602ce03f294cb430fe74ea7e753d860f24236a",
+  "engine": "target/debug/axiom",
+  "host": "macos-x64",
+  "initial_install_exit": 0,
+  "repeat_rollback_exit": 0,
+  "rollback_exit": 0,
+  "schema_version": 1,
+  "synthetic_development_payloads": true,
+  "transaction_id": "update-1790071588-a55a47fdc92a833f",
+  "update_apply_exit": 0,
+  "update_plan_exit": 0,
+  "wrong_approval_exit": 5
+}

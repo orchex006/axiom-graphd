@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "scope": "temporary AXIOM_HOME and temporary HOME only",
+  "host": "darwin",
+  "commands": [
+    {"action": "service install --component axiom-graphd --user", "exit": 0, "outcome": "registered"},
+    {"action": "service status --component axiom-graphd", "exit": 0, "outcome": "running", "pid_observed": true},
+    {"action": "service stop --component axiom-graphd", "exit": 0, "outcome": "stopped"},
+    {"action": "service start --component axiom-graphd", "exit": 0, "outcome": "running"},
+    {"action": "service status --component axiom-graphd", "exit": 0, "outcome": "running", "pid_observed": true},
+    {"action": "service uninstall --component axiom-graphd", "exit": 0, "outcome": "removed"},
+    {"action": "service uninstall --component axiom-graphd", "exit": 0, "outcome": "already_removed"}
+  ],
+  "assertions": [
+    "launchd GUI-domain agent ran the isolated graphd executable",
+    "generated plist supplied isolated AXIOM_HOME",
+    "stop used SIGTERM and restart produced a new PID",
+    "cleanup targeted only the canonical fixture label and plist"
+  ]
+}

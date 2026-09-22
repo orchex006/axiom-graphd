@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-22",
+  "host": "macos-x64",
+  "scope": "local development lifecycle",
+  "repositories": {
+    "axiom-cli": {
+      "branch": "feature/j-005-local-macos-delivery",
+      "base_commit": "e20aeca6313bb078b4e3b7ae11015e807dc45ceb",
+      "working_tree": "task changes plus preserved inherited edits; no main integration or release",
+      "changed_paths": [
+        "M Changelog.md",
+        " M README.md",
+        " M channels/stable.json",
+        " M containers/entrypoint.sh",
+        " M docs/30-DISTRIBUTION-AND-INSTALLERS.md",
+        " M docs/40-CLI-ARGV-SURFACE.md",
+        " M docs/50-CONTAINER-CHANNEL.md",
+        " M docs/50-UPDATE-CHANNEL.md",
+        " M docs/60-LINUX-AND-MACOS-ARM64.md",
+        " M docs/README.md",
+        " M evidence/J-003/SUMMARY.txt",
+        " M evidence/J-003/j003-argv-matrix.txt",
+        " M evidence/J-003/j003-build.txt",
+        " M evidence/J-003/j003-help-inventory.txt",
+        " M evidence/J-003/j003-negative-drift.txt",
+        " M evidence/J-003/j003-repo-inventory.txt",
+        " M evidence/J-003/j003-tests.txt",
+        " M evidence/J-003/j003-tool-versions.txt",
+        " M evidence/J-004/envelopes/L01-install-plan-only.json",
+        " M evidence/J-004/envelopes/L02-apply-without-approval.json",
+        " M evidence/J-004/envelopes/L03-apply-wrong-approval.json",
+        " M evidence/J-004/envelopes/L04-apply-approved.json",
+        " M evidence/J-004/envelopes/L05-install-idempotent-rerun.json",
+        " M evidence/J-004/envelopes/L06-corrupted-artifact-refused.json",
+        " M evidence/J-004/envelopes/L07-unowned-entrypoint-conflict.json",
+        " M evidence/J-004/envelopes/L07b-unowned-entrypoint-forced.json",
+        " M evidence/J-004/envelopes/L08-downgrade-refused.json",
+        " M evidence/J-004/envelopes/L08-setup-install-main.json",
+        " M evidence/J-004/envelopes/L08b-downgrade-allowed.json",
+        " M evidence/J-004/envelopes/L09-interrupted-install-recovery.json",
+        " M evidence/J-004/envelopes/L10-transaction-lock-held.json",
+        " M evidence/J-004/envelopes/L11-uninstall-plan-only.json",
+        " M evidence/J-004/envelopes/L12-uninstall-wrong-approval.json",
+        " M evidence/J-004/envelopes/L13-uninstall-approved.json",
+        " M evidence/J-004/envelopes/L14-uninstall-when-absent.json",
+        " M evidence/J-004/envelopes/L15a-install-for-purge.json",
+        " M evidence/J-004/envelopes/L15b-purge-plan.json",
+        " M evidence/J-004/envelopes/L15c-purge-approved.json",
+        " M evidence/J-004/envelopes/L16a-install-with-service.json",
+        " M evidence/J-004/envelopes/L16b-uninstall-service-plan.json",
+        " M evidence/J-004/envelopes/L16c-uninstall-removes-service.json",
+        " M evidence/J-004/envelopes/L17a-cleanup-unowned-apply.json",
+        " M evidence/J-004/envelopes/L17a-cleanup-unowned-plan.json",
+        " M evidence/J-004/envelopes/L17b-cleanup-downgrade-apply.json",
+        " M evidence/J-004/envelopes/L17b-cleanup-downgrade-plan.json",
+        " M evidence/J-004/envelopes/L17c-cleanup-recover-apply.json",
+        " M evidence/J-004/envelopes/L17c-cleanup-recover-plan.json",
+        " M evidence/J-004/envelopes/L19-unelevated-install-uninstall.json",
+        " M evidence/J-004/j004-artifact-digests.txt",
+        " M evidence/J-004/j004-gate-records.txt",
+        " M evidence/J-004/j004-hygiene-proof.txt",
+        " M evidence/J-004/j004-run-transcript.txt",
+        " M evidence/J-004/j004-schema-validation.txt",
+        " M evidence/J-004/j004-step-records.json",
+        " M evidence/J-004/release-set-reports/B01-build-main.json",
+        " M evidence/J-004/release-set-reports/B02-build-alpha.json",
+        " M evidence/J-004/release-set-reports/B03-build-service.json",
+        " M evidence/J-006/j006-asset-inventory.txt",
+        " M evidence/J-006/j006-base-image-pins.txt",
+        " M evidence/J-006/j006-build-nocache.txt",
+        " M evidence/J-006/j006-build.txt",
+        " M evidence/J-006/j006-clippy.txt",
+        " M evidence/J-006/j006-container-transcripts.txt",
+        " M evidence/J-006/j006-fmt.txt",
+        " M evidence/J-006/j006-gates.txt",
+        " M evidence/J-006/j006-image-identity.txt",
+        " M evidence/J-006/j006-reproducibility.txt",
+        " M evidence/J-006/j006-tests.txt",
+        " M evidence/J-006/j006-tool-versions.txt",
+        " M evidence/J-006/j006-verb-matrix.txt",
+        " M evidence/J-007/SUMMARY.txt",
+        " M evidence/J-007/j007-ac2-transcript.txt",
+        " M evidence/J-007/j007-canonical-contract.txt",
+        " M evidence/J-007/j007-fixtures.txt",
+        " M evidence/J-007/j007-gates.txt",
+        " M evidence/J-007/j007-self-update-single-digest.txt",
+        " M evidence/J-008/j008-artifact.txt",
+        " M evidence/J-008/j008-build-linux-x64.txt",
+        " M evidence/J-008/j008-envelope-plan-debian.json",
+        " M evidence/J-008/j008-envelope-sample-debian.json",
+        " M evidence/J-008/j008-gates.txt",
+        " M evidence/J-008/j008-host-facts.txt",
+        " M evidence/J-008/j008-linux-debian-harness.txt",
+        " M evidence/J-008/j008-linux-install-layout.txt",
+        " M evidence/J-008/j008-linux-systemd-user.txt",
+        " M evidence/J-008/j008-linux-ubuntu-harness.txt",
+        " M evidence/J-008/j008-macos-arm64-NOT_RUN.txt",
+        " M evidence/J-008/j008-summary.txt",
+        " M evidence/J-008/j008-tool-versions.txt",
+        " M packaging/macos-arm64/Build-ReleaseSet.sh",
+        " M packaging/macos-arm64/README.md",
+        " M src/cli.rs",
+        " M src/main.rs",
+        " M src/update/apply.rs",
+        " M src/update/health.rs",
+        " M src/update/report.rs",
+        " M tests/argv_surface.rs",
+        " M tests/linux/Invoke-AxiomCliLinuxDistributionTests.sh",
+        " M tests/update_channel.rs",
+        "?? docs/31-MACOS-X64-DISTRIBUTION.md",
+        "?? docs/32-LOCAL-LIFECYCLE-GAPS.md",
+        "?? evidence/J-005/",
+        "?? installers/macos/",
+        "?? packaging/macos/",
+        "?? spec.lock.json",
+        "?? src/bundle.rs",
+        "?? src/doctor.rs",
+        "?? src/engine.rs",
+        "?? src/lifecycle.rs",
+        "?? src/target.rs",
+        "?? src/version.rs",
+        "?? tests/cli_verbs.rs",
+        "?? tests/macos/"
+      ]
+    },
+    "axiom-graphd": {
+      "branch": "feature/v2-021-local-macos-delivery",
+      "base_commit": "5e436500a02ffb7b176099612c5fce71591469ac",
+      "working_tree": "task changes plus preserved inherited edits; no main integration or release",
+      "changed_paths": [
+        "M Cargo.lock",
+        " M Cargo.toml",
+        " M Changelog.md",
+        " M crates/axiom-graphd/Cargo.toml",
+        " M crates/axiom-graphd/src/cli.rs",
+        " M crates/axiom-graphd/src/commands/solution.rs",
+        " M crates/axiom-graphd/src/lib.rs",
+        " M crates/axiom-graphd/src/runtime.rs",
+        " M crates/axiom-graphd/src/serve.rs",
+        " M crates/axiom-graphd/tests/bootstrap_fixtures.rs",
+        " M crates/axiom/Cargo.toml",
+        " M crates/axiom/examples/install_plan_probe.rs",
+        " M crates/axiom/src/cli.rs",
+        " M crates/axiom/src/install/apply.rs",
+        " M crates/axiom/src/install/ecosystem.rs",
+        " M crates/axiom/src/install/mod.rs",
+        " M crates/axiom/src/install/plan.rs",
+        " M crates/axiom/src/service/macos.rs",
+        " M crates/axiom/src/service/mod.rs",
+        " M crates/axiom/src/service/startup.rs",
+        " M crates/axiom/src/update/mod.rs",
+        " M crates/config/src/solution.rs",
+        " M crates/graph-core/src/config.rs",
+        " M crates/graph-export/src/canonical.rs",
+        " M crates/graph-export/src/gc.rs",
+        " M crates/platform/src/filesystem.rs",
+        " M docs/reference/axiom-graphd.md",
+        " M release/core-manifest.json",
+        "?? crates/axiom-graphd/src/catalog_runtime.rs",
+        "?? crates/axiom/src/install/ecosystem_uninstall.rs",
+        "?? crates/axiom/src/service/owned_state.rs",
+        "?? crates/axiom/src/service/runtime.rs",
+        "?? crates/axiom/src/update/ecosystem_runtime.rs",
+        "?? docs/reference/local-ecosystem-lifecycle.md",
+        "?? evidence/engine-readiness-20260922/",
+        "?? evidence/local-lifecycle-20260922/"
+      ]
+    },
+    "axiom-mcp": {
+      "branch": "feature/v2-031-macos-x64",
+      "base_commit": "bdd13da084152ef8a66b035ad451e205e88cf9ed",
+      "working_tree": "task changes plus preserved inherited edits; no main integration or release",
+      "changed_paths": [
+        "M pyproject.toml",
+        " M src/axiom_mcp/read_session.py",
+        " M src/axiom_mcp/tools/context.py",
+        " M src/axiom_mcp/tools/query.py",
+        " M src/axiom_mcp/version.py",
+        " M tests/test_tools_query.py",
+        "?? evidence/V2-031/macos-x64-20260922/catalog-vector-reader.json"
+      ]
+    },
+    "axiom-specs": {
+      "branch": "feature/v2-031-certification-coordination",
+      "base_commit": "1faecdefc1303d069290c708eb7525035b22833c",
+      "working_tree": "task changes plus preserved inherited edits; no main integration or release",
+      "changed_paths": [
+        "M conformance/tests/platforms/test_macos.py",
+        " M contracts/ecosystem-installation-contract.md",
+        " M docs/16-CLI-AND-CONTROL-API.md",
+        " M evidence/artifacts/J-005/macos-x64-20260922/LOCAL-AUDIT.md",
+        " M evidence/preflight/J-005.json",
+        " M tasks/J/J-005.md",
+        " M tasks/V2/V2-031.md",
+        " M tasks/events.jsonl",
+        " M tasks/tasks.json",
+        " M tests/test_ecosystem_installation_contract.py",
+        "?? adrs/ADR-0014.md",
+        "?? evidence/artifacts/J-005/local-lifecycle-20260922/"
+      ]
+    }
+  },
+  "binaries_sha256": {
+    "axiom-cli/target/debug/axiom-cli": "067c4ec2fa42f623212f70883236f595600c7c2da011d7c6c23fa999fa0fb0ba",
+    "axiom-graphd/target/debug/axiom": "2cde3be1122b33c22b975ecbdba2d28dd03468923b390a1bc4331264298cc106",
+    "axiom-graphd/target/debug/axiom-graphd": "1dc1cbebf904bcff6756b250b4cffbe221bd174edd188093f837b9d358061808"
+  },
+  "gates": {
+    "engine_workspace_tests": {
+      "exit_code": 0,
+      "passed": 1423
+    },
+    "engine_clippy": {
+      "exit_code": 0
+    },
+    "engine_fmt": {
+      "exit_code": 0
+    },
+    "engine_build": {
+      "exit_code": 0
+    },
+    "core_manifest": {
+      "exit_code": 0
+    },
+    "cli_full_tests": {
+      "exit_code": 0,
+      "passed": 198
+    },
+    "cli_fmt_clippy": {
+      "exit_code": 0
+    },
+    "specs_full_tests": {
+      "exit_code": 0,
+      "ran": 679
+    },
+    "mcp_full_tests": {
+      "exit_code": 0,
+      "passed": 762,
+      "subtests_passed": 230,
+      "skipped": 2,
+      "warnings": 1
+    },
+    "mcp_ruff": {
+      "exit_code": 0
+    },
+    "specctl_validate": {
+      "exit_code": 0
+    },
+    "validate_v2": {
+      "exit_code": 0
+    },
+    "task_audit": {
+      "exit_code": 0
+    }
+  },
+  "commit_push_decision": "No main merge or release. Parent acceptance remains incomplete; inherited dirty CLI/engine changes are preserved rather than committed as new task work.",
+  "reviewed_source_sha256": {
+    "axiom-graphd/crates/axiom/src/cli.rs": "1379b3ca792b0dcde13021b422364e10e7f8c9e472dd6463c1d7556cd5d088c5",
+    "axiom-graphd/crates/axiom/src/install/ecosystem_uninstall.rs": "68cace400200dfc0c83cc80985a04c469b4a6090d915f43b05920dca0e9caefc",
+    "axiom-graphd/crates/axiom/src/update/ecosystem_runtime.rs": "f2300b706ad2d45fe0440ae11ea857c79b704d7d811eb16e6ff34d85f18184c1",
+    "axiom-graphd/crates/axiom/src/service/runtime.rs": "897b618ca49725ef973e9258ae9ac0fe95cd0adebe789e6f2f35538c1591d011",
+    "axiom-graphd/crates/axiom/src/service/owned_state.rs": "6de9d875826f90bd1301bc4b1029d8a1b0ec8fe1fe3423b666ce3fc0bdab6ec7",
+    "axiom-graphd/crates/axiom/src/service/macos.rs": "683f5267598a0900022e048932f7a6bc1ebd4a8105420bc3f93a3fec271a008d",
+    "axiom-graphd/crates/axiom-graphd/src/serve.rs": "b592618a7235d2de8381d032615de6b09d18b43de96ec5bed271b6400e05d19c",
+    "axiom-graphd/crates/axiom-graphd/src/catalog_runtime.rs": "c4c40388dd51d7efb82f6ef78507361115e82f820bd495beb8741a173548f41f",
+    "axiom-cli/src/lifecycle.rs": "8c223bfd339e1ced8232ad05418e60e92c56eb247f60ee89693967bfb6fe0407",
+    "axiom-mcp/src/axiom_mcp/read_session.py": "d66994bd54400f9b51ab366078b6970b471891d538fa13918ce601bbba67fae0",
+    "axiom-mcp/src/axiom_mcp/tools/context.py": "398e2dc5a905913d93d80df7dddb06b422603801d5e060dcf7c4a254b1e3196d",
+    "axiom-mcp/src/axiom_mcp/tools/query.py": "c6c939305bc80dce18809f5979f4c10931234d72294bffd2222ba7a3222756ab",
+    "axiom-mcp/tests/test_tools_query.py": "0f818feb83cc46eff0116157a64b806848ee1e09d17cd293b6020d503f0ba0f0"
+  }
+}

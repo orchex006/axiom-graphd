@@ -154,7 +154,12 @@ mod tests {
             reading.clone(),
             stale.clone(),
         ];
-        let plan = plan(&current, &[pinned.clone()], &[reading.clone()], &present);
+        let plan = plan(
+            &current,
+            std::slice::from_ref(&pinned),
+            std::slice::from_ref(&reading),
+            &present,
+        );
         assert_eq!(plan.retained_reason(&pinned), Some(REASON_CATALOG));
         assert_eq!(plan.retained_reason(&reading), Some(REASON_READER));
         assert!(plan.deletes(&stale));
@@ -168,7 +173,7 @@ mod tests {
         let path = dir.path().join("solution.lock");
         let reader = SolutionGuard::acquire(&path, LockMode::Shared).expect("reader");
         let stale = generation('e');
-        let plan = plan(&generation('f'), &[], &[], &[stale.clone()]);
+        let plan = plan(&generation('f'), &[], &[], std::slice::from_ref(&stale));
         let error = execute(&reader, dir.path(), &plan).expect_err("shared guard must be refused");
         assert_eq!(error.code, ERR_LOCKED);
         assert!(error.message.contains("exclusive guard"));

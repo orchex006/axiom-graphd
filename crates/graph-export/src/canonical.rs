@@ -280,8 +280,8 @@ mod tests {
             }),
         );
         assert_eq!(
-            identity_sha256(&[first.clone()], &policy).expect("digest"),
-            identity_sha256(&[second.clone()], &policy).expect("digest")
+            identity_sha256(std::slice::from_ref(&first), &policy).expect("digest"),
+            identity_sha256(std::slice::from_ref(&second), &policy).expect("digest")
         );
         let different_name = GraphRecord::new(
             "k",

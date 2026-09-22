@@ -401,6 +401,24 @@ impl StartupRegistration {
         .validated()
     }
 
+    /// The modern launchd registration bound to one concrete user domain.
+    /// The older [`Self::for_agent`] remains for generic planner callers.
+    pub fn for_agent_with_identity(
+        agent: &macos::LaunchAgent,
+        home: &str,
+        identity: macos::LaunchdIdentity,
+    ) -> Result<Self, AxiomError> {
+        let mut registration = Self::for_agent(agent, home)?;
+        registration.register = vec![macos::bootstrap_operation(agent, identity)];
+        registration.remove_ops = vec![macos::bootout_operation(
+            &agent.label,
+            &agent.plist_path,
+            home,
+            identity,
+        )?];
+        Ok(registration)
+    }
+
     /// Refuse a registration that could not be reached by the per-user adapters.
     fn validated(self) -> Result<Self, AxiomError> {
         check_component(&self.component)?;

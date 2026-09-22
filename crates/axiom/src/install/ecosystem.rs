@@ -132,7 +132,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::hosts::detect::{HostProbe, VERSION_ARGV};
-use crate::install::apply::{apply_install, ApplyRequest, InstallFs as ActivationFs};
+use crate::install::apply::{
+    apply_install, pointer_document, ActivatedArtifact, ApplyRequest, InstallFs as ActivationFs,
+    POINTER_TEMP_SUFFIX,
+};
 use crate::install::plan::{
     is_digest, plan_install as plan_component, read_bundle_manifest, sealed, BundleManifest,
     BundleReference, ComponentAction, DryRun, InstallPlan, InstallScope, InstallTarget,
@@ -1866,6 +1869,13 @@ impl EcosystemApplication {
 /// bytes is left exactly as it is, which is what makes a re-run idempotent and
 /// what lets a partially applied installation resume at component granularity.
 ///
+/// The core pointer is the one deliberate exception to that per-component
+/// boundary: both core children activate into the ecosystem's single pointer
+/// path, so the ecosystem writes one record there whose `activated` rows cover
+/// every contract position. A record per child would let the last writer hide
+/// the other core component, which contradicts what
+/// [`EcosystemApplication::core_pointer`] says the pointer names.
+///
 /// # Errors
 /// - [`ErrorCode::Forbidden`] when the plan is not approved at `approved_digest`
 ///   ([`RULE_APPROVAL`]).
@@ -1888,6 +1898,9 @@ pub fn apply_ecosystem(
     // Phase 1: check every core payload and destination. Nothing is written.
     let mut components: Vec<ComponentApplication> = Vec::with_capacity(INSTALL_ORDER.len());
     let mut pending: Vec<(usize, InstallPlan)> = Vec::new();
+    // One activation record names the whole core install, so the rows are
+    // gathered per contract position here and written once in phase 3.
+    let mut activated_core: Vec<Option<Vec<ActivatedArtifact>>> = vec![None; CORE_COMPONENTS.len()];
     for (index, entry) in plan.component_plans[..CORE_COMPONENTS.len()]
         .iter()
         .enumerate()
@@ -1899,6 +1912,7 @@ pub fn apply_ecosystem(
             .ok_or_else(|| refuse(RULE_SINGLE_COMPONENT_PLAN, &entry.component))?;
         components.push(application_row(entry, planned));
         if planned.action == ComponentAction::Noop {
+            activated_core[index] = Some(vec![in_place_artifact(planned)]);
             continue;
         }
         // A destination that already holds the planned bytes is left untouched:
@@ -1908,6 +1922,7 @@ pub fn apply_ecosystem(
             && graph_export::sha256_hex(&core_fs.read(&planned.destination)?)
                 == planned.source.sha256;
         if in_place {
+            activated_core[index] = Some(vec![in_place_artifact(planned)]);
             continue;
         }
         let staged = planned.staged_destination.clone();
@@ -1944,6 +1959,9 @@ pub fn apply_ecosystem(
     let skills_ready = skills_installed(skills_fs, &skills);
     components.push(skills_row(skills_entry, &skills));
 
+    // A run that moves no core payload must not rewrite the core pointer: the
+    // record it already holds still names the installation this plan targets.
+    let core_activated = !pending.is_empty();
     if pending.is_empty() && skills_ready {
         return Ok(application(
             plan,
@@ -1967,6 +1985,7 @@ pub fn apply_ecosystem(
             request.applied_at.clone(),
         );
         let applied = apply_install(&child, &child_request, core_fs)?;
+        activated_core[index] = Some(applied.activated.clone());
         let wrote = applied
             .activated
             .iter()
@@ -1981,6 +2000,16 @@ pub fn apply_ecosystem(
             components[index].sha256 = artifact.sha256.clone();
             components[index].destination = artifact.destination.clone();
         }
+    }
+    // The children share this ecosystem's one pointer path, so a record per
+    // component would let the last writer hide the other core component. The
+    // record is therefore written once, naming every activated core position.
+    if core_activated {
+        let mut record: Vec<ActivatedArtifact> = Vec::with_capacity(CORE_COMPONENTS.len());
+        for rows in activated_core.iter().flatten() {
+            record.extend(rows.iter().cloned());
+        }
+        write_core_pointer(plan, approved_digest, request, &record, core_fs)?;
     }
     if let Some((sha256, directory)) = skills_report {
         let row = &mut components[CORE_COMPONENTS.len()];
@@ -2025,6 +2054,56 @@ fn skills_row(
         sha256: skills.manifest_sha256.clone(),
         destination: skills.directory.clone(),
     }
+}
+
+/// The activation row a core position contributes without moving bytes.
+///
+/// A component that is already installed, or whose planned action is a no-op,
+/// is still part of the activated core install, so it belongs in the one
+/// pointer record beside the positions this transaction moved.
+fn in_place_artifact(planned: &crate::install::plan::PlannedComponent) -> ActivatedArtifact {
+    ActivatedArtifact {
+        component: planned.component.clone(),
+        version: planned.version.clone(),
+        artifact: planned.artifact.clone(),
+        sha256: planned.source.sha256.clone(),
+        destination: planned.destination.clone(),
+        already_present: true,
+    }
+}
+
+/// Replace the ecosystem's one core pointer with the record of this activation.
+///
+/// The identity fields are the ecosystem plan's own, because the record names
+/// the whole core install the ecosystem approval covers, not one child plan.
+/// The pointer is replaced through a sibling temporary, exactly as a single
+/// component activation replaces it, so a reader never observes a half-written
+/// pointer.
+fn write_core_pointer(
+    plan: &EcosystemPlan,
+    approved_digest: &str,
+    request: &ApplyRequest,
+    activated: &[ActivatedArtifact],
+    fs: &impl ActivationFs,
+) -> Result<(), AxiomError> {
+    let path = plan.rollback.current_pointer.clone();
+    if let Some(parent) = Path::new(&path).parent() {
+        let parent = parent.to_string_lossy().into_owned();
+        if !fs.exists(&parent) {
+            fs.create_dir_all(&parent)?;
+        }
+    }
+    let document = pointer_document(
+        &plan.plan_id,
+        approved_digest,
+        &request.transaction_id,
+        &request.applied_at,
+        activated,
+    )?;
+    let temp = format!("{path}{POINTER_TEMP_SUFFIX}");
+    fs.write(&temp, &document)?;
+    fs.rename(&temp, &path)?;
+    Ok(())
 }
 
 /// The application record one transaction produces.
@@ -2306,7 +2385,11 @@ mod tests {
             kind,
             sha256: graph_export::sha256_hex(payload),
             size_bytes: payload.len() as u64,
-            permissions: vec!["read".to_string()],
+            permissions: if kind == ArtifactKind::Binary {
+                vec!["read".to_string(), "execute".to_string()]
+            } else {
+                vec!["read".to_string()]
+            },
             service: None,
             network_access: Vec::new(),
         }
@@ -2883,6 +2966,95 @@ mod tests {
     }
 
     #[test]
+    fn the_core_pointer_names_every_activated_core_component() {
+        let fixture = fixture();
+        let plan = planned(&fixture);
+        let core_fs = MemoryActivationFs::default();
+        core_fs.put(&staged(&plan, 0), GRAPHD);
+        core_fs.put(&staged(&plan, 1), MCP);
+        let skills_fs = MemorySkillsFs::default();
+        apply_ecosystem(
+            &plan,
+            &plan.plan_digest,
+            &request(&plan),
+            &core_fs,
+            &skills_source(&fixture),
+            &skills_fs,
+        )
+        .expect("the fixture ecosystem installs");
+
+        let pointer = core_fs
+            .read(&plan.rollback.current_pointer)
+            .expect("the core pointer was written");
+        let pointer: Value = serde_json::from_slice(&pointer).expect("the pointer is JSON");
+        // The record names the ecosystem approval, not whichever child
+        // activated last.
+        assert_eq!(pointer["plan_id"], Value::from(PLAN_ID));
+        assert_eq!(
+            pointer["plan_digest"],
+            Value::from(plan.plan_digest.clone())
+        );
+        assert_eq!(pointer["transaction_id"], Value::from(TRANSACTION));
+        let rows = pointer["activated"]
+            .as_array()
+            .expect("the pointer carries activated rows");
+        let named: Vec<&str> = rows
+            .iter()
+            .map(|row| row["component"].as_str().expect("a component name"))
+            .collect();
+        // One shared pointer path is written by both children; a record that
+        // named only the last writer would fail here.
+        assert_eq!(named, CORE_COMPONENTS.to_vec());
+        for row in rows {
+            assert_eq!(row["version"], Value::from(VERSION));
+            assert_eq!(row["already_present"], Value::from(false));
+        }
+    }
+
+    #[test]
+    fn the_core_pointer_keeps_a_component_that_was_already_in_place() {
+        let fixture = fixture();
+        let plan = planned(&fixture);
+        let core_fs = MemoryActivationFs::default();
+        // A run interrupted after activating graphd: only mcp is resumed, but
+        // the record still has to name the whole activated core install.
+        core_fs.put(&destination(&plan, 0), GRAPHD);
+        core_fs.put(&staged(&plan, 1), MCP);
+        let skills_fs = MemorySkillsFs::default();
+        apply_ecosystem(
+            &plan,
+            &plan.plan_digest,
+            &request(&plan),
+            &core_fs,
+            &skills_source(&fixture),
+            &skills_fs,
+        )
+        .expect("the resumed run installs the remaining component");
+
+        let pointer = core_fs
+            .read(&plan.rollback.current_pointer)
+            .expect("the core pointer was written");
+        let pointer: Value = serde_json::from_slice(&pointer).expect("the pointer is JSON");
+        let rows = pointer["activated"]
+            .as_array()
+            .expect("the pointer carries activated rows");
+        let named: Vec<&str> = rows
+            .iter()
+            .map(|row| row["component"].as_str().expect("a component name"))
+            .collect();
+        assert_eq!(named, CORE_COMPONENTS.to_vec());
+        let graphd = rows
+            .iter()
+            .find(|row| row["component"] == "axiom-graphd")
+            .expect("graphd is still named");
+        assert_eq!(graphd["already_present"], Value::from(true));
+        assert_eq!(
+            graphd["sha256"],
+            Value::from(child(&plan, 0).components[0].source.sha256.clone())
+        );
+    }
+
+    #[test]
     fn a_run_that_cannot_stage_every_payload_writes_nothing() {
         let fixture = fixture();
         let plan = planned(&fixture);
@@ -3428,6 +3600,21 @@ mod tests {
             std::fs::read(destination(&plan, 1)).expect("mcp bytes"),
             MCP.to_vec()
         );
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt as _;
+
+            let graphd_mode = std::fs::metadata(destination(&plan, 0))
+                .expect("the installed binary metadata is readable")
+                .permissions()
+                .mode();
+            let mcp_mode = std::fs::metadata(destination(&plan, 1))
+                .expect("the installed wheel metadata is readable")
+                .permissions()
+                .mode();
+            assert_ne!(graphd_mode & 0o111, 0, "the installed binary is runnable");
+            assert_eq!(mcp_mode & 0o111, 0, "the wheel remains non-executable");
+        }
         assert!(!Path::new(&staged(&plan, 0)).exists());
         assert!(!Path::new(&staged(&plan, 1)).exists());
         assert!(Path::new(&plan.rollback.current_pointer).exists());

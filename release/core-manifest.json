@@ -32,9 +32,9 @@
     "bootstrap_note": "Bootstrap and installer behaviour live inside this same workspace and ship in this same core release; there is no second component, no second version and no second publication for them.",
     "source": {
       "workspace_toml": "Cargo.toml",
-      "workspace_toml_sha256": "135f029a9bbf1d822d9725587db0d54d3d53e5b8374f5f1acdc3c75da1ab8359",
+      "workspace_toml_sha256": "1a4bd1b99815e65e78e5eb472cef67b5d04066ded94348ed8a6c6c55330583eb",
       "lockfile": "Cargo.lock",
-      "lockfile_sha256": "89a2b780061658f1f7ad0d41e0aa37daf30c12940196bd80e46968d5549f6489",
+      "lockfile_sha256": "3dae955c9e7e501ced1d320f55452784595a8d95f418533a35f1955ae843de55",
       "lockfile_state": "checked_in"
     },
     "targets": [

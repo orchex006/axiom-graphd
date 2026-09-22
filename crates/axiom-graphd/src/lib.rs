@@ -26,6 +26,7 @@
 //! * [`update_guard`] - update and migration safe-refusal admission for the
 //!   portable update fixtures (task F-010).
 
+pub(crate) mod catalog_runtime;
 pub mod checkpoint;
 pub mod cli;
 pub mod commands;

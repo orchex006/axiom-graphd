@@ -16,6 +16,7 @@ use graph_core::locks::{GuardError, ERR_LOCKED};
 use graph_core::paths::AxiomHome;
 use graph_store::open::{LexicalVolumeProbe, OpenOptions, Store};
 use rusqlite::{Connection, OptionalExtension};
+use serde::Deserialize;
 
 /// The machine-local bindings document, relative to the Axiom home.
 ///
@@ -28,6 +29,114 @@ pub const BINDINGS_DOCUMENT: &str = "config/bindings.json";
 #[must_use]
 pub fn bindings_document_path(home: &AxiomHome) -> PathBuf {
     home.root().join("config").join("bindings.json")
+}
+
+const REGISTERED_SOLUTIONS_DIRECTORY: &str = "config/registered-solutions";
+
+#[derive(Debug, Deserialize)]
+struct RegisteredSolutionMetadata {
+    schema_version: u32,
+    solution_id: String,
+    config_hash: String,
+    catalog_host_repo: String,
+}
+
+fn registered_solution_path(home: &AxiomHome, solution_id: &str) -> PathBuf {
+    home.root()
+        .join(REGISTERED_SOLUTIONS_DIRECTORY)
+        .join(format!("{solution_id}.json"))
+}
+
+/// Atomically store the explicit catalog-host selector alongside the instance.
+pub fn write_catalog_host_metadata(
+    home: &AxiomHome,
+    solution_id: &str,
+    config_hash: &str,
+    catalog_host_repo: &str,
+) -> Result<(), AxiomError> {
+    let path = registered_solution_path(home, solution_id);
+    let parent = path.parent().ok_or_else(|| {
+        AxiomError::new(
+            ErrorCode::Internal,
+            "registered solution metadata has no parent",
+        )
+    })?;
+    std::fs::create_dir_all(parent)
+        .map_err(|error| storage_error("registered solution metadata directory", &error))?;
+    let bytes = graph_export::canonical::canonical_document_value(&serde_json::json!({
+        "catalog_host_repo": catalog_host_repo,
+        "config_hash": config_hash,
+        "schema_version": 1,
+        "solution_id": solution_id,
+    }))
+    .map_err(export_error)?;
+    let temporary = path.with_extension("json.tmp");
+    std::fs::write(&temporary, bytes)
+        .map_err(|error| storage_error("registered solution metadata write", &error))?;
+    std::fs::rename(&temporary, &path)
+        .map_err(|error| storage_error("registered solution metadata install", &error))
+}
+
+/// Return a catalog host only when it is explicitly pinned to the current
+/// SQLite configuration. Old one-repository registrations are unambiguous.
+pub fn catalog_host_repo(
+    home: &AxiomHome,
+    solution: &SolutionRow,
+    projects: &[ProjectRow],
+) -> Result<String, AxiomError> {
+    let path = registered_solution_path(home, &solution.id);
+    match std::fs::read(&path) {
+        Ok(bytes) => {
+            let metadata: RegisteredSolutionMetadata =
+                serde_json::from_slice(&bytes).map_err(|error| {
+                    AxiomError::new(
+                        ErrorCode::ConfigInvalid,
+                        "registered solution metadata is invalid",
+                    )
+                    .with_detail("path", path.to_string_lossy())
+                    .with_detail("io", error.to_string())
+                })?;
+            if metadata.schema_version != 1
+                || metadata.solution_id != solution.id
+                || metadata.config_hash != solution.config_hash
+            {
+                return Err(AxiomError::new(
+                    ErrorCode::ConfigInvalid,
+                    "registered solution metadata does not match the persisted solution",
+                )
+                .with_detail("path", path.to_string_lossy()));
+            }
+            if projects
+                .iter()
+                .any(|project| project.repo_id == metadata.catalog_host_repo)
+            {
+                Ok(metadata.catalog_host_repo)
+            } else {
+                Err(AxiomError::new(
+                    ErrorCode::ConfigInvalid,
+                    "registered catalog host is not a repository in this solution",
+                ))
+            }
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            let mut repos: Vec<&str> = projects
+                .iter()
+                .map(|project| project.repo_id.as_str())
+                .collect();
+            repos.sort_unstable();
+            repos.dedup();
+            if repos.len() == 1 {
+                Ok(repos[0].to_owned())
+            } else {
+                Err(AxiomError::new(
+                    ErrorCode::ConfigInvalid,
+                    "a multi-repository solution requires registered catalog host metadata",
+                )
+                .with_detail("path", path.to_string_lossy()))
+            }
+        }
+        Err(error) => Err(storage_error("registered solution metadata read", &error)),
+    }
 }
 
 /// Read and validate the machine-local binding table.
@@ -158,6 +267,8 @@ pub struct SolutionRow {
     pub profile: String,
     /// Last used event sequence.
     pub event_seq: i64,
+    /// Immutable configuration digest, binding local selector metadata.
+    pub config_hash: String,
     /// Whether the next pass must reconcile the whole solution.
     pub full_scan_required: bool,
 }
@@ -180,7 +291,7 @@ pub struct ProjectRow {
 /// [`ErrorCode::Internal`] for a storage failure.
 pub fn solutions(connection: &Connection) -> Result<Vec<SolutionRow>, AxiomError> {
     let mut statement = connection
-        .prepare("SELECT id, profile, event_seq, full_scan_required FROM solutions ORDER BY id")
+        .prepare("SELECT id, profile, event_seq, config_hash, full_scan_required FROM solutions ORDER BY id")
         .map_err(|error| storage_error("solution query", &error))?;
     let rows = statement
         .query_map([], |row| {
@@ -188,7 +299,8 @@ pub fn solutions(connection: &Connection) -> Result<Vec<SolutionRow>, AxiomError
                 id: row.get(0)?,
                 profile: row.get(1)?,
                 event_seq: row.get(2)?,
-                full_scan_required: row.get::<_, i64>(3)? != 0,
+                config_hash: row.get(3)?,
+                full_scan_required: row.get::<_, i64>(4)? != 0,
             })
         })
         .map_err(|error| storage_error("solution query", &error))?;
@@ -207,14 +319,15 @@ pub fn solutions(connection: &Connection) -> Result<Vec<SolutionRow>, AxiomError
 pub fn solution(connection: &Connection, solution_id: &str) -> Result<SolutionRow, AxiomError> {
     connection
         .query_row(
-            "SELECT id, profile, event_seq, full_scan_required FROM solutions WHERE id = ?1",
+            "SELECT id, profile, event_seq, config_hash, full_scan_required FROM solutions WHERE id = ?1",
             [solution_id],
             |row| {
                 Ok(SolutionRow {
                     id: row.get(0)?,
                     profile: row.get(1)?,
                     event_seq: row.get(2)?,
-                    full_scan_required: row.get::<_, i64>(3)? != 0,
+                    config_hash: row.get(3)?,
+                    full_scan_required: row.get::<_, i64>(4)? != 0,
                 })
             },
         )

@@ -115,6 +115,7 @@ pub struct SolutionDeclaration {
     id: String,
     profile: String,
     projects: Vec<ProjectDeclaration>,
+    catalog_host_repo: Option<String>,
 }
 
 impl SolutionDeclaration {
@@ -129,6 +130,7 @@ impl SolutionDeclaration {
             id: id.into(),
             profile: profile.into(),
             projects,
+            catalog_host_repo: None,
         }
     }
 
@@ -148,6 +150,19 @@ impl SolutionDeclaration {
     #[must_use]
     pub fn projects(&self) -> &[ProjectDeclaration] {
         &self.projects
+    }
+
+    /// Declare the repository that hosts the solution catalog.
+    #[must_use]
+    pub fn with_catalog_host_repo(mut self, repo_id: impl Into<String>) -> Self {
+        self.catalog_host_repo = Some(repo_id.into());
+        self
+    }
+
+    /// Explicit catalog host repository, when the portable declaration has one.
+    #[must_use]
+    pub fn catalog_host_repo(&self) -> Option<&str> {
+        self.catalog_host_repo.as_deref()
     }
 }
 /// Parse and validate a solution configuration document.
@@ -184,6 +199,10 @@ pub fn parse_config(document: &serde_json::Value) -> Result<SolutionDeclaration,
         .and_then(serde_json::Value::as_str)
         .unwrap_or("default")
         .to_owned();
+    let catalog_host_repo = document
+        .get("catalog_host_repo")
+        .and_then(serde_json::Value::as_str)
+        .map(str::to_owned);
     if !is_portable_id(&profile) {
         return Err(AxiomError::new(
             ErrorCode::ValidationError,
@@ -281,7 +300,16 @@ pub fn parse_config(document: &serde_json::Value) -> Result<SolutionDeclaration,
         }
         projects.push(project);
     }
-    Ok(SolutionDeclaration::new(id, profile, projects))
+    let declaration = SolutionDeclaration::new(id, profile, projects);
+    match catalog_host_repo {
+        Some(repo_id) if !is_portable_id(&repo_id) => Err(AxiomError::new(
+            ErrorCode::ValidationError,
+            "catalog_host_repo must be a portable repository identifier",
+        )
+        .with_detail("catalog_host_repo", repo_id)),
+        Some(repo_id) => Ok(declaration.with_catalog_host_repo(repo_id)),
+        None => Ok(declaration),
+    }
 }
 
 fn require_string(document: &serde_json::Value, key: &str) -> Result<String, AxiomError> {
@@ -372,6 +400,15 @@ pub fn plan_register(
             }
         }
     }
+    if let Some(host) = declaration.catalog_host_repo() {
+        if !bindings_used.iter().any(|repo_id| repo_id == host) {
+            return Err(AxiomError::new(
+                ErrorCode::ValidationError,
+                "catalog_host_repo must be a repository declared by this solution",
+            )
+            .with_detail("catalog_host_repo", host));
+        }
+    }
     Ok(RegisterPlan {
         solution_id: declaration.id().to_owned(),
         profile: declaration.profile().to_owned(),
@@ -398,6 +435,7 @@ fn config_hash(declaration: &SolutionDeclaration) -> Result<String, AxiomError> 
     let document = serde_json::json!({
         "id": declaration.id(),
         "profile": declaration.profile(),
+        "catalog_host_repo": declaration.catalog_host_repo(),
         "projects": declaration
             .projects()
             .iter()
