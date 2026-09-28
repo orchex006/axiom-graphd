@@ -69,17 +69,18 @@ stating plainly:
   the repository. The row describes the artifact a build of that target
   produces.
 - The checked-in core manifest remains an unsigned, unpublished declaration.
-  K-006 can produce a local Intel Mac candidate from a pinned commit; that
-  candidate does not certify or publish any row. Windows, WSL2 and container
-  lanes need their own final artifact/runtime evidence.
+  K-006 can produce local Intel Mac and Linux x64 candidates from a pinned
+  commit; those candidates do not certify or publish any row. Windows, WSL2
+  and container lanes need their own final artifact/runtime evidence.
 
-## 5. K-006 local Intel Mac candidate
+## 5. K-006 local native x64 candidates
 
 After committing reviewed source and building both binaries with
 `AXIOM_BUILD_REVISION=<40-hex commit> cargo build --release --locked -p axiom-cli -p axiom-graphd`,
 `release/package_core.py` accepts only a clean checkout at that exact commit.
 It runs both `version --json` commands and refuses a mixed revision, version,
-schema set or non-Intel Mach-O input. It produces a deterministic tar.gz with
+schema set or a binary that is not native Intel Mac Mach-O / Linux x64 ELF. It
+produces a deterministic tar.gz with
 the two executables and `release-info.json`, a Cargo workspace package
 inventory bound to `Cargo.lock`, and `candidate-manifest.json` with hashes,
 toolchain identity and explicit `unsigned`/`not_published` status.

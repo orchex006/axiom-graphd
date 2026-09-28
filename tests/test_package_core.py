@@ -48,9 +48,12 @@ def main() -> int:
         first, second = temporary / "first", temporary / "second"
         built = build(first)
         build(second)
+        candidate = json.loads((first / "candidate-manifest.json").read_text())
+        archive_name = candidate["archive"]["name"]
+        sbom_name = candidate["sbom"]["name"]
         assert sha(first / "candidate-manifest.json") == sha(second / "candidate-manifest.json")
-        assert sha(first / f"axiom-0.1.0-macos-x64.tar.gz") == sha(second / f"axiom-0.1.0-macos-x64.tar.gz")
-        assert sha(first / f"axiom-0.1.0-macos-x64.sbom.json") == sha(second / f"axiom-0.1.0-macos-x64.sbom.json")
+        assert sha(first / archive_name) == sha(second / archive_name)
+        assert sha(first / sbom_name) == sha(second / sbom_name)
         checked = call("verify_candidate", VERIFY, ["--candidate-dir", str(first)], 0)
         assert checked["source_revision"] == args.source_revision and checked["native_executable_checks"] == 2
         call("wrong_source_revision", BUILD, ["--daemon", str(args.daemon), "--cli", str(args.cli),
@@ -59,7 +62,7 @@ def main() -> int:
 
         corrupt = temporary / "corrupt"
         shutil.copytree(first, corrupt)
-        archive = corrupt / "axiom-0.1.0-macos-x64.tar.gz"
+        archive = corrupt / archive_name
         data = bytearray(archive.read_bytes())
         data[-1] ^= 1
         archive.write_bytes(data)

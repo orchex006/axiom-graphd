@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build an unsigned, deterministic Intel Mac core candidate from pinned binaries.
+"""Build an unsigned, deterministic native x64 core candidate from pinned binaries.
 
 The two executable inputs must report the same version, schema set and exact
 40-character source commit. This tool neither signs nor publishes a release.
@@ -23,6 +23,22 @@ import tarfile
 ROOT = Path(__file__).resolve().parents[1]
 REVISION = re.compile(r"[0-9a-f]{40}\Z")
 MACHO_X64 = bytes.fromhex("cffaedfe07000001")
+ELF_X64_PREFIX = bytes.fromhex("7f454c460201")
+TARGETS = {("Darwin", "x86_64"): ("macos-x64", "x86_64-apple-darwin"),
+           ("Linux", "x86_64"): ("linux-x64", "x86_64-unknown-linux-gnu")}
+
+
+def native_target() -> tuple[str, str]:
+    target = TARGETS.get((platform.system(), platform.machine()))
+    if target is None:
+        raise ValueError("native Intel Mac or Linux x64 packaging host required")
+    return target
+
+
+def native_binary(data: bytes, target: str) -> bool:
+    if target == "macos-x64":
+        return data[:8] == MACHO_X64
+    return data[:6] == ELF_X64_PREFIX and data[18:20] == bytes.fromhex("3e00")
 
 
 def sha(data: bytes) -> str:
@@ -51,12 +67,12 @@ def source_revision(expected: str) -> str:
     return actual
 
 
-def binary(path: Path, component: str, revision: str, version: str, compatibility: dict) -> dict:
+def binary(path: Path, component: str, revision: str, version: str, compatibility: dict, target: str) -> dict:
     if path.is_symlink() or not path.is_file() or not os.access(path, os.X_OK):
         raise ValueError(f"{component} input is not a regular executable")
     data = path.read_bytes()
-    if data[:8] != MACHO_X64:
-        raise ValueError(f"{component} input is not Intel Mac Mach-O")
+    if not native_binary(data, target):
+        raise ValueError(f"{component} input is not native {target} executable")
     report = json.loads(command([str(path.resolve()), "version", "--json"]))
     if report.get("component") != component or report.get("version") != version:
         raise ValueError(f"{component} version report disagrees with the core manifest")
@@ -91,22 +107,21 @@ def main() -> int:
     parser.add_argument("--source-revision", required=True)
     parser.add_argument("--out-dir", type=Path, required=True)
     args = parser.parse_args()
-    if (platform.system(), platform.machine()) != ("Darwin", "x86_64"):
-        raise ValueError("native Intel Mac packaging host required")
+    platform_id, triple = native_target()
     revision = source_revision(args.source_revision)
     manifest = read_json(ROOT / "release/core-manifest.json")
     release = manifest["release"]
     version = release["version"]
     if version != release["components"][0]["version"] or version != release["components"][1]["version"]:
         raise ValueError("core component versions disagree with the release version")
-    target = next((row for row in release["targets"] if row["platform"] == "macos-x64"), None)
-    if target is None or target["rust_target"] != "x86_64-apple-darwin":
-        raise ValueError("Intel Mac target is absent from the checked-in core manifest")
+    target = next((row for row in release["targets"] if row["platform"] == platform_id), None)
+    if target is None or target["rust_target"] != triple:
+        raise ValueError(f"{platform_id} target is absent from the checked-in core manifest")
     if release["publication"]["state"] != "not_published" or release["signature"]["state"] != "required":
         raise ValueError("candidate packager refuses a claimed published/signed release")
     compatibility = release["compatibility"]
-    binaries = [binary(args.daemon, "axiom-graphd", revision, version, compatibility),
-                binary(args.cli, "axiom", revision, version, compatibility)]
+    binaries = [binary(args.daemon, "axiom-graphd", revision, version, compatibility, platform_id),
+                binary(args.cli, "axiom", revision, version, compatibility, platform_id)]
     output = args.out_dir.resolve()
     if output == ROOT or ROOT in output.parents:
         raise ValueError("candidate output must be outside the source checkout")
@@ -121,21 +136,21 @@ def main() -> int:
     lock_bytes = (ROOT / "Cargo.lock").read_bytes()
     sbom = {"schema_version": 1, "kind": "cargo-workspace-package-inventory", "source_revision": revision,
             "cargo_lock_sha256": sha(lock_bytes), "packages": packages}
-    sbom_name = f"axiom-{version}-macos-x64.sbom.json"
+    sbom_name = f"axiom-{version}-{platform_id}.sbom.json"
     sbom_bytes = (json.dumps(sbom, sort_keys=True, separators=(",", ":")) + "\n").encode()
     (output / sbom_name).write_bytes(sbom_bytes)
 
-    release_info = {"schema_version": 1, "candidate": True, "platform": "macos-x64",
+    release_info = {"schema_version": 1, "candidate": True, "platform": platform_id,
                     "version": version, "source_revision": revision,
                     "binaries": [{k: row[k] for k in ("name", "sha256", "size_bytes", "mode")} for row in binaries],
                     "sbom_sha256": sha(sbom_bytes)}
     info_bytes = (json.dumps(release_info, sort_keys=True, separators=(",", ":")) + "\n").encode()
-    archive_name = f"axiom-{version}-macos-x64.tar.gz"
+    archive_name = f"axiom-{version}-{platform_id}.tar.gz"
     archive(output / archive_name, {"axiom": args.cli.read_bytes(),
                                     "axiom-graphd": args.daemon.read_bytes(),
                                     "release-info.json": info_bytes})
     candidate = {
-        "schema_version": 1, "kind": "unsigned-core-candidate", "platform": "macos-x64",
+        "schema_version": 1, "kind": "unsigned-core-candidate", "platform": platform_id,
         "version": version, "source_revision": revision, "spec_revision": read_json(ROOT / "spec.lock.json")["spec_revision"],
         "core_manifest_sha256": sha((ROOT / "release/core-manifest.json").read_bytes()),
         "source_lock_sha256": sha(lock_bytes), "archive": {"name": archive_name,
@@ -143,7 +158,8 @@ def main() -> int:
         "sbom": {"name": sbom_name, "sha256": sha(sbom_bytes), "size_bytes": len(sbom_bytes),
                  "package_count": len(packages)},
         "binaries": binaries,
-        "host": {"system": platform.system(), "machine": platform.machine(), "macos": platform.mac_ver()[0]},
+        "host": {"system": platform.system(), "machine": platform.machine(),
+                 "runtime": platform.mac_ver()[0] if platform_id == "macos-x64" else " ".join(platform.libc_ver())},
         "toolchain": {"rustc": command(["rustc", "--version", "--verbose"]),
                       "cargo": command(["cargo", "--version"]), "python": platform.python_version()},
         "signing": "unsigned", "notarization": "not_notarized", "publication": "not_published",

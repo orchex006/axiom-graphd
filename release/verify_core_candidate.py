@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify and execute an unsigned Intel Mac core candidate without source files."""
+"""Verify and execute an unsigned native x64 core candidate without source files."""
 
 from __future__ import annotations
 
@@ -16,6 +16,14 @@ import tarfile
 import tempfile
 
 MACHO_X64 = bytes.fromhex("cffaedfe07000001")
+ELF_X64_PREFIX = bytes.fromhex("7f454c460201")
+TARGETS = {("Darwin", "x86_64"): "macos-x64", ("Linux", "x86_64"): "linux-x64"}
+
+
+def native_binary(data: bytes, target: str) -> bool:
+    if target == "macos-x64":
+        return data[:8] == MACHO_X64
+    return data[:6] == ELF_X64_PREFIX and data[18:20] == bytes.fromhex("3e00")
 
 
 def sha(data: bytes) -> str:
@@ -36,13 +44,14 @@ def checked_file(root: Path, row: dict) -> bytes:
 
 
 def verify(root: Path) -> dict:
-    if (platform.system(), platform.machine()) != ("Darwin", "x86_64"):
-        raise ValueError("native Intel Mac verifier host required")
+    target = TARGETS.get((platform.system(), platform.machine()))
+    if target is None:
+        raise ValueError("native Intel Mac or Linux x64 verifier host required")
     path = root / "candidate-manifest.json"
     if path.is_symlink() or not path.is_file():
         raise ValueError("candidate manifest missing")
     manifest = json.loads(path.read_text())
-    if manifest.get("schema_version") != 1 or manifest.get("kind") != "unsigned-core-candidate" or manifest.get("platform") != "macos-x64":
+    if manifest.get("schema_version") != 1 or manifest.get("kind") != "unsigned-core-candidate" or manifest.get("platform") != target:
         raise ValueError("candidate manifest kind/platform invalid")
     if manifest.get("signing") != "unsigned" or manifest.get("notarization") != "not_notarized" or manifest.get("publication") != "not_published":
         raise ValueError("candidate falsely claims release authority")
@@ -73,14 +82,14 @@ def verify(root: Path) -> dict:
                 if item.name != "release-info.json":
                     (directory / item.name).chmod(0o755)
         info = json.loads((directory / "release-info.json").read_text())
-        if info.get("version") != manifest["version"] or info.get("source_revision") != revision or info.get("sbom_sha256") != manifest["sbom"]["sha256"]:
+        if info.get("platform") != target or info.get("version") != manifest["version"] or info.get("source_revision") != revision or info.get("sbom_sha256") != manifest["sbom"]["sha256"]:
             raise ValueError("candidate archive release identity mismatch")
         if info.get("binaries") != [{k: row[k] for k in ("name", "sha256", "size_bytes", "mode")} for row in manifest["binaries"]]:
             raise ValueError("candidate archive binary inventory mismatch")
         for name, row in expected.items():
             file = directory / name
             data = file.read_bytes()
-            if data[:8] != MACHO_X64 or sha(data) != row["sha256"] or len(data) != row["size_bytes"]:
+            if not native_binary(data, target) or sha(data) != row["sha256"] or len(data) != row["size_bytes"]:
                 raise ValueError(f"candidate {name} bytes or architecture mismatch")
             result = subprocess.run([str(file), "version", "--json"], capture_output=True, text=True, check=False)
             if result.returncode:
