@@ -76,7 +76,7 @@ stating plainly:
 ## 5. K-006 local Intel Mac candidate
 
 After committing reviewed source and building both binaries with
-`AXIOM_BUILD_REVISION=<40-hex commit> cargo build --release --locked -p axiom -p axiom-graphd`,
+`AXIOM_BUILD_REVISION=<40-hex commit> cargo build --release --locked -p axiom-cli -p axiom-graphd`,
 `release/package_core.py` accepts only a clean checkout at that exact commit.
 It runs both `version --json` commands and refuses a mixed revision, version,
 schema set or non-Intel Mach-O input. It produces a deterministic tar.gz with
