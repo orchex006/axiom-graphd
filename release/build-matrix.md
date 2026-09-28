@@ -25,8 +25,9 @@ ran from.
 | `windows-x64` | `x86_64-pc-windows-msvc` | `axiom-graphd.exe`, `axiom.exe` | `axiom-<version>-windows-x64.zip` |
 | `linux-x64` | `x86_64-unknown-linux-gnu` | `axiom-graphd`, `axiom` | `axiom-<version>-linux-x64.tar.gz` |
 | `macos-arm64` | `aarch64-apple-darwin` | `axiom-graphd`, `axiom` | `axiom-<version>-macos-arm64.tar.gz` |
+| `macos-x64` | `x86_64-apple-darwin` | `axiom-graphd`, `axiom` | `axiom-<version>-macos-x64.tar.gz` |
 
-`TargetPlatform::all()` is the authoritative list of three. A platform outside it
+`TargetPlatform::all()` is the authoritative list of four. A platform outside it
 is not built, and therefore has no row to publish.
 
 ## 2. Per-artifact metadata
@@ -35,7 +36,7 @@ Every artifact carries, and every row records, all of the following:
 
 - `version` - the workspace version, never a placeholder.
 - `source_commit` - the full 40-character commit the build ran from.
-- `platform` - one of the three triples above.
+- `platform` - one of the four triples above.
 - `signature` - the signing key id, or `unsigned`.
 - `sbom_sha256` - SHA-256 of the artifact SBOM.
 
@@ -67,12 +68,30 @@ stating plainly:
 - It does not claim a downloadable artifact exists for the version currently in
   the repository. The row describes the artifact a build of that target
   produces.
-- It does not claim the Windows or macOS rows were built on this host. This
-  workstream builds and tests `windows-x64`; the other rows are the declared
-  matrix, and their verification depends on the release pipeline that pins the
-  signing key.
+- The checked-in core manifest remains an unsigned, unpublished declaration.
+  K-006 can produce a local Intel Mac candidate from a pinned commit; that
+  candidate does not certify or publish any row. Windows, WSL2 and container
+  lanes need their own final artifact/runtime evidence.
 
-## 5. Related contracts
+## 5. K-006 local Intel Mac candidate
+
+After committing reviewed source and building both binaries with
+`AXIOM_BUILD_REVISION=<40-hex commit> cargo build --release --locked -p axiom -p axiom-graphd`,
+`release/package_core.py` accepts only a clean checkout at that exact commit.
+It runs both `version --json` commands and refuses a mixed revision, version,
+schema set or non-Intel Mach-O input. It produces a deterministic tar.gz with
+the two executables and `release-info.json`, a Cargo workspace package
+inventory bound to `Cargo.lock`, and `candidate-manifest.json` with hashes,
+toolchain identity and explicit `unsigned`/`not_published` status.
+
+`release/verify_core_candidate.py --candidate-dir <dir>` checks the candidate
+archive, SBOM, payload hashes, executable modes, embedded revision and both
+native version commands without reading the source checkout. The K-006 native
+test also corrupts the archive and version identity and expects refusal.
+Candidate artifacts and verifier output are review inputs; neither command
+signs, notarizes, tags, uploads or certifies the release.
+
+## 6. Related contracts
 
 - Exit codes: `docs/CLI-EXIT-CODES.md`.
 - Update delegation and approval binding: `docs/16-CLI-AND-CONTROL-API.md`

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- K-006 adds the `macos-x64` release target under ADR-0015 and a deterministic,
+  hash-verified unsigned core candidate packager. The checked-in manifest
+  continues to report no signed or published release. Native candidate and
+  final four-lane evidence are tracked separately.
+
 - ADR-0014 local uninstall now binds pointer-reachable activation history, exact
   service ownership and skill manifests to approval; preserves edited/unowned
   files, rejects injected unrelated journals, and retains recovery evidence.

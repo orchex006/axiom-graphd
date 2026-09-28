@@ -47,6 +47,8 @@ pub enum TargetPlatform {
     LinuxX64,
     /// `aarch64-apple-darwin`.
     MacosArm64,
+    /// `x86_64-apple-darwin`.
+    MacosX64,
 }
 
 impl TargetPlatform {
@@ -57,6 +59,7 @@ impl TargetPlatform {
             Self::WindowsX64 => "windows-x64",
             Self::LinuxX64 => "linux-x64",
             Self::MacosArm64 => "macos-arm64",
+            Self::MacosX64 => "macos-x64",
         }
     }
 
@@ -67,6 +70,7 @@ impl TargetPlatform {
             Self::WindowsX64 => "x86_64-pc-windows-msvc",
             Self::LinuxX64 => "x86_64-unknown-linux-gnu",
             Self::MacosArm64 => "aarch64-apple-darwin",
+            Self::MacosX64 => "x86_64-apple-darwin",
         }
     }
 
@@ -77,13 +81,19 @@ impl TargetPlatform {
             Self::WindowsX64 => "windows",
             Self::LinuxX64 => "linux",
             Self::MacosArm64 => "macos",
+            Self::MacosX64 => "macos",
         }
     }
 
     /// Every supported target, in a deterministic order.
     #[must_use]
     pub const fn all() -> &'static [Self] {
-        &[Self::WindowsX64, Self::LinuxX64, Self::MacosArm64]
+        &[
+            Self::WindowsX64,
+            Self::LinuxX64,
+            Self::MacosArm64,
+            Self::MacosX64,
+        ]
     }
 }
 
@@ -277,7 +287,7 @@ mod tests {
     #[test]
     fn the_matrix_covers_every_supported_family_at_one_pinned_commit() {
         let matrix = matrix("1.4.0", &"a".repeat(40));
-        assert_eq!(matrix.artifacts.len(), 3);
+        assert_eq!(matrix.artifacts.len(), 4);
         assert_eq!(covered_families(&matrix), vec!["linux", "macos", "windows"]);
         assert_eq!(
             TargetPlatform::WindowsX64.triple(),
@@ -288,13 +298,14 @@ mod tests {
             "x86_64-unknown-linux-gnu"
         );
         assert_eq!(TargetPlatform::MacosArm64.triple(), "aarch64-apple-darwin");
+        assert_eq!(TargetPlatform::MacosX64.triple(), "x86_64-apple-darwin");
         assert!(matrix
             .artifacts
             .iter()
             .all(|artifact| artifact.source_commit == matrix.source_commit));
         // A freshly built matrix is unsigned and therefore publishes nothing.
         assert!(matrix.publishable().is_empty());
-        assert_eq!(matrix.refusals().len(), 3);
+        assert_eq!(matrix.refusals().len(), 4);
     }
 
     #[test]
@@ -307,7 +318,7 @@ mod tests {
             source_commit: "a".repeat(40),
             artifacts: TargetPlatform::all().iter().copied().map(signed).collect(),
         };
-        assert_eq!(matrix.publishable().len(), 3);
+        assert_eq!(matrix.publishable().len(), 4);
         assert!(matrix.refusals().is_empty());
     }
 
@@ -366,13 +377,13 @@ mod tests {
     #[test]
     fn an_unsupported_target_is_outside_the_matrix() {
         // The matrix itself only ever contains supported platforms, so the
-        // supported set is the boundary: a fourth family cannot be requested.
+        // supported set is the boundary: an undeclared target cannot be requested.
         let targets: Vec<&str> = TargetPlatform::all()
             .iter()
             .map(|platform| platform.triple())
             .collect();
-        assert_eq!(targets.len(), 3);
-        assert!(!targets.contains(&"x86_64-apple-darwin"));
+        assert_eq!(targets.len(), 4);
+        assert!(!targets.contains(&"aarch64-pc-windows-msvc"));
         assert_eq!(covered_families(&matrix("1.4.0", &"a".repeat(40))).len(), 3);
     }
 }

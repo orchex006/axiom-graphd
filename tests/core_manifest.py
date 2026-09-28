@@ -18,7 +18,7 @@ Verified for real here (no Docker, no network, no third-party module):
   workspace members;
 * source provenance - the recorded SHA-256 of `Cargo.toml` and `Cargo.lock` is
   recomputed from the real bytes on disk;
-* targets - exactly the three triples declared in
+* targets - exactly the four triples declared in
   `crates/axiom-graphd/src/release.rs`, each shipping both executables, with an
   archive and an SBOM whose declared state is internally consistent;
 * compatibility - `spec_version`, `graph_schema_version`, `control_api_version`
@@ -91,6 +91,7 @@ EXPECTED_TARGETS = {
     "windows-x64": ("windows", "x86_64", "x86_64-pc-windows-msvc"),
     "linux-x64": ("linux", "x86_64", "x86_64-unknown-linux-gnu"),
     "macos-arm64": ("macos", "aarch64", "aarch64-apple-darwin"),
+    "macos-x64": ("macos", "x86_64", "x86_64-apple-darwin"),
 }
 
 # os -> the daemon and the CLI each archive must carry.
@@ -636,7 +637,7 @@ def run(repo_root):
             "signing, tagging and publishing: %s (the release gate is closed for this workstream: "
             "no tag, no release, no publish)" % refusal
         )
-    not_run.append("building and hashing the three per-target archives (no release artifact is built in this workstream)")
+    not_run.append("building and hashing all four released-target archives (this manifest checker does not package artifacts)")
     not_run.append("producing and hashing the per-target SBOMs")
     not_run.append("signing the release and each archive with the release key")
     not_run.append(
@@ -650,7 +651,7 @@ def run(repo_root):
                 "honesty: target %s claims verified installation evidence while its archive is not built"
                 % target.get("platform")
             )
-    not_run.append("cargo test --locked -p axiom-graphd (the real release code; the Rust gate runs in the Docker lane, not here)")
+    not_run.append("cargo test --locked -p axiom-graphd (this Python manifest checker does not run Rust tests; record those separately)")
 
     # --- negative legs: the same validator must catch each mutation -----------
     def catches(description, needle, mutate):

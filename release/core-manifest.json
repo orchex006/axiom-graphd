@@ -169,6 +169,50 @@
           "reason": "The clean-user installation cannot be run in this workstream: the archive axiom-0.1.0-macos-arm64.tar.gz is not built (release.archive.state = not_built), the release gate is closed so nothing is signed or published, and the `axiom install` verb is a recognised-but-unimplemented verb at this revision (crates/axiom/src/cli.rs PENDING_VERBS). No output or digest is claimed.",
           "sha256": null
         }
+      },
+      {
+        "platform": "macos-x64",
+        "os": "macos",
+        "arch": "x86_64",
+        "rust_target": "x86_64-apple-darwin",
+        "archive": {
+          "name": "axiom-0.1.0-macos-x64.tar.gz",
+          "state": "not_built",
+          "sha256": null
+        },
+        "sbom": {
+          "name": "axiom-0.1.0-macos-x64.sbom.json",
+          "state": "not_built",
+          "sha256": null
+        },
+        "executables": [
+          "axiom-graphd",
+          "axiom"
+        ],
+        "signature": {
+          "state": "required",
+          "scheme": "minisign-ed25519",
+          "key_id": null
+        },
+        "provenance": {
+          "revision": "unpinned",
+          "components": {
+            "axiom-graphd": "0.1.0",
+            "axiom": "0.1.0"
+          },
+          "note": "The Intel Mac candidate is prepared under K-006 from a recorded immutable source commit; this checked-in release declaration remains unpinned and does not claim a signed or published archive."
+        },
+        "executable_metadata": {
+          "posix-mode": "0755",
+          "windows-extension": null,
+          "note": "POSIX marks both shipped executables 0755 on extraction; no .exe extension is used."
+        },
+        "installation_evidence": {
+          "state": "not_run",
+          "command": "axiom-cli install --from <candidate-release-set>",
+          "reason": "The checked-in core release declaration is not signed or published. K-006 records candidate-only native installation evidence separately; no final released-fixture installation is claimed here.",
+          "sha256": null
+        }
       }
     ],
     "compatibility": {
