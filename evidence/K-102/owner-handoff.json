@@ -3,7 +3,7 @@
     "AC1": "passed: native Mach-O x64 CLI and graphd share one source revision and verified hashes",
     "AC2": "passed: packaged daemon generated and queried real C# graph/catalog; watcher advanced; corruption and schema refusals observed",
     "AC3": "passed: manifest explicitly unsigned, not notarized, not published",
-    "AC4": "pending specctl completion and Git delivery; owner checks passed"
+    "AC4": "passed: owner checks, canonical specctl after and K-102 completion; Git delivery recorded separately"
   },
   "artifacts": [
     {
@@ -83,7 +83,8 @@
     "main_integrated": false,
     "release_state": "candidate",
     "source_branch": "feature/k-102-macos-core-candidate",
-    "source_remote_verified": false
+    "source_commit": "ceb81d3999b689671c11e39f9fccf49d0796d041",
+    "source_remote_verified": true
   },
   "environment": {
     "arch": "x86_64",
@@ -93,8 +94,8 @@
     "runtime": "macOS 26.7 x86_64",
     "toolchain": "rustc/cargo 1.98.0; Python 3.9.6"
   },
-  "evidence_revision": "715697929a167704a8e9b350bcccb353a6aad4cb",
   "goal_id": "K-MacIntel-02",
+  "harness_revision": "715697929a167704a8e9b350bcccb353a6aad4cb",
   "lane": "macos-x64",
   "limitations": [
     "No signing, notarization, publication, Windows/WSL parity, or released-fixture claim.",
@@ -117,7 +118,7 @@
   },
   "source_revision": "e5a30e2ee6807ab36cecbc881be3ffb4259cba83",
   "spec_revision": "39759ac2311206059b00c44179a998f502e4e777",
-  "status": "in_progress",
+  "status": "local_verified",
   "task_id": "K-102",
   "version": {
     "control_api": 1,
