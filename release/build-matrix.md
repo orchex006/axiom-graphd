@@ -92,6 +92,11 @@ test also corrupts the archive and version identity and expects refusal.
 Candidate artifacts and verifier output are review inputs; neither command
 signs, notarizes, tags, uploads or certifies the release.
 
+K-102 records a lane-local Mac Intel candidate and graph/catalog from an
+isolated real-source project. Its source, binary, archive and fixture hashes
+are handed to K-105 and K-107. Windows/WSL execution and published release
+provenance remain separate aggregate gates.
+
 ## 6. Related contracts
 
 - Exit codes: `docs/CLI-EXIT-CODES.md`.

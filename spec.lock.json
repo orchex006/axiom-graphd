@@ -1,20 +1,27 @@
 {
   "spec_version": "2.0.0-draft.1",
   "spec_repository": "axiom-specs",
-  "spec_revision": "83a7c689c68e28f7fc24a68642583beb95049597",
-  "spec_content_sha256": "e46e6fdbab43b30d9f5901f3c082b7f12bd5e5e20cb7f984e021f290c806bb65",
+  "spec_revision": "39759ac2311206059b00c44179a998f502e4e777",
+  "spec_content_sha256": "df9d4c284c10a37394d538edadffbd24c3464fd454edcddd8aa4042ffbf88b27",
   "owner_repository": "axiom-graphd",
   "workspace_layout": 2,
   "graph_payload_schema": 1,
-  "verification": "validated offline against immutable K-spec revision 83a7c689c68e28f7fc24a68642583beb95049597 for K-006 candidate work; draft pin is not release approval or publication",
+  "verification": "K-012: exact Git archive 39759ac2311206059b00c44179a998f502e4e777; matching origin feature SHA; specctl/integrity and spec-lock-check coverage verified. Draft feature spec, not released or certified.",
   "contract_digests": {
-    "contracts/version-dimensions.json": "7717d17d48a8a6dc697c5e78c9f699744bef2c32edf03d7a4b5afeea40b12345",
-    "contracts/sqlite/schema-v1.sql": "0aa68b1bd4c76e0299a13ab431dbf5f86279fecb5c67576776e5210e78b24302",
-    "contracts/schemas/version-report.schema.json": "4f4c68c74873da69fdf0da15550778a5928281d7260ad1c84156799eeec3e8bb",
-    "contracts/control-api-v1.md": "1c6914b857f762974fe1c37151beee2863b46977321af620101ce2f95c16cab0",
-    "specs/v2/K-release-readiness.md": "2e001c916e15bcabbb15154925a2db3b5c1924bf2b64504c48992e654c4eccfe",
+    "Development.md": "d8bcb8ccce5e9ca4caf10bf2ab980c3a77c19050b8990884ef591655c218cfdb",
     "adrs/ADR-0015.md": "e7f0682e0ae6a3f65e1589cef72ae44d9952e2602b10059e497c9e0382cfab1b",
+    "adrs/ADR-0019.md": "ed20d2fa1e479618e27e58a1cb147d7fbaef05761182e6aaec3d69f910ff04f9",
+    "conformance/fixture-index.json": "e889087c9468ab9ec4a5816d964bee516dc29445139c7fed955415781e393263",
+    "conformance/k-scope.md": "b6a06714b00aed1f1df4a79d2d5e10a9a20030a9efde4efad254d59589077c01",
+    "conformance/k_scope.py": "4d50de0f3c6dd138a4a140fe1f46d0c7788c08a36abae02176ad31614ef5d4b9",
+    "contracts/control-api-v1.md": "1c6914b857f762974fe1c37151beee2863b46977321af620101ce2f95c16cab0",
+    "contracts/schemas/version-report.schema.json": "4f4c68c74873da69fdf0da15550778a5928281d7260ad1c84156799eeec3e8bb",
+    "contracts/sqlite/schema-v1.sql": "0aa68b1bd4c76e0299a13ab431dbf5f86279fecb5c67576776e5210e78b24302",
+    "contracts/version-dimensions.json": "7717d17d48a8a6dc697c5e78c9f699744bef2c32edf03d7a4b5afeea40b12345",
     "docs/20-VERSION-CHECK-UPDATE-RELEASE.md": "1552647cf1ff2348a7688f93ba9a153563cf8d4505f0d8d68962045f8a8a4002",
-    "conformance/fixture-index.json": "e889087c9468ab9ec4a5816d964bee516dc29445139c7fed955415781e393263"
+    "specs/v2/K-release-readiness.md": "3cd09b418ed60207e5434bcf3b2f27c361831a08ffc8b98ded6bc23280e4b88b",
+    "tasks/K/scope-map.json": "60f6d12a03e061b7f156e27bf1cc54dcada8d3aa44dd684f01d5d00282f115e4",
+    "tasks/tasks.json": "8933e28c2a98f4b701243ec11da0d5c2ff6f49d82f4c9f9e8d663310c8a796e4",
+    "tools/specctl.py": "7c1e35ac52f5c35528d14376d69c316f1d407d4f1b6d1cbed8255065cbfb68cd"
   }
 }
