@@ -50,7 +50,7 @@ Every component reports its own axis, and they move independently.
 | Axis | Meaning | Example shape |
 |---|---|---|
 | spec | the specification revision; not a runtime | `2.0.0-draft.1` |
-| axiom-graphd | Rust daemon and public CLI/control behavior | `0.1.0` at release |
+| axiom-graphd | Rust daemon and public CLI/control behavior | `0.1.1` local candidate B (unpublished) |
 | axiom-mcp | MCP tools and query contract | `0.1.0` at release |
 | skills | workflow, template and script bundle | `0.1.0` at release |
 | axiom CLI | bundled bootstrap/installer/updater | same core version as `axiom-graphd` |

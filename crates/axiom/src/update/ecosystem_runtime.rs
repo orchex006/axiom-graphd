@@ -16,7 +16,7 @@ use serde_json::Value;
 use crate::install::apply::{ApplyRequest, LocalFs};
 use crate::install::ecosystem::{
     apply_ecosystem, plan_ecosystem, verify_ecosystem, EcosystemContext, EcosystemPlan,
-    EcosystemProbe,
+    EcosystemProbe, EcosystemSkillsPlan,
 };
 use crate::install::ecosystem_uninstall::maintenance_lock;
 use crate::install::plan::{is_digest, InstallPlan};
@@ -209,6 +209,16 @@ struct PointerArtifact {
     destination: String,
     sha256: String,
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RecoveryTarget {
+    plan_id: String,
+    plan_digest: String,
+    applied_at: String,
+    core_artifacts: Vec<PointerArtifact>,
+    skills_pointer: Vec<u8>,
+}
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Journal {
@@ -226,6 +236,8 @@ struct Journal {
     previous_skill_files: Vec<PointerArtifact>,
     service_owned: bool,
     state: String,
+    #[serde(default)]
+    candidate: Option<RecoveryTarget>,
 }
 
 /// Result of a successful update.
@@ -279,6 +291,7 @@ pub fn apply(
             "skills pointer changed after update plan review",
         ));
     }
+    let candidate = recovery_target(root, &plan.ecosystem, applied_at)?;
     let mut journal = Journal {
         schema_version: SCHEMA_VERSION,
         kind: JOURNAL_KIND.to_string(),
@@ -294,6 +307,7 @@ pub fn apply(
         activated_skills_pointer_sha256: None,
         service_owned,
         state: "prepared".to_string(),
+        candidate: Some(candidate),
     };
     write_journal(&journal_path, &journal)?;
     if service_owned {
@@ -438,6 +452,58 @@ pub fn rollback(
             "pointer-changed",
             "rolled-back journal no longer matches the active pointer",
         ));
+    }
+    if journal.state == "prepared" {
+        let target = journal.candidate.as_ref().ok_or_else(|| {
+            refuse(
+                "recovery-target-missing",
+                "prepared journal has no sealed candidate identity",
+            )
+        })?;
+        verify_artifacts(install_root, &journal.previous_artifacts)?;
+        verify_artifacts(install_root, &journal.previous_skill_files)?;
+        let current = read_pointer(install_root)?;
+        let current_skills = read_optional_skills_pointer(install_root)?;
+        let core_is_previous = current == journal.previous_pointer;
+        let skills_are_previous = current_skills == journal.previous_skills_pointer;
+        if !core_is_previous
+            && !candidate_core_pointer(install_root, &current, transaction_id, target)?
+        {
+            return Err(conflict(
+                "pointer-changed",
+                "prepared update does not own the current core pointer",
+            ));
+        }
+        if !skills_are_previous {
+            if current_skills.as_deref() != Some(target.skills_pointer.as_slice()) {
+                return Err(conflict(
+                    "skills-pointer-changed",
+                    "prepared update does not own the current skills pointer",
+                ));
+            }
+            verify_candidate_skills(install_root, target)?;
+        }
+        if journal.service_owned && (!core_is_previous || !skills_are_previous) {
+            service.drain(install_root)?;
+        }
+        if !core_is_previous {
+            restore_pointer(install_root, &journal.previous_pointer)?;
+        }
+        if !skills_are_previous {
+            restore_skills_pointer(install_root, journal.previous_skills_pointer.as_deref())?;
+        }
+        journal.state = "restored-after-service-failure".to_string();
+        write_journal(&journal_path, &journal)?;
+        if journal.service_owned {
+            service.reinstall(install_root)?;
+        }
+        journal.state = "rolled-back".to_string();
+        write_journal(&journal_path, &journal)?;
+        return Ok(EcosystemRollbackOutcome {
+            transaction_id: transaction_id.to_string(),
+            restored_pointer_sha256: journal.previous_pointer_sha256,
+            journal_path: journal_path.to_string_lossy().into_owned(),
+        });
     }
     if matches!(
         journal.state.as_str(),
@@ -803,6 +869,108 @@ fn verify_artifacts(root: &Path, artifacts: &[PointerArtifact]) -> Result<(), Ax
             ));
         }
     }
+    Ok(())
+}
+fn recovery_target(
+    root: &Path,
+    plan: &EcosystemPlan,
+    applied_at: &str,
+) -> Result<RecoveryTarget, AxiomError> {
+    if plan.component_plans.len() != 3 {
+        return Err(refuse(
+            "recovery-plan",
+            "ecosystem recovery plan is incomplete",
+        ));
+    }
+    let mut core_artifacts = Vec::with_capacity(2);
+    for entry in plan.component_plans.iter().take(2) {
+        let mut body = entry.plan.clone();
+        let object = body
+            .as_object_mut()
+            .ok_or_else(|| refuse("recovery-plan", "core plan is not an object"))?;
+        for key in crate::plan::DIGEST_EXCLUDED {
+            object.remove(key);
+        }
+        let child: InstallPlan = serde_json::from_value(body)
+            .map_err(|_| refuse("recovery-plan", "core plan is malformed"))?;
+        if child.components.len() != 1 {
+            return Err(refuse("recovery-plan", "core plan has no unique component"));
+        }
+        let component = &child.components[0];
+        let destination = Path::new(&component.destination);
+        let relative = destination
+            .strip_prefix(root)
+            .map_err(|_| refuse("recovery-plan", "core destination escapes install root"))?;
+        if !relative.starts_with("versions") || !is_digest(&component.source.sha256) {
+            return Err(refuse("recovery-plan", "core candidate is not versioned"));
+        }
+        core_artifacts.push(PointerArtifact {
+            destination: component.destination.clone(),
+            sha256: component.source.sha256.clone(),
+        });
+    }
+    let skills: EcosystemSkillsPlan = serde_json::from_value(plan.component_plans[2].plan.clone())
+        .map_err(|_| refuse("recovery-plan", "skills plan is malformed"))?;
+    if skills.directory != format!("skills/{}", skills.bundle.version) {
+        return Err(refuse(
+            "recovery-plan",
+            "skills candidate directory changed",
+        ));
+    }
+    let manifest = skills.bundle.manifest_bytes()?;
+    if sha256_hex(&manifest) != skills.manifest_sha256 {
+        return Err(refuse("recovery-plan", "skills candidate manifest changed"));
+    }
+    let pointer = crate::skills::install::pointer_record(&skills.install_plan(), &manifest);
+    Ok(RecoveryTarget {
+        plan_id: plan.plan_id.clone(),
+        plan_digest: plan.plan_digest.clone(),
+        applied_at: applied_at.to_string(),
+        core_artifacts,
+        skills_pointer: pointer.into_bytes(),
+    })
+}
+
+fn candidate_core_pointer(
+    root: &Path,
+    bytes: &[u8],
+    transaction_id: &str,
+    target: &RecoveryTarget,
+) -> Result<bool, AxiomError> {
+    let value: Value = serde_json::from_slice(bytes)
+        .map_err(|_| refuse("pointer-invalid", "current pointer is not JSON"))?;
+    if value.get("transaction_id").and_then(Value::as_str) != Some(transaction_id)
+        || value.get("plan_id").and_then(Value::as_str) != Some(target.plan_id.as_str())
+        || value.get("plan_digest").and_then(Value::as_str) != Some(target.plan_digest.as_str())
+        || value.get("applied_at").and_then(Value::as_str) != Some(target.applied_at.as_str())
+    {
+        return Ok(false);
+    }
+    Ok(pointer_artifacts(root, bytes)? == target.core_artifacts)
+}
+
+fn verify_candidate_skills(root: &Path, target: &RecoveryTarget) -> Result<(), AxiomError> {
+    let value: Value = serde_json::from_slice(&target.skills_pointer)
+        .map_err(|_| refuse("recovery-plan", "skills candidate pointer is invalid"))?;
+    let directory = value
+        .get("directory")
+        .and_then(Value::as_str)
+        .ok_or_else(|| refuse("recovery-plan", "skills candidate has no directory"))?;
+    let expected = value
+        .get("manifest_sha256")
+        .and_then(Value::as_str)
+        .ok_or_else(|| refuse("recovery-plan", "skills candidate has no manifest digest"))?;
+    if !is_digest(expected) {
+        return Err(refuse("recovery-plan", "skills manifest digest is invalid"));
+    }
+    let manifest = checked(root, &format!("{directory}/bundle.json"))?;
+    if sha256_hex(&fs::read(manifest).map_err(|e| io("skills-manifest-read", e))?) != expected {
+        return Err(conflict(
+            "skills-manifest-changed",
+            "prepared skills candidate manifest differs from approved bytes",
+        ));
+    }
+    let _ = skill_snapshot(root)?;
     Ok(())
 }
 fn stage_core_payloads(root: &Path, plan: &EcosystemPlan) -> Result<(), AxiomError> {
@@ -1190,6 +1358,130 @@ mod tests {
             &service,
         )
         .unwrap();
+    }
+
+    fn mark_prepared(root: &Path, transaction: &str) {
+        let path = journal_path(root, transaction).unwrap();
+        let mut journal: Journal = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+        journal.state = "prepared".to_string();
+        journal.activated_pointer_sha256 = None;
+        journal.activated_pointer = None;
+        journal.activated_skills_pointer_sha256 = None;
+        write_journal(&path, &journal).unwrap();
+    }
+
+    #[test]
+    fn prepared_journal_before_any_pointer_move_restores_service_and_is_idempotent() {
+        let (install, _bundle, plan) = setup();
+        let root = install.path();
+        let previous = fs::read(root.join("current")).unwrap();
+        let service = Service::owned();
+        let transaction = "update-prepared-before";
+        apply(
+            &plan,
+            &plan.plan_digest,
+            transaction,
+            "2026-09-22T00:01:00Z",
+            &service,
+        )
+        .unwrap();
+        fs::write(root.join("current"), &previous).unwrap();
+        fs::remove_file(root.join("skills/current")).unwrap();
+        mark_prepared(root, transaction);
+        rollback(root, transaction, &service).unwrap();
+        assert_eq!(fs::read(root.join("current")).unwrap(), previous);
+        assert!(!root.join("skills/current").exists());
+        assert_eq!(service.drains.get(), 1);
+        assert_eq!(service.reinstalls.get(), 2);
+        rollback(root, transaction, &service).unwrap();
+        assert_eq!(service.reinstalls.get(), 2);
+    }
+
+    #[test]
+    fn prepared_journal_after_skills_move_restores_both_previous_pointers() {
+        let (install, _bundle, plan) = setup();
+        let root = install.path();
+        let previous = fs::read(root.join("current")).unwrap();
+        let service = Service::owned();
+        let transaction = "update-prepared-skills";
+        apply(
+            &plan,
+            &plan.plan_digest,
+            transaction,
+            "2026-09-22T00:01:00Z",
+            &service,
+        )
+        .unwrap();
+        fs::write(root.join("current"), &previous).unwrap();
+        mark_prepared(root, transaction);
+        rollback(root, transaction, &service).unwrap();
+        assert_eq!(fs::read(root.join("current")).unwrap(), previous);
+        assert!(!root.join("skills/current").exists());
+        assert_eq!(service.drains.get(), 2);
+        assert_eq!(service.reinstalls.get(), 2);
+    }
+
+    #[test]
+    fn prepared_journal_refuses_changed_skills_manifest_before_service_drain() {
+        let (install, _bundle, plan) = setup();
+        let root = install.path();
+        let previous = fs::read(root.join("current")).unwrap();
+        let service = Service::owned();
+        let transaction = "update-prepared-tampered-skills";
+        apply(
+            &plan,
+            &plan.plan_digest,
+            transaction,
+            "2026-09-22T00:01:00Z",
+            &service,
+        )
+        .unwrap();
+        fs::write(root.join("current"), &previous).unwrap();
+        mark_prepared(root, transaction);
+        let current_skills: Value =
+            serde_json::from_slice(&fs::read(root.join("skills/current")).unwrap()).unwrap();
+        let directory = current_skills["directory"].as_str().unwrap();
+        fs::write(root.join(directory).join("bundle.json"), b"tampered").unwrap();
+        let error = rollback(root, transaction, &service).unwrap_err();
+        assert_eq!(
+            error.details().get("rule").map(String::as_str),
+            Some("skills-manifest-changed")
+        );
+        assert_eq!(service.drains.get(), 1);
+    }
+
+    #[test]
+    fn prepared_journal_after_core_move_requires_matching_transaction() {
+        let (install, _bundle, plan) = setup();
+        let root = install.path();
+        let previous = fs::read(root.join("current")).unwrap();
+        let service = Service::owned();
+        let transaction = "update-prepared-core";
+        apply(
+            &plan,
+            &plan.plan_digest,
+            transaction,
+            "2026-09-22T00:01:00Z",
+            &service,
+        )
+        .unwrap();
+        mark_prepared(root, transaction);
+        let mut foreign: Value =
+            serde_json::from_slice(&fs::read(root.join("current")).unwrap()).unwrap();
+        foreign["transaction_id"] = Value::String("foreign".to_string());
+        fs::write(root.join("current"), serde_json::to_vec(&foreign).unwrap()).unwrap();
+        let error = rollback(root, transaction, &service).unwrap_err();
+        assert_eq!(
+            error.details().get("rule").map(String::as_str),
+            Some("pointer-changed")
+        );
+        assert_eq!(service.drains.get(), 1);
+
+        foreign["transaction_id"] = Value::String(transaction.to_string());
+        fs::write(root.join("current"), serde_json::to_vec(&foreign).unwrap()).unwrap();
+        rollback(root, transaction, &service).unwrap();
+        assert_eq!(fs::read(root.join("current")).unwrap(), previous);
+        assert!(!root.join("skills/current").exists());
     }
 
     #[test]

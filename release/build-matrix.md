@@ -96,6 +96,10 @@ K-102 records a lane-local Mac Intel candidate and graph/catalog from an
 isolated real-source project. Its source, binary, archive and fixture hashes
 are handed to K-105 and K-107. The fixture verifies a project in a repository
 subdirectory so query cannot silently search the wrong output root.
+The K-106 downstream owner follow-up uses workspace version `0.1.1` for a
+separate unsigned, unpublished Mac Intel candidate B. Its source commit and
+payload hashes must be recorded by the native candidate packager; the earlier
+K-102 `0.1.0` evidence remains a separate point-in-time candidate.
 Windows/WSL execution and published release
 provenance remain separate aggregate gates.
 

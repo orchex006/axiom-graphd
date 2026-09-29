@@ -704,7 +704,7 @@ pub fn install(
 }
 
 /// The activation pointer record for one installed bundle.
-fn pointer_record(plan: &InstallPlan, manifest: &[u8]) -> String {
+pub(crate) fn pointer_record(plan: &InstallPlan, manifest: &[u8]) -> String {
     format!(
         "{{\"schema_version\":{BUNDLE_SCHEMA_VERSION},\"component\":\"{COMPONENT}\",\"version\":\"{}\",\"revision\":\"{}\",\"spec_revision\":\"{}\",\"directory\":\"{}\",\"entries\":{},\"installs_executable\":{},\"manifest_sha256\":\"{}\"}}\n",
         plan.bundle.version,

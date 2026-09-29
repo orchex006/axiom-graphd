@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- K-106 downstream owner follow-up prepares unsigned local core candidate
+  `0.1.1` for native Intel Mac A/B testing. A `prepared` ecosystem update
+  journal now records the expected core and skills activation identities before
+  pointer mutation. Explicit rollback verifies the retained A payloads and
+  current pointer ownership, restores A, and resumes the owned service after an
+  interrupted activation. This local candidate is neither signed nor published.
+
 - K-102 advances the owner pin to the immutable K-012 draft scope and records
   a native Intel Mac core candidate plus an isolated real-source graph/catalog
   fixture. Query/render now resolve the graph lane at the repository binding
