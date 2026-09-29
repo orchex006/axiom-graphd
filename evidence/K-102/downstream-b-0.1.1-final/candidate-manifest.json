@@ -1,0 +1,72 @@
+{
+  "archive": {
+    "name": "axiom-0.1.1-macos-x64.tar.gz",
+    "sha256": "edad423cba453c191dbebab2cc4ccd5b07aacd70a89c3245a89eb272d2c388f5",
+    "size_bytes": 3617358
+  },
+  "binaries": [
+    {
+      "mode": "0755",
+      "name": "axiom-graphd",
+      "sha256": "2c0bad2a382d0ed960d350ba32c44112c023ea65bf9703b2c3a150b241718378",
+      "size_bytes": 4060360,
+      "version_report": {
+        "analyzers": [],
+        "build_revision": "c4f643ebf7af95395d12cbba8572e7065254e8b4",
+        "component": "axiom-graphd",
+        "control_api": 1,
+        "graph_schema": 1,
+        "queue_schema": 1,
+        "spec_version": "2.0.0-draft.1",
+        "sqlite_version": "3.51.3",
+        "sqlite_wal_baseline": "3.51.3",
+        "sqlite_wal_supported": true,
+        "update_status": "unconfigured",
+        "version": "0.1.1"
+      }
+    },
+    {
+      "mode": "0755",
+      "name": "axiom",
+      "sha256": "08d72b12eaad63de2f40a626cc4ea5c8380cadba80412b58812c00cc77258089",
+      "size_bytes": 3703208,
+      "version_report": {
+        "build_revision": "c4f643ebf7af95395d12cbba8572e7065254e8b4",
+        "component": "axiom",
+        "control_api": 1,
+        "graph_schema": 1,
+        "queue_schema": 1,
+        "spec_version": "2.0.0-draft.1",
+        "update_status": "unconfigured",
+        "version": "0.1.1"
+      }
+    }
+  ],
+  "core_manifest_sha256": "7e6019f4a9e815a7ffb3b7d37106ee3f3e0753311b91c8431313132f8dcf2f55",
+  "host": {
+    "machine": "x86_64",
+    "runtime": "26.7",
+    "system": "Darwin"
+  },
+  "kind": "unsigned-core-candidate",
+  "notarization": "not_notarized",
+  "platform": "macos-x64",
+  "publication": "not_published",
+  "sbom": {
+    "name": "axiom-0.1.1-macos-x64.sbom.json",
+    "package_count": 94,
+    "sha256": "8bd4ed8442e680b1f6fad479975e45a3c9522f42d73f60dc9f76ad4d7a7c108f",
+    "size_bytes": 12401
+  },
+  "schema_version": 1,
+  "signing": "unsigned",
+  "source_lock_sha256": "685a973a089977fcb00a8132ba9361d15e9550973690eafea35c4f41ae29074a",
+  "source_revision": "c4f643ebf7af95395d12cbba8572e7065254e8b4",
+  "spec_revision": "39759ac2311206059b00c44179a998f502e4e777",
+  "toolchain": {
+    "cargo": "cargo 1.98.0 (797e8a9bc 2026-08-05) (Homebrew)",
+    "python": "3.9.6",
+    "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18) (Homebrew)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-apple-darwin\nrelease: 1.98.0\nLLVM version: 22.1.8"
+  },
+  "version": "0.1.1"
+}
