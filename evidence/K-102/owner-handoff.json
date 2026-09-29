@@ -1,0 +1,128 @@
+{
+  "acceptance": {
+    "AC1": "passed: native Mach-O x64 CLI and graphd share one source revision and verified hashes",
+    "AC2": "passed: packaged daemon generated and queried real C# graph/catalog; watcher advanced; corruption and schema refusals observed",
+    "AC3": "passed: manifest explicitly unsigned, not notarized, not published",
+    "AC4": "pending specctl completion and Git delivery; owner checks passed"
+  },
+  "artifacts": [
+    {
+      "path": "evidence/K-102/candidate-manifest.json",
+      "sha256": "c923680a3211986fa92eaa7cc3d62ee4cd465332ba52188968add4eda8471878"
+    },
+    {
+      "path": "evidence/K-102/axiom-0.1.0-macos-x64.tar.gz",
+      "sha256": "49ea03217b7099347808c7e023a592232fd70813f46cbc422cfddacb46a8bb94"
+    },
+    {
+      "path": "evidence/K-102/axiom-0.1.0-macos-x64.sbom.json",
+      "sha256": "0aed3a3eacf18524d4c1a8305ff1633624d8e5d0bb58b0f01c2393b9ae3bda9f"
+    },
+    {
+      "path": "evidence/K-102/real-source-fixture.tar",
+      "sha256": "cc9ae19cae2c1f08148daccfb5c3cd993db417a19a849747739ffc84a3599887"
+    },
+    {
+      "path": "evidence/K-102/real-source-report.json",
+      "sha256": "89d8b648a9356ba621a8108aaf25f470d097b4f135a6c3316cc7af06a4bc3109"
+    }
+  ],
+  "certified": false,
+  "commands": [
+    {
+      "command": "AXIOM_BUILD_REVISION=e5a30e2ee6807ab36cecbc881be3ffb4259cba83 cargo build --release --locked -p axiom-cli -p axiom-graphd",
+      "exit_code": 0,
+      "id": "build",
+      "output": "evidence/K-102/build.txt",
+      "output_sha256": "622ad82a43cb73fee73f7b7b947808560008454136d9c2f5489ed17009c6c840"
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "id": "fmt",
+      "output": "evidence/K-102/fmt.txt",
+      "output_sha256": "366fd957874ffac9f6ee639ca6f225e5bc7f3f7a136857c7dc660fd601f69aab"
+    },
+    {
+      "command": "cargo clippy --locked --all-targets -- -D warnings",
+      "exit_code": 0,
+      "id": "clippy",
+      "output": "evidence/K-102/clippy.txt",
+      "output_sha256": "2e10700226543532c2d92a20c49c713575f7a6d366365fdde642c2744f1127e6"
+    },
+    {
+      "command": "cargo test --locked --quiet",
+      "exit_code": 0,
+      "id": "workspace-tests",
+      "output": "evidence/K-102/workspace-tests.txt",
+      "output_sha256": "2f712b448aeef19e36605fc3eb22335393cb692b4758d261304e1634eaa38148"
+    },
+    {
+      "command": "python3 release/verify_core_candidate.py --candidate-dir evidence/K-102",
+      "exit_code": 0,
+      "id": "candidate-verify",
+      "output": "evidence/K-102/candidate-verify.txt",
+      "output_sha256": "bdc58d529569f21dbd2ba5e8f0ed84247b69c34b179da969ef5f604116dddcc2"
+    },
+    {
+      "command": "python3 tests/test_package_core.py --daemon <source-workspace>/target/release/axiom-graphd --cli <source-workspace>/target/release/axiom --source-revision e5a30e2ee6807ab36cecbc881be3ffb4259cba83 (detached worktree at source revision)",
+      "exit_code": 0,
+      "id": "package-tests",
+      "output": "evidence/K-102/package-tests.txt",
+      "output_sha256": "588a9ef44614b8282450405c48d0d01b8260cfe9ee7930a9c1dfa0136027db74"
+    },
+    {
+      "command": "python3 release/verify_real_source_candidate.py --candidate-dir /tmp/axiom-k102-candidate-e5 --out /tmp/axiom-k102-real-e5-clean",
+      "exit_code": 0,
+      "id": "real-source",
+      "output": "evidence/K-102/real-source.txt",
+      "output_sha256": "26d02b8e8489a54d567b27aabba82f8ffb47bf5a98182c26b97aa043dc742e1e"
+    }
+  ],
+  "delivery": {
+    "main_integrated": false,
+    "release_state": "candidate",
+    "source_branch": "feature/k-102-macos-core-candidate",
+    "source_remote_verified": false
+  },
+  "environment": {
+    "arch": "x86_64",
+    "execution": "native",
+    "os": "Darwin",
+    "os_version": "26.7",
+    "runtime": "macOS 26.7 x86_64",
+    "toolchain": "rustc/cargo 1.98.0; Python 3.9.6"
+  },
+  "evidence_revision": "715697929a167704a8e9b350bcccb353a6aad4cb",
+  "goal_id": "K-MacIntel-02",
+  "lane": "macos-x64",
+  "limitations": [
+    "No signing, notarization, publication, Windows/WSL parity, or released-fixture claim.",
+    "Independent review required before main integration."
+  ],
+  "next_consumers": [
+    "K-105 distribution install",
+    "K-107 installed query/process"
+  ],
+  "owner": "axiom-graphd",
+  "results": {
+    "corrupt_archive_refused": true,
+    "incompatible_fixture_refused": true,
+    "incompatible_manifest_refused": true,
+    "native_core": true,
+    "query_symbol": "Demo.TokenSource",
+    "real_source_catalog": true,
+    "watcher_generation_advanced": true,
+    "wrong_revision_refused": true
+  },
+  "source_revision": "e5a30e2ee6807ab36cecbc881be3ffb4259cba83",
+  "spec_revision": "39759ac2311206059b00c44179a998f502e4e777",
+  "status": "in_progress",
+  "task_id": "K-102",
+  "version": {
+    "control_api": 1,
+    "core": "0.1.0",
+    "graph_schema": 1,
+    "queue_schema": 1
+  }
+}

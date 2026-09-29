@@ -1,0 +1,6 @@
+cwd=axiom-graphd
+command=AXIOM_BUILD_REVISION=e5a30e2ee6807ab36cecbc881be3ffb4259cba83 cargo build --release --locked -p axiom-cli -p axiom-graphd
+exit_code=0
+result=Finished release profile [optimized] target(s) in 1m 16s
+host=Darwin 26.7 x86_64
+rustc=1.98.0 x86_64-apple-darwin

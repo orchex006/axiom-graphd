@@ -1,0 +1,3 @@
+$ python3 release/verify_core_candidate.py --candidate-dir evidence/K-102
+exit_code=0
+{"archive_sha256": "49ea03217b7099347808c7e023a592232fd70813f46cbc422cfddacb46a8bb94", "binary_sha256": {"axiom": "d441185263902334557da9a2b42a72e0c8f26e1c47eb222bac602fa86e60a528", "axiom-graphd": "aea46d4b63c6382f009f4fcf8822f9e90a3177442240440f4818050ae9231572"}, "native_executable_checks": 2, "ok": true, "package_count": 94, "sbom_sha256": "0aed3a3eacf18524d4c1a8305ff1633624d8e5d0bb58b0f01c2393b9ae3bda9f", "source_revision": "e5a30e2ee6807ab36cecbc881be3ffb4259cba83"}
