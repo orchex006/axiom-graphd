@@ -544,6 +544,14 @@ pub fn plan_install(
 pub trait InstallFs {
     /// True when the path exists, whatever its type.
     fn exists(&self, path: &str) -> bool;
+    /// Enumerate regular files below a retained version directory. Implementations
+    /// that cannot prove the complete set refuse reactivation.
+    fn files_under(&self, _path: &str) -> Result<Vec<String>, AxiomError> {
+        Err(refuse(
+            "retained_bundle_unverifiable",
+            "file listing unavailable",
+        ))
+    }
     /// Read a file.
     ///
     /// # Errors
@@ -596,6 +604,50 @@ impl LocalInstallFs {
 impl InstallFs for LocalInstallFs {
     fn exists(&self, path: &str) -> bool {
         self.native(path).is_ok_and(|native| native.exists())
+    }
+
+    fn files_under(&self, path: &str) -> Result<Vec<String>, AxiomError> {
+        let root = self.native(path)?;
+        let mut ancestor = self.root.clone();
+        for segment in path.split('/') {
+            ancestor.push(segment);
+            let kind = std::fs::symlink_metadata(&ancestor)
+                .map_err(|_| refuse("retained_bundle_unverifiable", path))?
+                .file_type();
+            if kind.is_symlink() || !kind.is_dir() {
+                return Err(refuse("retained_bundle_unverifiable", path));
+            }
+        }
+        let mut pending = vec![root.clone()];
+        let mut files = Vec::new();
+        while let Some(dir) = pending.pop() {
+            for item in
+                std::fs::read_dir(&dir).map_err(|_| refuse("retained_bundle_unverifiable", path))?
+            {
+                let item = item.map_err(|_| refuse("retained_bundle_unverifiable", path))?;
+                let kind = item
+                    .file_type()
+                    .map_err(|_| refuse("retained_bundle_unverifiable", path))?;
+                if kind.is_symlink() {
+                    return Err(refuse("retained_bundle_unverifiable", path));
+                }
+                if kind.is_dir() {
+                    pending.push(item.path());
+                } else if kind.is_file() {
+                    files.push(
+                        item.path()
+                            .strip_prefix(&root)
+                            .map_err(|_| refuse("retained_bundle_unverifiable", path))?
+                            .to_string_lossy()
+                            .replace(std::path::MAIN_SEPARATOR, "/"),
+                    );
+                } else {
+                    return Err(refuse("retained_bundle_unverifiable", path));
+                }
+            }
+        }
+        files.sort();
+        Ok(files)
     }
 
     fn read(&self, path: &str) -> Result<Vec<u8>, AxiomError> {
@@ -697,6 +749,46 @@ pub fn install(
         version: plan.bundle.version.clone(),
         directory: plan.directory.clone(),
         installed,
+        manifest_sha256: sha256_hex(&manifest),
+        pointer: pointer_path,
+        installs_executable: plan.installs_executable(),
+    })
+}
+
+/// Reactivate a retained version only after every file and the full directory
+/// inventory still match the reviewed bundle. Used after a pointer rollback.
+pub fn reactivate_existing(
+    plan: &InstallPlan,
+    fs: &dyn InstallFs,
+) -> Result<InstallReport, AxiomError> {
+    plan.bundle.validate()?;
+    if !fs.exists(&plan.directory) {
+        return Err(refuse("retained_bundle_missing", &plan.directory));
+    }
+    let mut expected: Vec<String> = plan.steps.iter().map(|step| step.path.clone()).collect();
+    expected.push(MANIFEST_FILE.to_string());
+    expected.sort();
+    if fs.files_under(&plan.directory)? != expected {
+        return Err(refuse("retained_bundle_changed", &plan.directory));
+    }
+    let manifest = plan.bundle.manifest_bytes()?;
+    if fs.read(&format!("{}/{}", plan.directory, MANIFEST_FILE))? != manifest {
+        return Err(refuse("retained_bundle_changed", &plan.directory));
+    }
+    for step in &plan.steps {
+        let bytes = fs.read(&format!("{}/{}", plan.directory, step.path))?;
+        if bytes.len() as u64 != step.size_bytes || sha256_hex(&bytes) != step.sha256 {
+            return Err(refuse("retained_bundle_changed", &step.path));
+        }
+    }
+    let pointer_path = format!("{BUNDLES_DIR}/{ACTIVE_POINTER}");
+    let temp = format!("{pointer_path}{POINTER_TEMP_SUFFIX}");
+    fs.write(&temp, pointer_record(plan, &manifest).as_bytes())?;
+    fs.rename(&temp, &pointer_path)?;
+    Ok(InstallReport {
+        version: plan.bundle.version.clone(),
+        directory: plan.directory.clone(),
+        installed: plan.steps.iter().map(|step| step.path.clone()).collect(),
         manifest_sha256: sha256_hex(&manifest),
         pointer: pointer_path,
         installs_executable: plan.installs_executable(),

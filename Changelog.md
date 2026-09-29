@@ -8,6 +8,10 @@
   pointer mutation. Explicit rollback verifies the retained A payloads and
   current pointer ownership, restores A, and resumes the owned service after an
   interrupted activation. This local candidate is neither signed nor published.
+  A rollback keeps versioned payloads for retry. Reapplying B now verifies a
+  retained skills directory in full and reactivates the core and skills
+  pointers even when both candidate payloads are already present; a changed
+  retained file refuses the retry before core pointer activation.
 
 - K-102 advances the owner pin to the immutable K-012 draft scope and records
   a native Intel Mac core candidate plus an isolated real-source graph/catalog

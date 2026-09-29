@@ -1451,6 +1451,65 @@ mod tests {
     }
 
     #[test]
+    fn rolled_back_candidate_can_be_activated_again_from_retained_payloads() {
+        let (install, _bundle, plan) = setup();
+        let root = install.path();
+        let previous = fs::read(root.join("current")).unwrap();
+        let service = Service::owned();
+        apply(
+            &plan,
+            &plan.plan_digest,
+            "update-first",
+            "2026-09-22T00:01:00Z",
+            &service,
+        )
+        .unwrap();
+        rollback(root, "update-first", &service).unwrap();
+        assert_eq!(fs::read(root.join("current")).unwrap(), previous);
+        apply(
+            &plan,
+            &plan.plan_digest,
+            "update-second",
+            "2026-09-22T00:02:00Z",
+            &service,
+        )
+        .unwrap();
+        assert_ne!(fs::read(root.join("current")).unwrap(), previous);
+    }
+
+    #[test]
+    fn changed_retained_skills_block_retry_without_moving_core_pointer() {
+        let (install, _bundle, plan) = setup();
+        let root = install.path();
+        let previous = fs::read(root.join("current")).unwrap();
+        let service = Service::owned();
+        apply(
+            &plan,
+            &plan.plan_digest,
+            "update-first",
+            "2026-09-22T00:01:00Z",
+            &service,
+        )
+        .unwrap();
+        rollback(root, "update-first", &service).unwrap();
+        let candidate = root.join("skills/2.0.0/instructions/axiom.md");
+        fs::write(candidate, b"changed by a user").unwrap();
+        let error = apply(
+            &plan,
+            &plan.plan_digest,
+            "update-second",
+            "2026-09-22T00:02:00Z",
+            &service,
+        )
+        .unwrap_err();
+        assert_eq!(
+            error.details().get("rule").map(String::as_str),
+            Some("retained_bundle_changed")
+        );
+        assert_eq!(fs::read(root.join("current")).unwrap(), previous);
+    }
+
+    #[test]
     fn prepared_journal_after_core_move_requires_matching_transaction() {
         let (install, _bundle, plan) = setup();
         let root = install.path();

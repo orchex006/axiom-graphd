@@ -26,7 +26,9 @@ This is a follow-up on the existing K-102 owner branch; the completed K-102
   Independent shared-update review remains pending. No compatibility or
   release claim follows from this draft proposal.
 - Allowed owner changes: `crates/axiom/src/update/ecosystem_runtime.rs`,
-  focused engine tests under `crates/`, workspace version/dependency metadata,
+  `crates/axiom/src/install/ecosystem.rs`,
+  `crates/axiom/src/skills/install.rs`, focused engine tests under `crates/`,
+  workspace version/dependency metadata,
   `release/` candidate tooling or manifest as needed, owner docs,
   `Changelog.md`, and `evidence/K-102/`. Preserve all unrelated content.
 - Verification plan: positive prepared recovery before and after each pointer

@@ -143,10 +143,11 @@ use crate::install::plan::{
     PLAN_KIND as COMPONENT_PLAN_KIND,
 };
 use crate::skills::install::{
-    install as install_skills, plan_install as plan_skills, InstallFs as SkillsFs,
-    InstallPlan as SkillsPlan, InstallStep as SkillsStep, LocalPayloadSource, PayloadSource,
-    SkillBundle, ACTIVE_POINTER, BUNDLES_DIR as SKILLS_BUNDLES_DIR,
-    MANIFEST_FILE as SKILLS_MANIFEST_FILE, MAX_MANIFEST_BYTES as SKILLS_MAX_MANIFEST_BYTES,
+    install as install_skills, plan_install as plan_skills,
+    reactivate_existing as reactivate_skills, InstallFs as SkillsFs, InstallPlan as SkillsPlan,
+    InstallStep as SkillsStep, LocalPayloadSource, PayloadSource, SkillBundle, ACTIVE_POINTER,
+    BUNDLES_DIR as SKILLS_BUNDLES_DIR, MANIFEST_FILE as SKILLS_MANIFEST_FILE,
+    MAX_MANIFEST_BYTES as SKILLS_MAX_MANIFEST_BYTES,
 };
 
 /// Contract identifier this module implements.
@@ -1959,10 +1960,50 @@ pub fn apply_ecosystem(
     let skills_ready = skills_installed(skills_fs, &skills);
     components.push(skills_row(skills_entry, &skills));
 
-    // A run that moves no core payload must not rewrite the core pointer: the
-    // record it already holds still names the installation this plan targets.
-    let core_activated = !pending.is_empty();
-    if pending.is_empty() && skills_ready {
+    // Retained candidate files may already exist after rollback while the
+    // active pointer still names the previous generation. In that case the
+    // candidate must be activated again even though no file needs moving.
+    let pointer_path = &plan.rollback.current_pointer;
+    let target_rows: Vec<(String, String)> = activated_core
+        .iter()
+        .flatten()
+        .flat_map(|rows| rows.iter())
+        .map(|row| (row.destination.clone(), row.sha256.clone()))
+        .collect();
+    let pointer_matches = if pending.is_empty() && core_fs.exists(pointer_path) {
+        let bytes = core_fs.read(pointer_path)?;
+        let value: serde_json::Value = serde_json::from_slice(&bytes)
+            .map_err(|_| refuse(RULE_STAGING_INCOMPLETE, "active core pointer is malformed"))?;
+        let rows = value
+            .get("activated")
+            .and_then(serde_json::Value::as_array)
+            .ok_or_else(|| {
+                refuse(
+                    RULE_STAGING_INCOMPLETE,
+                    "active core pointer has no artifacts",
+                )
+            })?;
+        let actual: Vec<_> = rows
+            .iter()
+            .map(|row| {
+                (
+                    row.get("destination")
+                        .and_then(serde_json::Value::as_str)
+                        .unwrap_or("")
+                        .to_string(),
+                    row.get("sha256")
+                        .and_then(serde_json::Value::as_str)
+                        .unwrap_or("")
+                        .to_string(),
+                )
+            })
+            .collect();
+        actual == target_rows
+    } else {
+        false
+    };
+    let core_activated = !pending.is_empty() || !pointer_matches;
+    if !core_activated && skills_ready {
         return Ok(application(
             plan,
             request,
@@ -1974,7 +2015,12 @@ pub fn apply_ecosystem(
     // Phase 3: activate. Every check has already passed.
     let mut skills_report: Option<(String, String)> = None;
     if !skills_ready {
-        let report = install_skills(&skills.install_plan(), skills_source, skills_fs)?;
+        let skills_plan = skills.install_plan();
+        let report = if skills_fs.exists(&skills.directory) {
+            reactivate_skills(&skills_plan, skills_fs)?
+        } else {
+            install_skills(&skills_plan, skills_source, skills_fs)?
+        };
         skills_report = Some((report.manifest_sha256, report.directory));
     }
     for (index, child) in pending {
