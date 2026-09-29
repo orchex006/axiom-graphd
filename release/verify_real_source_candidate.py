@@ -95,7 +95,7 @@ def main() -> int:
         if process.returncode != 0:
             raise AssertionError(f"daemon exited {process.returncode}: {stderr[-300:]}")
         context = call([str(daemon), "query", "context", "--solution", "demo-solution",
-                        "--symbol", "TokenSource", "--json"], env)
+                        "--symbol", "Demo.TokenSource", "--json"], env)
         project_generation = generation(project_pointer)
         if not project_generation:
             raise AssertionError("project generation missing")
@@ -106,7 +106,8 @@ def main() -> int:
         if "TokenSource" not in json.dumps(context):
             raise AssertionError("checkpoint query omitted expected source symbol")
         out.mkdir(parents=True)
-        shutil.copytree(repo / ".axiom/graph/demo-solution", out / "graph")
+        shutil.copytree(repo / ".axiom/graph/demo-solution", out / "graph",
+                        ignore=shutil.ignore_patterns("*.lock"))
         shutil.copytree(repo / "src", out / "source")
         checkpoint_pointer = repo / ".axiom/graph/demo-solution/demo-project/checkpoint/current.json"
         original_pointer = checkpoint_pointer.read_bytes()
@@ -116,12 +117,13 @@ def main() -> int:
         try:
             incompatible_query = subprocess.run(
                 [str(daemon), "query", "context", "--solution", "demo-solution",
-                 "--symbol", "TokenSource", "--json"], env=env, capture_output=True, text=True,
+                 "--symbol", "Demo.TokenSource", "--json"], env=env, capture_output=True, text=True,
             )
         finally:
             checkpoint_pointer.write_bytes(original_pointer)
-        if incompatible_query.returncode == 0:
-            raise AssertionError("incompatible fixture schema was accepted")
+        incompatible_response = json.loads(incompatible_query.stdout)
+        if incompatible_query.returncode == 0 or incompatible_response.get("details", {}).get("rule") != "export-unsupported":
+            raise AssertionError("incompatible fixture schema was not explicitly refused")
         report = {"source_revision": manifest["source_revision"], "candidate_manifest_sha256": sha(candidate / "candidate-manifest.json"),
                   "daemon_sha256": sha(daemon), "source_sha256": sha(source),
                   "first_catalog_generation": first, "updated_catalog_generation": second,
@@ -129,7 +131,7 @@ def main() -> int:
                   "graph_contains_TokenSource": True, "graph_contains_WatcherAdded": True,
                   "checkpoint_query_contains_TokenSource": True,
                   "incompatible_fixture_exit_code": incompatible_query.returncode,
-                  "incompatible_fixture_response": json.loads(incompatible_query.stdout),
+                  "incompatible_fixture_response": incompatible_response,
                   "daemon_exit_code": process.returncode,
                   "watcher_advanced": first != second, "candidate": True,
                   "graph_pointer_sha256": sha(pointer), "project_pointer_sha256": sha(project_pointer)}
