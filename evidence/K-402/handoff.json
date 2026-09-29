@@ -1,0 +1,127 @@
+{
+  "acceptance": {
+    "AC1": "passed: source-built Linux x64 CLI and graphd share exact core revision; manifest/archive/SBOM and executable hashes verified",
+    "AC2": "passed: candidate engine generated real-source graph/catalog fixture, watcher advanced, corrupt archive and incompatible fixture refused",
+    "AC3": "passed: manifest marks candidate unsigned, not notarized, not published",
+    "AC4": "passed: owner fmt/clippy/workspace tests, package tests and scoped review; canonical spec task completion recorded separately"
+  },
+  "artifacts": [
+    {
+      "path": "evidence/K-402/axiom-0.1.1-linux-x64.tar.gz",
+      "sha256": "3b94b0fbd1f6bee168c83b4ef66c6480197af1cf89945ff42fd97b900407cb35"
+    },
+    {
+      "path": "evidence/K-402/candidate-manifest.json",
+      "sha256": "b272505afac81837c7311a9649ae37fb42780499e8190dec703ea9ddc7865a22"
+    },
+    {
+      "path": "evidence/K-402/axiom-0.1.1-linux-x64.sbom.json",
+      "sha256": "3ee0afc433a451db88c7976b62122c304197ac18d424ce7880c91d7b559fbcef"
+    },
+    {
+      "path": "evidence/K-402/real-source-fixture.tar",
+      "sha256": "a2023e9d52f3a0f8e29adf68e4c482d0503dcf1d8839751b36e0be27c94f2004"
+    },
+    {
+      "path": "evidence/K-402/real-source-report.json",
+      "sha256": "a66349d46536523841d99d3664cc90174c6513ce6dd9501e71dd037dc2c53791"
+    }
+  ],
+  "candidate": true,
+  "certified": false,
+  "commands": [
+    {
+      "command": "AXIOM_BUILD_REVISION=dc6b7190260f879043354b991e0a4ced76da0ddd cargo build --release --locked -p axiom-cli -p axiom-graphd (Debian 12 x86_64 Docker)",
+      "exit_code": 0,
+      "id": "build",
+      "output": "evidence/K-402/build.txt",
+      "output_sha256": "dba3ca6b3631f2f3c0e03f7ed5d1f7ee6600583154fdb33f29fba8fabbe3e5f8"
+    },
+    {
+      "command": "python3 release/package_core.py --daemon /out/target/release/axiom-graphd --cli /out/target/release/axiom --source-revision dc6b7190260f879043354b991e0a4ced76da0ddd --out /out/candidate (clean Git clone in container)",
+      "exit_code": 0,
+      "id": "package",
+      "output": "evidence/K-402/package.txt",
+      "output_sha256": "08186bb2d983390adc512dc2e2d490342c3c192e03c72e3a8734fa708c0ef79d"
+    },
+    {
+      "command": "python3 release/verify_core_candidate.py --candidate-dir /out/candidate (container)",
+      "exit_code": 0,
+      "id": "verify",
+      "output": "evidence/K-402/candidate-verify.txt",
+      "output_sha256": "8ae4ab4bd7f9adc3261debe33dd9b81c6d1a4707ab36bb08dd3728aa7ace0318"
+    },
+    {
+      "command": "python3 release/verify_real_source_candidate.py --candidate-dir /out/candidate --out /out/real-source (container)",
+      "exit_code": 0,
+      "id": "real-source",
+      "output": "evidence/K-402/real-source.txt",
+      "output_sha256": "32364139293ccf6e3e32b339e1832183688372639498d624d83fb5366d1d97c5"
+    },
+    {
+      "command": "python3 tests/test_package_core.py --daemon /out/target/release/axiom-graphd --cli /out/target/release/axiom --source-revision dc6b7190260f879043354b991e0a4ced76da0ddd (container)",
+      "exit_code": 0,
+      "id": "package-tests",
+      "output": "evidence/K-402/package-tests.txt",
+      "output_sha256": "edd1fec483d958d558747ebadb9689b63fed9e8287a0015567bb60fa80f12f7d"
+    },
+    {
+      "command": "cargo fmt --all -- --check && cargo clippy --locked --workspace --all-targets -- -D warnings && cargo test --locked --workspace (container)",
+      "exit_code": 0,
+      "id": "owner-checks",
+      "output": "evidence/K-402/owner-checks.txt",
+      "output_sha256": "06d3cfcaa4a5dda5783b307bf1cf9b60f693d9ab4879bfce54bc33b1521402e3"
+    }
+  ],
+  "delivery": {
+    "main_integrated": false,
+    "release_state": "candidate",
+    "source_branch": "feature/k-402-container-core-candidate",
+    "source_commit": null,
+    "source_remote_verified": false
+  },
+  "environment": {
+    "arch": "x86_64",
+    "execution": "Docker Linux/amd64",
+    "image_id": "sha256:b29b6f802639ca8f495cd8d56613b74c89f20285827225ebc4bb0e9a211611fb",
+    "os": "Debian GNU/Linux 12",
+    "toolchain": {
+      "cargo": "cargo 1.85.0 (d73d2caf9 2024-12-31)",
+      "python": "3.11.2",
+      "rustc": "rustc 1.85.0 (4d91de4e4 2025-02-17)\nbinary: rustc\ncommit-hash: 4d91de4e48198da2e33413efdcd9cd2cc0c46688\ncommit-date: 2025-02-17\nhost: x86_64-unknown-linux-gnu\nrelease: 1.85.0\nLLVM version: 19.1.7"
+    }
+  },
+  "lane": "container-linux-x64",
+  "limitations": [
+    "Container Linux x64 is not native WSL2 or Windows proof.",
+    "Independent review and main integration remain pending.",
+    "No signing or publication authorization."
+  ],
+  "next_consumers": [
+    "K-404 CLI container input",
+    "K-407 MCP installed integration",
+    "K-504 native WSL2 fixture check"
+  ],
+  "owner": "axiom-graphd",
+  "provenance": {
+    "notarization": "not_notarized",
+    "publication": "not_published",
+    "signing": "unsigned"
+  },
+  "results": {
+    "checkpoint_query": true,
+    "corrupt_archive_refused": true,
+    "incompatible_fixture_refused": true,
+    "incompatible_manifest_refused": true,
+    "native_core": true,
+    "real_source_catalog": true,
+    "watcher_generation_advanced": true,
+    "workspace_tests_passed": 1429,
+    "wrong_revision_refused": true
+  },
+  "source_revision": "dc6b7190260f879043354b991e0a4ced76da0ddd",
+  "spec_revision": "39759ac2311206059b00c44179a998f502e4e777",
+  "status": "local_verified",
+  "task_id": "K-402",
+  "version": "0.1.1"
+}

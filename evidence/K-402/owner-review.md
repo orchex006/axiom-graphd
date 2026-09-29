@@ -1,0 +1,8 @@
+# K-402 owner review — Linux x64 core candidate
+
+- Source: clean clone of graphd revision `dc6b7190260f879043354b991e0a4ced76da0ddd` in Debian 12 x86_64 Docker. The source mount was read only; binaries and candidate were written outside it. The packaged CLI and daemon report the same build revision and core `0.1.1`.
+- Packaging: `package_core.py` produced an unsigned, not published Linux x64 archive and SBOM. `verify_core_candidate.py` checked manifest/archive hashes, two native executables, and 94 SBOM packages. The package regression produced byte identical archives twice and refused a wrong source revision, corrupt archive, and incompatible manifest version with exit 9.
+- Real source: the packaged daemon registered a C# project, generated catalog and project graph, observed a watcher generation change after `WatcherAdded` was added, and queried `Demo.TokenSource`. The graph and source bytes are retained in `real-source-fixture.tar`. A checkpoint pointer with schema version 99 was refused with exit 8 and `export-unsupported`; the original pointer was restored.
+- Compatibility: this is a glibc 2.36 Linux x86_64 candidate; Windows and WSL2 native behavior, signing, publication, and released provenance remain outside K-402. The fixture preserves generation identity and pointer hashes in `real-source-report.json`. Downstream must verify candidate and fixture digests before using them.
+- Rollback: the task adds only evidence and documentation on a feature branch. Removing the branch/evidence leaves the engine implementation unchanged. The source-built candidate did not mutate the user's installation.
+- Delivery: independent review and main integration are separate from this local owner verification.

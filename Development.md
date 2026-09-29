@@ -59,3 +59,14 @@ Merge เข้า `release/vX.Y.Z`, การ tag และ publish MUST มี
 รายงานปิดงานของทุก task MUST ระบุ: task ID, branch, commit SHA, สถานะการ integrate เข้า `main` และ path ของ checkout หลักที่อัปเดตแล้ว
 
 Daemon plus CLI share one core release; MCP and skills version independently. Documentation follows its component version. Do not invent a remote, push credentials or release version. No production action is authorized by copying this seed.
+
+## K-402 Linux x64 candidate handoff
+
+`evidence/K-402/` contains the unsigned core `0.1.1` Linux x64 candidate,
+manifest, SBOM, source graph fixture, and test outputs. The source revision and
+binary digests are recorded in `candidate-manifest.json`; the fixture's
+candidate and source identities are recorded in `real-source-report.json`.
+Downstream CLI and MCP container work may use these as candidate inputs after
+verifying their SHA-256 values. This handoff does not grant release or signing
+authority. The local candidate check is independent of the parent K-005
+four-lane release gate.

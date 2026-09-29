@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- K-402 records an unsigned Linux x64 core `0.1.1` candidate built from one
+  committed graphd revision in a native Linux container. Its packaged daemon
+  generated a C# source graph and catalog, observed a watcher update, and
+  refused corrupt package and incompatible fixture inputs. The archive,
+  fixture, manifest, SBOM, hashes, and owner check output are in
+  `evidence/K-402/` for downstream container consumers. This candidate is
+  neither signed nor published.
+
 - K-106 downstream owner follow-up prepares unsigned local core candidate
   `0.1.1` for native Intel Mac A/B testing. A `prepared` ecosystem update
   journal now records the expected core and skills activation identities before
