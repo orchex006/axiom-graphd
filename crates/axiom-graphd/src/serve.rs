@@ -1375,7 +1375,8 @@ pub fn resolve_projects(
     Ok(out)
 }
 
-/// Resolve one registered project to its absolute root.
+/// Resolve the repository output root for one registered project. Validate its
+/// membership subdirectory first; published graph lanes belong to the binding.
 ///
 /// # Errors
 ///
@@ -1389,7 +1390,8 @@ pub fn resolve_one_project(
     let probe = runtime::symlink_probe();
     let catalog = vec![CatalogRepoReference::new(project.repo_id.clone())];
     let resolved = resolve_binding(&bindings, &catalog, &project.repo_id, &probe)?;
-    resolve_project_root(&resolved, &project.relative_path, &probe)
+    let _project_root = resolve_project_root(&resolved, &project.relative_path, &probe)?;
+    Ok(resolved.resolved_root().to_owned())
 }
 
 /// Whether a solution has a registration row, used before queue operations.

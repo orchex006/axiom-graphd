@@ -94,7 +94,9 @@ signs, notarizes, tags, uploads or certifies the release.
 
 K-102 records a lane-local Mac Intel candidate and graph/catalog from an
 isolated real-source project. Its source, binary, archive and fixture hashes
-are handed to K-105 and K-107. Windows/WSL execution and published release
+are handed to K-105 and K-107. The fixture verifies a project in a repository
+subdirectory so query cannot silently search the wrong output root.
+Windows/WSL execution and published release
 provenance remain separate aggregate gates.
 
 ## 6. Related contracts

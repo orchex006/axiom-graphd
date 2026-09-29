@@ -81,31 +81,56 @@ def main() -> int:
         env = {**os.environ, "AXIOM_HOME": str(home)}
         registration = call([str(daemon), "solution", "register", "--config", str(solution), "--apply", "--json"], env)
         pointer = repo / ".axiom/graph/demo-solution/_catalog/live/current.json"
+        project_pointer = repo / ".axiom/graph/demo-solution/demo-project/live/current.json"
         process = subprocess.Popen([str(daemon), "serve", "--json"], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         try:
             first = wait_generation(pointer, None)
+            first_project = wait_generation(project_pointer, None)
             source.write_text(source.read_text() + "public sealed class WatcherAdded { }\n")
             second = wait_generation(pointer, first)
-            context = call([str(daemon), "query", "context", "--solution", "demo-solution", "--symbol", "TokenSource", "--json"], env)
+            wait_generation(project_pointer, first_project)
         finally:
             process.send_signal(signal.SIGINT)
             stdout, stderr = process.communicate(timeout=20)
         if process.returncode != 0:
             raise AssertionError(f"daemon exited {process.returncode}: {stderr[-300:]}")
-        project_pointer = repo / ".axiom/graph/demo-solution/demo-project/live/current.json"
+        context = call([str(daemon), "query", "context", "--solution", "demo-solution",
+                        "--symbol", "TokenSource", "--json"], env)
         project_generation = generation(project_pointer)
         if not project_generation:
             raise AssertionError("project generation missing")
+        project_live = project_pointer.parent / "generations" / project_generation
+        graph_bytes = b"".join(path.read_bytes() for path in project_live.rglob("*.json"))
+        if b"TokenSource" not in graph_bytes or b"WatcherAdded" not in graph_bytes:
+            raise AssertionError("published graph omitted expected source symbols")
         if "TokenSource" not in json.dumps(context):
-            raise AssertionError("query omitted expected source symbol")
+            raise AssertionError("checkpoint query omitted expected source symbol")
         out.mkdir(parents=True)
         shutil.copytree(repo / ".axiom/graph/demo-solution", out / "graph")
         shutil.copytree(repo / "src", out / "source")
+        checkpoint_pointer = repo / ".axiom/graph/demo-solution/demo-project/checkpoint/current.json"
+        original_pointer = checkpoint_pointer.read_bytes()
+        incompatible = json.loads(original_pointer)
+        incompatible["schema_version"] = 99
+        checkpoint_pointer.write_text(json.dumps(incompatible) + "\n")
+        try:
+            incompatible_query = subprocess.run(
+                [str(daemon), "query", "context", "--solution", "demo-solution",
+                 "--symbol", "TokenSource", "--json"], env=env, capture_output=True, text=True,
+            )
+        finally:
+            checkpoint_pointer.write_bytes(original_pointer)
+        if incompatible_query.returncode == 0:
+            raise AssertionError("incompatible fixture schema was accepted")
         report = {"source_revision": manifest["source_revision"], "candidate_manifest_sha256": sha(candidate / "candidate-manifest.json"),
                   "daemon_sha256": sha(daemon), "source_sha256": sha(source),
                   "first_catalog_generation": first, "updated_catalog_generation": second,
                   "project_generation": project_generation, "registered": registration,
-                  "query_contains_TokenSource": True, "daemon_exit_code": process.returncode,
+                  "graph_contains_TokenSource": True, "graph_contains_WatcherAdded": True,
+                  "checkpoint_query_contains_TokenSource": True,
+                  "incompatible_fixture_exit_code": incompatible_query.returncode,
+                  "incompatible_fixture_response": json.loads(incompatible_query.stdout),
+                  "daemon_exit_code": process.returncode,
                   "watcher_advanced": first != second, "candidate": True,
                   "graph_pointer_sha256": sha(pointer), "project_pointer_sha256": sha(project_pointer)}
         (out / "report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")

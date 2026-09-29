@@ -4,7 +4,9 @@
 
 - K-102 advances the owner pin to the immutable K-012 draft scope and records
   a native Intel Mac core candidate plus an isolated real-source graph/catalog
-  fixture. Candidate evidence does not sign or publish the core release.
+  fixture. Query/render now resolve the graph lane at the repository binding
+  after validating the project subdirectory, matching the writer's location.
+  Candidate evidence does not sign or publish the core release.
 
 - K-006 adds the `macos-x64` release target under ADR-0015 and deterministic,
   hash-verified unsigned core candidate packaging for native Intel Mac and
