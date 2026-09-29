@@ -136,5 +136,32 @@
     "core": "0.1.0",
     "graph_schema": 1,
     "queue_schema": 1
-  }
+  },
+  "parent_ids": [
+    "K-006"
+  ],
+  "fixture_provenance": "candidate",
+  "input_reports": [],
+  "negative_and_failure": "Wrong revision, corrupt candidate archive, incompatible manifest version all refused by package tests; query rejected schema_version 99 with export-unsupported; watcher update was observed.",
+  "next_consumer": [
+    "K-105 distribution install",
+    "K-107 installed query/process"
+  ],
+  "spec_lock": {
+    "path": "axiom-specs/evidence/artifacts/K-102/spec.lock.json",
+    "sha256": "810cb38caeeabc453b785bd63c13cd475dc9ed8212827740b5fc9fd5fccdaf44"
+  },
+  "reference_bases": {
+    "artifacts": "owner_repo",
+    "commands": "owner_repo",
+    "scope_report": "workspace_root",
+    "input_reports": "workspace_root"
+  },
+  "spec_pins": [
+    {
+      "component": "axiom-spec-pin",
+      "path": "axiom-specs/evidence/artifacts/K-102/spec.lock.json",
+      "sha256": "810cb38caeeabc453b785bd63c13cd475dc9ed8212827740b5fc9fd5fccdaf44"
+    }
+  ]
 }
