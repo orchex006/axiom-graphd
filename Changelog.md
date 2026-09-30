@@ -1,3 +1,7 @@
+# 0.1.1 MacIntel test release
+
+Owner-authorized publication of current code; see release/v0.1.1-notes.md.
+
 # Changelog — axiom-graphd
 
 ## Unreleased

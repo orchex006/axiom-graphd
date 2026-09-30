@@ -1,0 +1,14 @@
+{
+  "owner": "Codex",
+  "task": "Publish owner-authorized 0.1.1 MacIntel test release",
+  "baseline": "1c1ad88c347a1b1665dcec144de1f5ac3ba86773",
+  "initial_tree": "clean",
+  "authorization": "User explicitly authorized commit, push, tag and GitHub publication using current code.",
+  "allowed_changes": [
+    "version metadata",
+    "release automation",
+    "packaging compatibility",
+    "release documentation"
+  ],
+  "verification": "Build and validate release payloads in GitHub Actions; record actual outcomes. Other platform certification is not required for this test release."
+}

@@ -1,0 +1,48 @@
+name: Release 0.1.1 for MacIntel testing
+on:
+  push:
+    branches: [release/v0.1.1]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: release-v0.1.1
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: macos-15-intel
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and verify
+        shell: bash
+        env:
+          OUT: ${{ runner.temp }}/release-assets
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          test "$(uname -m)" = x86_64
+          rustup toolchain install 1.85.0 --profile minimal
+          export AXIOM_BUILD_REVISION="$GITHUB_SHA"
+          cargo build --locked --release -p axiom-graphd -p axiom-cli
+          python3 release/package_core.py --daemon target/release/axiom-graphd --cli target/release/axiom --source-revision "$GITHUB_SHA" --out-dir "$OUT"
+          cp release/v0.1.1-notes.md "$OUT/RELEASE-NOTES.md"
+          printf '%s\n' "$GITHUB_SHA" > "$OUT/SOURCE-REVISION.txt"
+          cd "$OUT"
+          shasum -a 256 * > SHA256SUMS
+      - name: Publish verified assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          OUT: ${{ runner.temp }}/release-assets
+        run: |
+          set -euo pipefail
+          if gh release view v0.1.1 --json isDraft >/dev/null 2>&1; then
+            test "$(gh release view v0.1.1 --json isDraft --jq .isDraft)" = true
+          else
+            gh release create v0.1.1 --target "$GITHUB_SHA" --draft --title '0.1.1 — MacIntel test release' --notes-file release/v0.1.1-notes.md
+          fi
+          gh release upload v0.1.1 "$OUT"/* --clobber
+          gh release edit v0.1.1 --draft=false --latest
+          gh release view v0.1.1 --json url,tagName,isDraft,assets >> "$GITHUB_STEP_SUMMARY"
