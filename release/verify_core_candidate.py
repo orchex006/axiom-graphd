@@ -112,7 +112,8 @@ def verify(root: Path) -> dict:
             data = file.read_bytes()
             if not native_binary(data, target) or sha(data) != row["sha256"] or len(data) != row["size_bytes"]:
                 raise ValueError(f"candidate {name} bytes or architecture mismatch")
-            result = subprocess.run([str(file), "version", "--json"], capture_output=True, text=True, check=False)
+            result = subprocess.run([str(file), "version", "--json"], capture_output=True,
+                                    text=True, encoding="utf-8", check=False)
             if result.returncode:
                 raise ValueError(f"candidate {name} executable failed with {result.returncode}")
             report = json.loads(result.stdout)

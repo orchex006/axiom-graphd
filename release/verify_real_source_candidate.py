@@ -22,7 +22,7 @@ def sha(path: Path) -> str:
 
 
 def call(argv: list[str], env: dict[str, str], expected: int = 0) -> dict:
-    result = subprocess.run(argv, env=env, capture_output=True, text=True)
+    result = subprocess.run(argv, env=env, capture_output=True, text=True, encoding="utf-8")
     if result.returncode != expected:
         raise AssertionError(f"{Path(argv[0]).name} returned {result.returncode}, expected {expected}: {result.stdout[-300:]} {result.stderr[-300:]}")
     return json.loads(result.stdout)
@@ -96,7 +96,7 @@ def main() -> int:
         registration = call([str(daemon), "solution", "register", "--config", str(solution), "--apply", "--json"], env)
         pointer = repo / ".axiom/graph/demo-solution/_catalog/live/current.json"
         project_pointer = repo / ".axiom/graph/demo-solution/demo-project/live/current.json"
-        process = subprocess.Popen([str(daemon), "serve", "--json"], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+        process = subprocess.Popen([str(daemon), "serve", "--json"], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8",
                                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if windows else 0)
         try:
             first = wait_generation(pointer, None)
@@ -132,7 +132,7 @@ def main() -> int:
         try:
             incompatible_query = subprocess.run(
                 [str(daemon), "query", "context", "--solution", "demo-solution",
-                 "--symbol", "Demo.TokenSource", "--json"], env=env, capture_output=True, text=True,
+                 "--symbol", "Demo.TokenSource", "--json"], env=env, capture_output=True, text=True, encoding="utf-8",
             )
         finally:
             checkpoint_pointer.write_bytes(original_pointer)

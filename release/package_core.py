@@ -61,7 +61,8 @@ def read_json(path: Path) -> dict:
 
 
 def command(argv: list[str], *, cwd: Path = ROOT) -> str:
-    result = subprocess.run(argv, cwd=cwd, capture_output=True, text=True, check=False)
+    result = subprocess.run(argv, cwd=cwd, capture_output=True, text=True,
+                            encoding="utf-8", check=False)
     if result.returncode:
         raise ValueError(f"{Path(argv[0]).name} exited {result.returncode}: {result.stderr[-300:]}")
     return result.stdout.strip()
