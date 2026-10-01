@@ -1,0 +1,5 @@
+cwd=axiom-graphd
+command=cargo build --release --locked -p axiom-cli -p axiom-graphd
+AXIOM_BUILD_REVISION=4f8765a74ae5f077f53d092ddb4fea40d0c44fe3
+    Finished `release` profile [optimized] target(s) in 0.52s
+exit=0
