@@ -105,6 +105,13 @@ provenance remain separate aggregate gates.
 
 ## 6. Related contracts
 
+K-308 prepares the Windows `0.1.2` core B input for K-306. This candidate is
+built from one committed source revision with native MSVC x64 binaries; the
+corrected K-302/K-305 Windows `0.1.1` candidate is A. The checked-in core
+manifest describes the next unpublished workspace version, while the K-308
+evidence names the exact candidate ZIP, SBOM and hashes. It does not claim a
+published `v0.1.2` release.
+
 - Exit codes: `docs/CLI-EXIT-CODES.md`.
 - Update delegation and approval binding: `docs/16-CLI-AND-CONTROL-API.md`
   section 7, implemented in `crates/axiom-graphd/src/commands/update.rs`.

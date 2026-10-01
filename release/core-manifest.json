@@ -7,7 +7,7 @@
   "note": "One core release. The daemon `axiom-graphd` and the installation CLI `axiom` are built from one Rust workspace, one version and one revision, and are published together. There is no separate `axiom-bootstrap` release component. This file declares that release and records honestly what this workstream verified and what it did not: it is a declaration, not a publication record, and it claims no artifact that was not built.",
   "release": {
     "name": "axiom-core",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "version_source": "Cargo.toml [workspace.package].version",
     "revision": "unpinned",
     "revision_state": "not_pinned",
@@ -16,14 +16,14 @@
       {
         "name": "axiom-graphd",
         "role": "daemon",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "revision": "unpinned",
         "cargo_package": "crates/axiom-graphd"
       },
       {
         "name": "axiom",
         "role": "cli",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "revision": "unpinned",
         "cargo_package": "crates/axiom-cli"
       }
@@ -32,9 +32,9 @@
     "bootstrap_note": "Bootstrap and installer behaviour live inside this same workspace and ship in this same core release; there is no second component, no second version and no second publication for them.",
     "source": {
       "workspace_toml": "Cargo.toml",
-      "workspace_toml_sha256": "0c5d81b879b209ab7e0b7f1cf790db9f14b2334e3d163a7150243e69de44db53",
+      "workspace_toml_sha256": "d62c3e8f272d41c185e9021044ed915366f958873d57384854d132bb56d33dd7",
       "lockfile": "Cargo.lock",
-      "lockfile_sha256": "685a973a089977fcb00a8132ba9361d15e9550973690eafea35c4f41ae29074a",
+      "lockfile_sha256": "ca4291d16ddb16e9f964b9180888bd1d5a948bcc939c68e6a5768c34630a7f9c",
       "lockfile_state": "checked_in"
     },
     "targets": [
@@ -44,12 +44,12 @@
         "arch": "x86_64",
         "rust_target": "x86_64-pc-windows-msvc",
         "archive": {
-          "name": "axiom-0.1.1-windows-x64.zip",
+          "name": "axiom-0.1.2-windows-x64.zip",
           "state": "not_built",
           "sha256": null
         },
         "sbom": {
-          "name": "axiom-0.1.1-windows-x64.sbom.json",
+          "name": "axiom-0.1.2-windows-x64.sbom.json",
           "state": "not_built",
           "sha256": null
         },
@@ -65,8 +65,8 @@
         "provenance": {
           "revision": "unpinned",
           "components": {
-            "axiom-graphd": "0.1.1",
-            "axiom": "0.1.1"
+            "axiom-graphd": "0.1.2",
+            "axiom": "0.1.2"
           },
           "note": "An archive may only be declared once both components stand at the release revision; the revision stays `unpinned` because the release gate is closed and no commit is pinned for this workstream."
         },
@@ -77,8 +77,8 @@
         },
         "installation_evidence": {
           "state": "not_run",
-          "command": "axiom install --archive axiom-0.1.1-windows-x64.zip",
-          "reason": "The clean-user installation cannot be run in this workstream: the archive axiom-0.1.1-windows-x64.zip is not built (release.archive.state = not_built), the release gate is closed so nothing is signed or published, and the `axiom install` verb is a recognised-but-unimplemented verb at this revision (crates/axiom/src/cli.rs PENDING_VERBS). No output or digest is claimed.",
+          "command": "axiom install --archive axiom-0.1.2-windows-x64.zip",
+          "reason": "The clean-user installation cannot be run in this workstream: the archive axiom-0.1.2-windows-x64.zip is not built (release.archive.state = not_built), the release gate is closed so nothing is signed or published, and the `axiom install` verb is a recognised-but-unimplemented verb at this revision (crates/axiom/src/cli.rs PENDING_VERBS). No output or digest is claimed.",
           "sha256": null
         }
       },
@@ -88,12 +88,12 @@
         "arch": "x86_64",
         "rust_target": "x86_64-unknown-linux-gnu",
         "archive": {
-          "name": "axiom-0.1.1-linux-x64.tar.gz",
+          "name": "axiom-0.1.2-linux-x64.tar.gz",
           "state": "not_built",
           "sha256": null
         },
         "sbom": {
-          "name": "axiom-0.1.1-linux-x64.sbom.json",
+          "name": "axiom-0.1.2-linux-x64.sbom.json",
           "state": "not_built",
           "sha256": null
         },
@@ -109,8 +109,8 @@
         "provenance": {
           "revision": "unpinned",
           "components": {
-            "axiom-graphd": "0.1.1",
-            "axiom": "0.1.1"
+            "axiom-graphd": "0.1.2",
+            "axiom": "0.1.2"
           },
           "note": "An archive may only be declared once both components stand at the release revision; the revision stays `unpinned` because the release gate is closed and no commit is pinned for this workstream."
         },
@@ -121,8 +121,8 @@
         },
         "installation_evidence": {
           "state": "not_run",
-          "command": "axiom install --archive axiom-0.1.1-linux-x64.tar.gz",
-          "reason": "The clean-user installation cannot be run in this workstream: the archive axiom-0.1.1-linux-x64.tar.gz is not built (release.archive.state = not_built), the release gate is closed so nothing is signed or published, and the `axiom install` verb is a recognised-but-unimplemented verb at this revision (crates/axiom/src/cli.rs PENDING_VERBS). No output or digest is claimed.",
+          "command": "axiom install --archive axiom-0.1.2-linux-x64.tar.gz",
+          "reason": "The clean-user installation cannot be run in this workstream: the archive axiom-0.1.2-linux-x64.tar.gz is not built (release.archive.state = not_built), the release gate is closed so nothing is signed or published, and the `axiom install` verb is a recognised-but-unimplemented verb at this revision (crates/axiom/src/cli.rs PENDING_VERBS). No output or digest is claimed.",
           "sha256": null
         }
       },
@@ -132,12 +132,12 @@
         "arch": "aarch64",
         "rust_target": "aarch64-apple-darwin",
         "archive": {
-          "name": "axiom-0.1.1-macos-arm64.tar.gz",
+          "name": "axiom-0.1.2-macos-arm64.tar.gz",
           "state": "not_built",
           "sha256": null
         },
         "sbom": {
-          "name": "axiom-0.1.1-macos-arm64.sbom.json",
+          "name": "axiom-0.1.2-macos-arm64.sbom.json",
           "state": "not_built",
           "sha256": null
         },
@@ -153,8 +153,8 @@
         "provenance": {
           "revision": "unpinned",
           "components": {
-            "axiom-graphd": "0.1.1",
-            "axiom": "0.1.1"
+            "axiom-graphd": "0.1.2",
+            "axiom": "0.1.2"
           },
           "note": "An archive may only be declared once both components stand at the release revision; the revision stays `unpinned` because the release gate is closed and no commit is pinned for this workstream."
         },
@@ -165,8 +165,8 @@
         },
         "installation_evidence": {
           "state": "not_run",
-          "command": "axiom install --archive axiom-0.1.1-macos-arm64.tar.gz",
-          "reason": "The clean-user installation cannot be run in this workstream: the archive axiom-0.1.1-macos-arm64.tar.gz is not built (release.archive.state = not_built), the release gate is closed so nothing is signed or published, and the `axiom install` verb is a recognised-but-unimplemented verb at this revision (crates/axiom/src/cli.rs PENDING_VERBS). No output or digest is claimed.",
+          "command": "axiom install --archive axiom-0.1.2-macos-arm64.tar.gz",
+          "reason": "The clean-user installation cannot be run in this workstream: the archive axiom-0.1.2-macos-arm64.tar.gz is not built (release.archive.state = not_built), the release gate is closed so nothing is signed or published, and the `axiom install` verb is a recognised-but-unimplemented verb at this revision (crates/axiom/src/cli.rs PENDING_VERBS). No output or digest is claimed.",
           "sha256": null
         }
       },
@@ -176,12 +176,12 @@
         "arch": "x86_64",
         "rust_target": "x86_64-apple-darwin",
         "archive": {
-          "name": "axiom-0.1.1-macos-x64.tar.gz",
+          "name": "axiom-0.1.2-macos-x64.tar.gz",
           "state": "not_built",
           "sha256": null
         },
         "sbom": {
-          "name": "axiom-0.1.1-macos-x64.sbom.json",
+          "name": "axiom-0.1.2-macos-x64.sbom.json",
           "state": "not_built",
           "sha256": null
         },
@@ -197,8 +197,8 @@
         "provenance": {
           "revision": "unpinned",
           "components": {
-            "axiom-graphd": "0.1.1",
-            "axiom": "0.1.1"
+            "axiom-graphd": "0.1.2",
+            "axiom": "0.1.2"
           },
           "note": "The Intel Mac candidate is prepared under K-006 from a recorded immutable source commit; this checked-in release declaration remains unpinned and does not claim a signed or published archive."
         },

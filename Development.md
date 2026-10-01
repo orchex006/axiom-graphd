@@ -70,6 +70,17 @@ The K-305 downstream correction uses the same K-302 owner branch to fix native
 Windows uninstall planning. The original candidate remains historical evidence;
 the corrected source and candidate require new immutable revision and hashes.
 
+## K-308 Windows 0.1.2 core B candidate
+
+The shared graphd daemon and engine CLI advance together to workspace version
+`0.1.2` for K-306's native Windows A-to-B update test. The `0.1.1` corrected
+K-302/K-305 candidate is immutable A. Build both native MSVC x64 executables
+with the same committed `AXIOM_BUILD_REVISION`, then package and verify the
+unsigned ZIP/SBOM with `release/package_core.py` and
+`release/verify_core_candidate.py`. Record real-source graph/watch and refusal
+evidence under `evidence/K-308/`. This local candidate carries no release,
+signing or three-lane certification claim.
+
 ## K-402 Linux x64 candidate handoff
 
 `evidence/K-402/` contains the unsigned core `0.1.1` Linux x64 candidate,

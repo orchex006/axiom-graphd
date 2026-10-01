@@ -1,12 +1,12 @@
 {
   "spec_version": "2.0.0-draft.1",
   "spec_repository": "axiom-specs",
-  "spec_revision": "6584470ffede0926029147efa40732f3d3a8bf16",
-  "spec_content_sha256": "f4164a58349d5a885856a252a201cb060f16d73ecf80ff0adc419718075f693c",
+  "spec_revision": "9c63527a158e2d74baeccdfd7cf26e50e54b151c",
+  "spec_content_sha256": "91f66a1f0f2574f10f67b8bf22c087356ed24a0df2a42f0eb4c9500640a6fd8f",
   "owner_repository": "axiom-graphd",
   "workspace_layout": 2,
   "graph_payload_schema": 1,
-  "verification": "K-302: exact immutable specs revision 6584470ffede0926029147efa40732f3d3a8bf16 with ADR-0020, verified from Git blobs. Draft candidate, not signed or certified.",
+  "verification": "K-308: immutable delivered K-308 registration revision and exact Git blob contract hashes; unsigned local Windows 0.1.2 candidate only.",
   "contract_digests": {
     "Development.md": "731fef8f80f99b0656877a3742a117163e8b6b1d446e5e9ff1a8a99bc4ff14de",
     "adrs/ADR-0015.md": "22699c8518263fb5f21c7a9cda48b27da2229b19bf6c336d7dec72a980139716",
@@ -21,9 +21,10 @@
     "contracts/sqlite/schema-v1.sql": "0aa68b1bd4c76e0299a13ab431dbf5f86279fecb5c67576776e5210e78b24302",
     "contracts/version-dimensions.json": "7717d17d48a8a6dc697c5e78c9f699744bef2c32edf03d7a4b5afeea40b12345",
     "docs/20-VERSION-CHECK-UPDATE-RELEASE.md": "1552647cf1ff2348a7688f93ba9a153563cf8d4505f0d8d68962045f8a8a4002",
-    "specs/v2/K-release-readiness.md": "a83da7e2f0a000d9165aa0d664ab690fa2756f2b61e7255dbf72c52acb2288e9",
+    "specs/v2/K-release-readiness.md": "f8c1e874734d67302d947b1d24dea8c37e367609e9fdc45aa6ada84094e7f757",
+    "tasks/K/K-308.md": "8a1c638c8afdd69780961ee2fd5681903a6ff32872b12cca74fda1802297a4b9",
     "tasks/K/scope-map.json": "60a8b5f4e6813083c51e2d6992327af7fbf10865bc3c1aee5dc2f7dfed35edc1",
-    "tasks/tasks.json": "1b958edb00e25b2b53dc621410bd5d9b2db8ae945c0783b0f38d0c7aa8de605f",
+    "tasks/tasks.json": "77119822860a7aae5720adf98dcf3a8c826bb098bfb764078d7fdbadaddea919",
     "tools/specctl.py": "2353a4ca139b5d52f0904fb98a2cacfb14ffb08acee9a828d4d299e812db099f"
   }
 }

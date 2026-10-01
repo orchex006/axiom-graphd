@@ -6,6 +6,13 @@ Owner-authorized publication of current code; see release/v0.1.1-notes.md.
 
 ## Unreleased
 
+### K-308 Windows 0.1.2 core candidate
+
+Advance the shared daemon and engine CLI workspace version to 0.1.2 for the
+native Windows composite update B input. Record an unsigned, unpublished x64
+candidate from one pinned source revision and verify its archive, source graph,
+watcher and refusal cases. K-305's corrected 0.1.1 candidate remains A.
+
 ### K-302 Windows x64 core candidate
 
 Package and verify native MSVC x64 daemon and engine CLI as a deterministic
