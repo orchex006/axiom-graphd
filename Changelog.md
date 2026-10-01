@@ -11,6 +11,9 @@ Owner-authorized publication of current code; see release/v0.1.1-notes.md.
 Package and verify native MSVC x64 daemon and engine CLI as a deterministic
 unsigned ZIP. Check PE architecture, immutable source revision, version and
 schema compatibility, real-source graph/watch behavior and corruption refusal.
+The downstream K-305 Windows install exposed a path separator refusal in the
+engine uninstall planner; normalize owned runtime evidence keys with path APIs
+while retaining exact ownership checks and user-data preservation.
 
 - K-402 records an unsigned Linux x64 core `0.1.1` candidate built from one
   committed graphd revision in a native Linux container. Its packaged daemon

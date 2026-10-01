@@ -66,6 +66,9 @@ The Windows packager and verifier consume native MSVC x64 PE binaries, create
 and inspect a deterministic ZIP archive, and refuse incompatible architecture or
 manifest data. The owner candidate remains unsigned and unpublished. Runtime
 graph/watch and installed consumer checks require their own native evidence.
+The K-305 downstream correction uses the same K-302 owner branch to fix native
+Windows uninstall planning. The original candidate remains historical evidence;
+the corrected source and candidate require new immutable revision and hashes.
 
 ## K-402 Linux x64 candidate handoff
 

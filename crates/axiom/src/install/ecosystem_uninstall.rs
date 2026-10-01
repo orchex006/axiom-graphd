@@ -302,14 +302,21 @@ fn build(root: &Path) -> Result<Plan, AxiomError> {
             });
             journal_artifacts.extend(rows);
             for artifact in &record.activated {
-                let path = Path::new(&artifact.destination)
+                let relative = Path::new(&artifact.destination)
                     .strip_prefix(root)
-                    .map_err(|_| refuse("ownership-path-escape"))?
-                    .to_string_lossy()
-                    .into_owned();
-                if !path.starts_with("versions/") {
+                    .map_err(|_| refuse("ownership-path-escape"))?;
+                if !matches!(relative.components().next(),
+                    Some(Component::Normal(first)) if first == std::ffi::OsStr::new("versions"))
+                {
                     return Err(refuse("ownership-outside-runtime"));
                 }
+                // Component boundaries are checked with the host Path API. The
+                // evidence key then uses portable '/' separators on every OS.
+                let path = relative
+                    .components()
+                    .map(|part| part.as_os_str().to_string_lossy().into_owned())
+                    .collect::<Vec<_>>()
+                    .join("/");
                 checked_path(root, &path)?;
                 if let Some(previous) = runtime.insert(path, artifact.sha256.clone()) {
                     if previous != artifact.sha256 {
@@ -640,6 +647,19 @@ mod tests {
 
     fn approved(document: &Value) -> String {
         document["plan_digest"].as_str().expect("digest").to_owned()
+    }
+
+    #[test]
+    fn runtime_ownership_paths_are_portable_on_the_native_host() {
+        let (_temp, root) = fixture();
+        let document = plan(&root).expect("plan");
+        let rows = document["runtime"].as_array().expect("runtime rows");
+        assert!(rows
+            .iter()
+            .any(|row| { row["path"].as_str() == Some("versions/core/0.1.0/axiom-graphd") }));
+        assert!(rows
+            .iter()
+            .all(|row| !row["path"].as_str().unwrap().contains('\\')));
     }
 
     #[test]
