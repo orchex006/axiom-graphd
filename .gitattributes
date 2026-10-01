@@ -11,3 +11,4 @@
 # platform so the recorded sha256 digests stay reproducible and the WSL
 # runner (evidence/V2-030/run-wsl-linux.sh) is not broken by CRLF.
 evidence/** text eol=lf
+Cargo.lock text eol=lf

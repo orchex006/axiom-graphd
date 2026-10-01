@@ -80,6 +80,8 @@ unsigned ZIP/SBOM with `release/package_core.py` and
 `release/verify_core_candidate.py`. Record real-source graph/watch and refusal
 evidence under `evidence/K-308/`. This local candidate carries no release,
 signing or three-lane certification claim.
+`Cargo.lock` has a fixed LF checkout so the SBOM byte hash reproduces from the
+same commit on Windows. The manifest hashes the checked-out LF workspace bytes.
 
 ## K-402 Linux x64 candidate handoff
 
