@@ -50,8 +50,15 @@ use graph_watch::inventory::{plan_inventory, KnownInventory, StdDirentSource};
 use graph_watch::poll::{FileStamp, PollingWatcher, SnapshotSource};
 use rusqlite::{Connection, OptionalExtension};
 use serde::Serialize;
+#[cfg(windows)]
+use signal_hook::consts::signal::SIGBREAK;
 use signal_hook::consts::signal::{SIGINT, SIGTERM};
+#[cfg(not(windows))]
 use signal_hook::iterator::{Handle as SignalHandle, Signals};
+#[cfg(windows)]
+use std::sync::atomic::{AtomicBool, Ordering};
+#[cfg(windows)]
+use std::sync::Arc;
 
 use crate::catalog_runtime::{self, CatalogMember, CatalogPublication};
 use crate::instance_lock::DaemonLock;
@@ -290,19 +297,33 @@ fn project_roots(config: &ServiceConfig, home: &AxiomHome) -> Result<Vec<PathBuf
 /// token before each new bounded pass, while an in-flight pass retains its
 /// existing claim guards and drains at their file boundaries.
 struct SignalDrainListener {
+    #[cfg(not(windows))]
     handle: SignalHandle,
+    #[cfg(windows)]
+    registrations: Vec<signal_hook::SigId>,
+    #[cfg(windows)]
+    closed: Arc<AtomicBool>,
     thread: Option<std::thread::JoinHandle<()>>,
 }
 
 impl SignalDrainListener {
     fn stop(mut self) {
+        #[cfg(not(windows))]
         self.handle.close();
+        #[cfg(windows)]
+        {
+            self.closed.store(true, Ordering::Release);
+            for registration in self.registrations {
+                signal_hook::low_level::unregister(registration);
+            }
+        }
         if let Some(thread) = self.thread.take() {
             let _ = thread.join();
         }
     }
 }
 
+#[cfg(not(windows))]
 fn install_signal_drain(token: ShutdownToken) -> Result<SignalDrainListener, AxiomError> {
     let mut signals = Signals::new([SIGINT, SIGTERM]).map_err(|error| {
         AxiomError::new(
@@ -328,6 +349,52 @@ fn install_signal_drain(token: ShutdownToken) -> Result<SignalDrainListener, Axi
         })?;
     Ok(SignalDrainListener {
         handle,
+        thread: Some(thread),
+    })
+}
+
+#[cfg(windows)]
+fn install_signal_drain(token: ShutdownToken) -> Result<SignalDrainListener, AxiomError> {
+    let requested = Arc::new(AtomicBool::new(false));
+    let mut registrations = Vec::new();
+    for signal in [SIGINT, SIGTERM, SIGBREAK] {
+        match signal_hook::flag::register(signal, Arc::clone(&requested)) {
+            Ok(id) => registrations.push(id),
+            Err(error) => {
+                for id in registrations {
+                    signal_hook::low_level::unregister(id);
+                }
+                return Err(AxiomError::new(
+                    ErrorCode::Internal,
+                    "the foreground signal handler could not start",
+                )
+                .with_detail("observed", error.to_string()));
+            }
+        }
+    }
+    let closed = Arc::new(AtomicBool::new(false));
+    let stop = Arc::clone(&closed);
+    let thread = std::thread::Builder::new()
+        .name("axiom-graphd-signal-drain".to_owned())
+        .spawn(move || {
+            while !stop.load(Ordering::Acquire) {
+                if requested.swap(false, Ordering::AcqRel) {
+                    token.request_shutdown();
+                    break;
+                }
+                std::thread::sleep(Duration::from_millis(10));
+            }
+        })
+        .map_err(|error| {
+            AxiomError::new(
+                ErrorCode::Internal,
+                "the foreground signal listener could not start",
+            )
+            .with_detail("observed", error.to_string())
+        })?;
+    Ok(SignalDrainListener {
+        registrations,
+        closed,
         thread: Some(thread),
     })
 }

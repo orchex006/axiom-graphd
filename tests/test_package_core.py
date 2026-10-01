@@ -11,10 +11,32 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import unittest
+
+from release.package_core import native_binary as package_native_binary
+from release.verify_core_candidate import native_binary as verify_native_binary
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / "release/package_core.py"
 VERIFY = ROOT / "release/verify_core_candidate.py"
+
+
+class WindowsArchitectureTests(unittest.TestCase):
+    def test_pe_x64_and_wrong_architecture(self) -> None:
+        image = bytearray(0x100)
+        image[:2] = b"MZ"
+        image[0x3c:0x40] = (0x80).to_bytes(4, "little")
+        image[0x80:0x84] = b"PE\0\0"
+        image[0x84:0x86] = bytes.fromhex("6486")
+        image[0x98:0x9a] = bytes.fromhex("0b02")
+        for check in (package_native_binary, verify_native_binary):
+            self.assertTrue(check(bytes(image), "windows-x64"))
+            image[0x84:0x86] = bytes.fromhex("4c01")
+            self.assertFalse(check(bytes(image), "windows-x64"))
+            image[0x84:0x86] = bytes.fromhex("6486")
+            image[0x98:0x9a] = bytes.fromhex("0b01")
+            self.assertFalse(check(bytes(image), "windows-x64"))
+            image[0x98:0x9a] = bytes.fromhex("0b02")
 
 
 def sha(path: Path) -> str:

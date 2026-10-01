@@ -6,6 +6,12 @@ Owner-authorized publication of current code; see release/v0.1.1-notes.md.
 
 ## Unreleased
 
+### K-302 Windows x64 core candidate
+
+Package and verify native MSVC x64 daemon and engine CLI as a deterministic
+unsigned ZIP. Check PE architecture, immutable source revision, version and
+schema compatibility, real-source graph/watch behavior and corruption refusal.
+
 - K-402 records an unsigned Linux x64 core `0.1.1` candidate built from one
   committed graphd revision in a native Linux container. Its packaged daemon
   generated a C# source graph and catalog, observed a watcher update, and
