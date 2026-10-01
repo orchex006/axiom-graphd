@@ -1,0 +1,5 @@
+cwd=axiom-graphd
+command=python -m pytest tests/test_package_core.py -q
+exit=0
+.                                                                        [100%]
+1 passed in 0.02s

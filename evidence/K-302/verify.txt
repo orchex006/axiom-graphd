@@ -1,0 +1,4 @@
+cwd=axiom-graphd
+command=python release/verify_core_candidate.py --candidate-dir <workspace-output>
+exit=0
+{"archive_sha256": "bd18ddd78a5902313564bf02589e5ed4758611456f981e47535ab0706bc4a68c", "binary_sha256": {"axiom-graphd.exe": "7b726a95f984bc430aaeef0ffc4130aa3cca6c0e6228c0816058b5a52e895d71", "axiom.exe": "13a7fa76d8515867e86aa2589d0adbe2a1d70115e6e7f1c9f3b6efbee5ecaaf5"}, "native_executable_checks": 2, "ok": true, "package_count": 94, "sbom_sha256": "aa55866793dfa553562104413b423eaa9e9f7331eb02e6dfd553737ef844c065", "source_revision": "e399a6c1300642b0af41c52afe00606cc22f64f1"}

@@ -1,0 +1,4 @@
+cwd=axiom-graphd
+command=python tests/test_package_core.py --daemon target/release/axiom-graphd.exe --cli target/release/axiom.exe --source-revision e399a6c1300642b0af41c52afe00606cc22f64f1
+exit=0
+{"archive_sha256": "bd18ddd78a5902313564bf02589e5ed4758611456f981e47535ab0706bc4a68c", "candidate_manifest_sha256": "b7d60ab62ec58e16489ed0dccef379d0bee841f60b9fdf11f19ebf905aa76c44", "cases": [{"case": "build_candidate", "exit_code": 0}, {"case": "build_candidate", "exit_code": 0}, {"case": "verify_candidate", "exit_code": 0}, {"case": "wrong_source_revision", "exit_code": 9, "reason": "source revision differs"}, {"case": "corrupt_archive", "exit_code": 9, "reason": "digest/size mismatch"}, {"case": "incompatible_manifest_version", "exit_code": 9, "reason": "archive release identity mismatch"}], "ok": true, "package_count": 94, "sbom_sha256": "aa55866793dfa553562104413b423eaa9e9f7331eb02e6dfd553737ef844c065", "source_revision": "e399a6c1300642b0af41c52afe00606cc22f64f1"}
