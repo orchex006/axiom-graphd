@@ -1,8 +1,8 @@
 {
   "spec_version": "2.0.0-draft.1",
   "spec_repository": "axiom-specs",
-  "spec_revision": "9c63527a158e2d74baeccdfd7cf26e50e54b151c",
-  "spec_content_sha256": "91f66a1f0f2574f10f67b8bf22c087356ed24a0df2a42f0eb4c9500640a6fd8f",
+  "spec_revision": "de8cab08bf4849699633ade3e3f962777bf616ea",
+  "spec_content_sha256": "6bb6a9de8a956b457429dfebc6f9c21b486b51a5d11d4ae4bea36786f1248c9a",
   "owner_repository": "axiom-graphd",
   "workspace_layout": 2,
   "graph_payload_schema": 1,
@@ -22,9 +22,9 @@
     "contracts/version-dimensions.json": "7717d17d48a8a6dc697c5e78c9f699744bef2c32edf03d7a4b5afeea40b12345",
     "docs/20-VERSION-CHECK-UPDATE-RELEASE.md": "1552647cf1ff2348a7688f93ba9a153563cf8d4505f0d8d68962045f8a8a4002",
     "specs/v2/K-release-readiness.md": "f8c1e874734d67302d947b1d24dea8c37e367609e9fdc45aa6ada84094e7f757",
-    "tasks/K/K-308.md": "8a1c638c8afdd69780961ee2fd5681903a6ff32872b12cca74fda1802297a4b9",
+    "tasks/K/K-308.md": "aa2e1f13e0eb2dff472aaaa020959e20e4fa4e60ecc87dfcae8ec02e573ef71e",
     "tasks/K/scope-map.json": "60a8b5f4e6813083c51e2d6992327af7fbf10865bc3c1aee5dc2f7dfed35edc1",
-    "tasks/tasks.json": "77119822860a7aae5720adf98dcf3a8c826bb098bfb764078d7fdbadaddea919",
+    "tasks/tasks.json": "fc19af18b126c29727eda659424812d591aca64e3b1b549385750ff2c1ebf6a2",
     "tools/specctl.py": "2353a4ca139b5d52f0904fb98a2cacfb14ffb08acee9a828d4d299e812db099f"
   }
 }
