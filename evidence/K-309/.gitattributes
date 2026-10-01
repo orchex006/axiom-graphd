@@ -1,0 +1,3 @@
+*.zip -text -eol -diff
+candidate-manifest.json -text -diff
+real-source-report.json -text -diff
