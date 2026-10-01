@@ -1,0 +1,11 @@
+{
+  "task_id": "K-309",
+  "owner": "axiom-graphd",
+  "branch": "feature/k-309-windows-service-core",
+  "source_revision": "4f8765a74ae5f077f53d092ddb4fea40d0c44fe3",
+  "lane": "windows-x64",
+  "kind": "local_runtime",
+  "certified": false,
+  "archive_sha256": "ba9e294cd112c7311b755ab9aad2d3713502c68925febb48359fec0fe1cc2c53",
+  "handoff": "evidence/K-309/final-4f/handoff.json"
+}
