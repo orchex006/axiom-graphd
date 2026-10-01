@@ -1,0 +1,23 @@
+cwd=axiom-graphd
+command=cargo test --locked -p axiom ecosystem_uninstall
+exit=0
+
+running 11 tests
+test install::ecosystem_uninstall::tests::runtime_ownership_paths_are_portable_on_the_native_host ... ok
+test install::ecosystem_uninstall::tests::altered_approval_and_body_refuse_before_any_recovery_write ... ok
+test install::ecosystem_uninstall::tests::replaced_ownership_is_refused_before_removal ... ok
+test install::ecosystem_uninstall::tests::unrecorded_active_pointer_member_refuses_removal ... ok
+test install::ecosystem_uninstall::tests::injected_unreachable_journal_cannot_authorize_a_user_file ... ok
+test install::ecosystem_uninstall::tests::human_edit_after_plan_is_preserved_and_reported ... ok
+test install::ecosystem_uninstall::tests::aggregate_pointer_matches_component_journals_without_parent_journal ... ok
+test install::ecosystem_uninstall::tests::reinstall_archives_completed_removal_but_refuses_incomplete_removal ... ok
+test install::ecosystem_uninstall::tests::exact_approved_removal_preserves_unowned_data_and_is_retryable ... ok
+test install::ecosystem_uninstall::tests::failed_service_removal_keeps_payloads_and_retry_finishes ... ok
+test install::ecosystem_uninstall::tests::skills_removal_preserves_edited_and_undeclared_files ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 577 filtered out; finished in 0.25s
+
+   Compiling axiom-graphd v0.1.1 (<axiom-graphd>\crates\axiom-graphd)
+   Compiling axiom v0.1.1 (<axiom-graphd>\crates\axiom)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.69s
+     Running unittests src\lib.rs (target\debug\deps\axiom-1ca496eb6f9183c4.exe)

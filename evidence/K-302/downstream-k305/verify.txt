@@ -1,0 +1,4 @@
+cwd=axiom-graphd
+command=verify
+exit=0
+{"archive_sha256": "1c834d5b3a594866183fca7356cb06a65443f8814dd29abc47c3bc6ef8c6ea29", "binary_sha256": {"axiom-graphd.exe": "d707598882af0b8ca18661aa77e802c039309f46c5c38fc98fc91c15bb143b72", "axiom.exe": "1d012514fb5d403dd990d8abbc3567d560e5d453f1efd7f67b18025c00873483"}, "native_executable_checks": 2, "ok": true, "package_count": 94, "sbom_sha256": "cdedc10da98be3483e936f8a34a075d4995a96d21d4ca73b9d7dd5f617feb8e4", "source_revision": "3e4671ae928abe04d8437074216fed6790fb57bd"}

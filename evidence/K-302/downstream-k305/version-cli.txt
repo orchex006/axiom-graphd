@@ -1,0 +1,4 @@
+cwd=axiom-graphd
+command=version-cli
+exit=0
+{"component":"axiom","version":"0.1.1","spec_version":"2.0.0-draft.1","graph_schema":1,"control_api":1,"queue_schema":1,"build_revision":"3e4671ae928abe04d8437074216fed6790fb57bd","update_status":"unconfigured"}

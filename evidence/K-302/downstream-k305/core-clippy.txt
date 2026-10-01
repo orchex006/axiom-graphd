@@ -1,0 +1,7 @@
+cwd=axiom-graphd
+command=cargo clippy --locked --all-targets -- -D warnings
+exit=0
+    Checking axiom-graphd v0.1.1 (<axiom-graphd>\crates\axiom-graphd)
+    Checking axiom v0.1.1 (<axiom-graphd>\crates\axiom)
+    Checking axiom-cli v0.1.1 (<axiom-graphd>\crates\axiom-cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 12.56s

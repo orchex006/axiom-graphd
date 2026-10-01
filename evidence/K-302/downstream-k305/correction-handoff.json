@@ -1,0 +1,35 @@
+{
+  "task_id": "K-302",
+  "phase": "downstream-k305-correction",
+  "source_revision": "3e4671ae928abe04d8437074216fed6790fb57bd",
+  "lane": "windows-x64",
+  "candidate": true,
+  "certified": false,
+  "root_cause": "Windows uninstall planner compared host-native backslash paths with a slash string prefix; source now checks Path components and emits portable slash keys.",
+  "archive": {
+    "path": "evidence/K-302/downstream-k305/axiom-0.1.1-windows-x64.zip",
+    "sha256": "1c834d5b3a594866183fca7356cb06a65443f8814dd29abc47c3bc6ef8c6ea29"
+  },
+  "manifest": {
+    "path": "evidence/K-302/downstream-k305/candidate-manifest.json",
+    "sha256": "d81f22ec8a47d4d9aac585547371bfa89c6ee87c4b57df1f674d063ea40e583a"
+  },
+  "fixture": {
+    "path": "evidence/K-302/downstream-k305/real-source-fixture.tar",
+    "sha256": "095d36a3db66f81b3db8df8d96e4f312c6ea5e91e80ccb6bc635d6538522fade"
+  },
+  "report": {
+    "path": "evidence/K-302/downstream-k305/real-source-report.json",
+    "sha256": "bbf1f864f9d371c8afb7068467b663e54dd613a09771a31ae04e0f4e808cd433"
+  },
+  "original_scope_remains_historical": true,
+  "downstream": [
+    "K-305",
+    "K-502"
+  ],
+  "uninstall_plan": {
+    "path": "evidence/K-302/downstream-k305/uninstall-plan.txt",
+    "sha256": "08ee6a217687febb349c9dfb940f2b68298318e94db8ffb7c30aa37ab43c3281"
+  },
+  "service_cli_limitation": "axiom service install still routes through macOS/Unix runtime identity on Windows; K-305 uses native Limited Scheduled Task from installed daemon; aggregate service API remains open."
+}

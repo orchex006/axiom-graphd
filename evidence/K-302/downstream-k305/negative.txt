@@ -1,0 +1,4 @@
+cwd=axiom-graphd
+command=negative
+exit=0
+{"archive_sha256": "1c834d5b3a594866183fca7356cb06a65443f8814dd29abc47c3bc6ef8c6ea29", "candidate_manifest_sha256": "d81f22ec8a47d4d9aac585547371bfa89c6ee87c4b57df1f674d063ea40e583a", "cases": [{"case": "build_candidate", "exit_code": 0}, {"case": "build_candidate", "exit_code": 0}, {"case": "verify_candidate", "exit_code": 0}, {"case": "wrong_source_revision", "exit_code": 9, "reason": "source revision differs"}, {"case": "corrupt_archive", "exit_code": 9, "reason": "digest/size mismatch"}, {"case": "incompatible_manifest_version", "exit_code": 9, "reason": "archive release identity mismatch"}], "ok": true, "package_count": 94, "sbom_sha256": "cdedc10da98be3483e936f8a34a075d4995a96d21d4ca73b9d7dd5f617feb8e4", "source_revision": "3e4671ae928abe04d8437074216fed6790fb57bd"}

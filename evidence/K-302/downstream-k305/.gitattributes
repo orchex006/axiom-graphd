@@ -1,0 +1,4 @@
+*.zip -text
+*.tar -text
+*.json -text
+*.txt -text

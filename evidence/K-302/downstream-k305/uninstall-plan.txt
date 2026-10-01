@@ -1,0 +1,4 @@
+cwd=axiom-graphd
+command=<corrected-installed-compatible-axiom> uninstall plan --out <isolated-plan> --json
+exit=0
+{"plan_digest": "ee30eb33f569ac15f5c3e4cb27c0d807e2241df6ce99abc519952c752aba6458", "plan_file": "<isolated-plan>", "status": "planned"}
