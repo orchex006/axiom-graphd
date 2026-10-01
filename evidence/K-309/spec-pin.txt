@@ -1,0 +1,13 @@
+cwd=axiom-graphd
+command=python <axiom-specs>\tools\spec-lock-check.py --lock spec.lock.json --spec-root <isolated-run-logs>\K-309-spec-pin --json
+exit=0
+stdout:
+{
+  "ok": true,
+  "lock": "spec.lock.json",
+  "spec_root": "D:\\SP-Billy\\axiom\\goals\\run-logs\\K-309-spec-pin",
+  "release": false,
+  "reasons": []
+}
+
+stderr:

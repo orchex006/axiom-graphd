@@ -1,0 +1,11 @@
+cwd=axiom-graphd
+command=cargo test --locked -p axiom update::ecosystem_runtime --quiet
+exit=0
+stdout:
+
+running 15 tests
+...............
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 580 filtered out; finished in 0.58s
+
+
+stderr:

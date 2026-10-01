@@ -1,0 +1,33 @@
+{
+  "candidate": true,
+  "candidate_manifest_sha256": "8055c57b1db2a6f3ce9a4cc79e1484ec34b309368b699f1f3903a1ed35e90de7",
+  "checkpoint_query_contains_TokenSource": true,
+  "daemon_exit_code": 0,
+  "daemon_sha256": "2dfef43f80d1e69b8baf773646a7c04955c8dc7edbabc225d805bdfc205abfd7",
+  "first_catalog_generation": "4c081b5fb5a7855d1460e059aceedf3c24e25fd81586f3c0ac326ec2a6c9e26a",
+  "graph_contains_TokenSource": true,
+  "graph_contains_WatcherAdded": true,
+  "graph_pointer_sha256": "1b488e16080c172812e803164ede97e5361a0dda20a420a350d88963b174dfb1",
+  "incompatible_fixture_exit_code": 8,
+  "incompatible_fixture_response": {
+    "code": "INTERNAL",
+    "details": {
+      "rule": "export-unsupported"
+    },
+    "message": "publication failed: export-unsupported: [path] declares pointer schema_version 99 but this reader implements 1",
+    "request_id": null,
+    "retryable": false
+  },
+  "project_generation": "39960ff5a1169bfe5f84b0b70dc6070351be3d4ae9d84846bc118662ff20948c",
+  "project_pointer_sha256": "77c2c29ce216c7bde072ddb85126c2f312c50cdfb4f385f07351c4c8328a11ea",
+  "registered": {
+    "config_hash": "62592e0a3c5b8e4dcc824e73251b2f29af8992d240a1806fa133e5109fe0ce95",
+    "id": "demo-solution",
+    "profile": "default",
+    "projects": 1
+  },
+  "source_revision": "6223daa59e0bcc0f3c5312c1801fbd5a5783aa34",
+  "source_sha256": "3ea4948adad97ee0f131a34c6d386026009c783deb7eb60fccae12a4542731c4",
+  "updated_catalog_generation": "d63dab0c300a7dd78ebaea007d57604c559b886fe138f26fe5acd1085fef6f0e",
+  "watcher_advanced": true
+}
