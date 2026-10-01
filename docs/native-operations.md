@@ -159,8 +159,10 @@ instead. Refusal reasons carried on the error: `not-per-user-mechanism`,
 The original adapter tests only injected `ServiceExec` and did not register
 startup records. K-309 has since exercised the public Windows `axiom service`
 path with `schtasks.exe` in an isolated per-user test root. That native spike
-does not complete K-309 until its exact final core, update/restart and rollback
-gates pass. No Linux systemd or macOS launchd host run is claimed here.
+exposed that update activation and rollback only re-registered the Windows task
+and left it Ready. `NativeLifecycle::reinstall` now starts the task after
+registration on Windows. K-309 still requires exact final core native rerun
+before completion. No Linux systemd or macOS launchd host run is claimed here.
 
 An operator needs two facts to reason about a startup record:
 

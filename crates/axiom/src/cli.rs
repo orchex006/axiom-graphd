@@ -1122,8 +1122,16 @@ impl crate::update::ecosystem_runtime::ServiceLifecycle for NativeLifecycle {
             true,
             root,
             &crate::service::SysExec,
-        )
-        .map(|_| ())
+        )?;
+        #[cfg(windows)]
+        crate::service::runtime::run_with_exec(
+            "start",
+            "axiom-graphd",
+            false,
+            root,
+            &crate::service::SysExec,
+        )?;
+        Ok(())
     }
 }
 
