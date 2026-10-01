@@ -1,0 +1,96 @@
+{
+  "task_id": "K-308",
+  "source_revision": "d548bdfcd34975abf08d6a88de335f9ae432f55c",
+  "environment": {
+    "os": "Windows",
+    "version": "10.0.26200",
+    "arch": "AMD64",
+    "python": "3.13.14"
+  },
+  "commands": [
+    {
+      "id": "fmt",
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "path": "evidence/K-308/fmt.txt",
+      "sha256": "b0e3701869d01aa21c7b7b0f025df470bc860593604e4aa3200cb0b875c7909e"
+    },
+    {
+      "id": "clippy",
+      "command": "cargo clippy --locked --all-targets -- -D warnings",
+      "exit_code": 0,
+      "path": "evidence/K-308/clippy.txt",
+      "sha256": "3dd4bdbf3f80b46471ef46c6c2ae80e310fe68aa14480927bf3fb93fecfb109b"
+    },
+    {
+      "id": "graphd-tests",
+      "command": "cargo test --locked -p axiom-graphd --quiet",
+      "exit_code": 0,
+      "path": "evidence/K-308/graphd-tests.txt",
+      "sha256": "e2593e8ec049389d1c83aea4e6b2c58838211b6895779e94ab70a90def114967"
+    },
+    {
+      "id": "windows-service-tests",
+      "command": "cargo test --locked -p axiom service::windows::tests --quiet",
+      "exit_code": 0,
+      "path": "evidence/K-308/windows-service-tests.txt",
+      "sha256": "b2664f4aa6996d1b6761e61dd7f5e78849099ab5e7d0b796f4ace03d041999e5"
+    },
+    {
+      "id": "packaging-unit",
+      "command": "python -m unittest discover -s tests -p test_package_core.py",
+      "exit_code": 0,
+      "path": "evidence/K-308/packaging-unit.txt",
+      "sha256": "6c8c53f0d3a0e94bfa50e3dc7549a35a4f812a2342afc3bb69d3100961152f81"
+    },
+    {
+      "id": "core-manifest",
+      "command": "python tests/core_manifest.py",
+      "exit_code": 0,
+      "path": "evidence/K-308/core-manifest.txt",
+      "sha256": "8225b7f7d046cdd0379902a841994e680ec70239c549df72ebbedda0857bde10"
+    },
+    {
+      "id": "verify",
+      "command": "python release/verify_core_candidate.py --candidate-dir <isolated-run-logs>\\K-308\\candidate-final",
+      "exit_code": 0,
+      "path": "evidence/K-308/verify.txt",
+      "sha256": "b663ac5f394b3e9e2e1f8f8623a57fd3deef96c6ca5483b177f807ceaba63b56"
+    },
+    {
+      "id": "release-build",
+      "command": "cargo build --release --locked -p axiom-cli --bin axiom -p axiom-graphd --bin axiom-graphd",
+      "exit_code": 0,
+      "path": "evidence/K-308/release-build.txt",
+      "sha256": "8c02e053928109789f1ba18eac7b1b68f74c57958e1d7a730a4b0b5dbbea4c84"
+    },
+    {
+      "id": "full-workspace",
+      "command": "cargo test --locked --workspace --quiet",
+      "exit_code": 101,
+      "path": "evidence/K-308/full-workspace.txt",
+      "sha256": "f4e9558ed02d9080e3e58551793556369034a903a5284c5518ed14cf4954732c"
+    }
+  ],
+  "artifacts": {
+    ".gitattributes": "1f8abb11ec318c74528ef55e215bc347aef259fba822bc07b15185d0b4ffe79a",
+    "axiom-0.1.2-windows-x64.sbom.json": "572a74a18536e98952667f029d1af22cecd54e3f9cfb9deba1c4d198555de8ef",
+    "axiom-0.1.2-windows-x64.zip": "981ea1a4433cad32fe3c0e2372d22e4c75440fe66efd3afaa428158456bd8744",
+    "candidate-manifest.json": "62d25dae01c23a566d1157890c49a6ef572ff370003f09888504df3e5d1e73ee",
+    "clippy.txt": "3dd4bdbf3f80b46471ef46c6c2ae80e310fe68aa14480927bf3fb93fecfb109b",
+    "compatibility-negative.json": "838f18a884955be53f0aeaee5ef7107d17f731860f94e9f6feda2dedc4ab28df",
+    "core-manifest.txt": "8225b7f7d046cdd0379902a841994e680ec70239c549df72ebbedda0857bde10",
+    "fmt.txt": "b0e3701869d01aa21c7b7b0f025df470bc860593604e4aa3200cb0b875c7909e",
+    "full-workspace.txt": "f4e9558ed02d9080e3e58551793556369034a903a5284c5518ed14cf4954732c",
+    "graphd-tests.txt": "e2593e8ec049389d1c83aea4e6b2c58838211b6895779e94ab70a90def114967",
+    "handoff.json": "1eb1c8627ce647fad86da56a13915e3e916f66ffc9b376c7cc7a6aac97fabfcf",
+    "package-regression.txt": "c181e8a33569155c257a488ee5968901bf8a064c9887110581b65510d84f6f15",
+    "packaging-unit.txt": "6c8c53f0d3a0e94bfa50e3dc7549a35a4f812a2342afc3bb69d3100961152f81",
+    "real-source-fixture.tar": "e4ce77fae1c3400c5d0582b308d8c942bf51ac6c7776a65e58694e45d04e7625",
+    "real-source-report.json": "bf7bfdbc3cc993610f73cef87218cee52f50719faa9a1a45c2b556ede15fc193",
+    "release-build.txt": "8c02e053928109789f1ba18eac7b1b68f74c57958e1d7a730a4b0b5dbbea4c84",
+    "spec.lock.json": "45ef718fb5f9b581f63177786baaef3c1ba6cf2614749bb90dc0141cafe11133",
+    "verify.txt": "b663ac5f394b3e9e2e1f8f8623a57fd3deef96c6ca5483b177f807ceaba63b56",
+    "windows-service-tests.txt": "b2664f4aa6996d1b6761e61dd7f5e78849099ab5e7d0b796f4ace03d041999e5"
+  }
+}

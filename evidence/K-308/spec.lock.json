@@ -1,0 +1,30 @@
+{
+  "spec_version": "2.0.0-draft.1",
+  "spec_repository": "axiom-specs",
+  "spec_revision": "9e34f1645414bf4502af417a95b9333cf2f86887",
+  "spec_content_sha256": "7cc757d2195f1fd04a0d7a7c5838f6e43adc106cbef721e0d871082228293bde",
+  "owner_repository": "axiom-graphd",
+  "workspace_layout": 2,
+  "graph_payload_schema": 1,
+  "verification": "K-308: immutable delivered K-308 registration revision and exact Git blob contract hashes; unsigned local Windows 0.1.2 candidate only.",
+  "contract_digests": {
+    "Development.md": "731fef8f80f99b0656877a3742a117163e8b6b1d446e5e9ff1a8a99bc4ff14de",
+    "adrs/ADR-0015.md": "22699c8518263fb5f21c7a9cda48b27da2229b19bf6c336d7dec72a980139716",
+    "adrs/ADR-0019.md": "aae92d700b3019a535ab0a57cf91bf4e01771f02890ebb043ff8aaecd3e44fbd",
+    "adrs/ADR-0020.md": "8a53b170dcc8e2a6635b35e77dec252037941fd5690de6e41e802344840c8d72",
+    "compatibility/platform-matrix.json": "99e78fd7903482f14a454c651ad79f05250e9ac27e88266481a1b5a433959e3e",
+    "conformance/fixture-index.json": "e889087c9468ab9ec4a5816d964bee516dc29445139c7fed955415781e393263",
+    "conformance/k-scope.md": "97e4e9ab7b6bb2c0fec04b2cfef21f71d2a8c22e38bb7fb6ffca076ac2c373c6",
+    "conformance/k_scope.py": "b1868c0653d87eb6b705dbd33903a31611b33631b47723bae4bc8b5f407f0319",
+    "contracts/control-api-v1.md": "1c6914b857f762974fe1c37151beee2863b46977321af620101ce2f95c16cab0",
+    "contracts/schemas/version-report.schema.json": "4f4c68c74873da69fdf0da15550778a5928281d7260ad1c84156799eeec3e8bb",
+    "contracts/sqlite/schema-v1.sql": "0aa68b1bd4c76e0299a13ab431dbf5f86279fecb5c67576776e5210e78b24302",
+    "contracts/version-dimensions.json": "7717d17d48a8a6dc697c5e78c9f699744bef2c32edf03d7a4b5afeea40b12345",
+    "docs/20-VERSION-CHECK-UPDATE-RELEASE.md": "1552647cf1ff2348a7688f93ba9a153563cf8d4505f0d8d68962045f8a8a4002",
+    "specs/v2/K-release-readiness.md": "f8c1e874734d67302d947b1d24dea8c37e367609e9fdc45aa6ada84094e7f757",
+    "tasks/K/K-308.md": "792627d2bf086a2d17220b8334b43be956398844d31c10c312c4069c9caf2e6d",
+    "tasks/K/scope-map.json": "60a8b5f4e6813083c51e2d6992327af7fbf10865bc3c1aee5dc2f7dfed35edc1",
+    "tasks/tasks.json": "f6a3d7d7c3dc0c14178ae0ee21bd814c84201c4b0fcfb18a106ef03c2aebd9fc",
+    "tools/specctl.py": "2353a4ca139b5d52f0904fb98a2cacfb14ffb08acee9a828d4d299e812db099f"
+  }
+}

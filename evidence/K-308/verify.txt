@@ -1,0 +1,7 @@
+cwd=axiom-graphd
+command=python release/verify_core_candidate.py --candidate-dir <isolated-run-logs>\K-308\candidate-final
+exit=0
+stdout:
+{"archive_sha256": "981ea1a4433cad32fe3c0e2372d22e4c75440fe66efd3afaa428158456bd8744", "binary_sha256": {"axiom-graphd.exe": "433c1c030953164dc2b5dcde81cb0650cae708c31cabbb00055283a9f50beb24", "axiom.exe": "51253872cfa4e6e71c98248874c71772451ecb9da0bce85713dde61f9bfc0e2e"}, "native_executable_checks": 2, "ok": true, "package_count": 94, "sbom_sha256": "572a74a18536e98952667f029d1af22cecd54e3f9cfb9deba1c4d198555de8ef", "source_revision": "d548bdfcd34975abf08d6a88de335f9ae432f55c"}
+
+stderr:

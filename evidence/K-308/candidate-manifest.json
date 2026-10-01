@@ -1,0 +1,72 @@
+{
+  "archive": {
+    "name": "axiom-0.1.2-windows-x64.zip",
+    "sha256": "981ea1a4433cad32fe3c0e2372d22e4c75440fe66efd3afaa428158456bd8744",
+    "size_bytes": 7576901
+  },
+  "binaries": [
+    {
+      "mode": null,
+      "name": "axiom-graphd.exe",
+      "sha256": "433c1c030953164dc2b5dcde81cb0650cae708c31cabbb00055283a9f50beb24",
+      "size_bytes": 3896320,
+      "version_report": {
+        "analyzers": [],
+        "build_revision": "d548bdfcd34975abf08d6a88de335f9ae432f55c",
+        "component": "axiom-graphd",
+        "control_api": 1,
+        "graph_schema": 1,
+        "queue_schema": 1,
+        "spec_version": "2.0.0-draft.1",
+        "sqlite_version": "3.51.3",
+        "sqlite_wal_baseline": "3.51.3",
+        "sqlite_wal_supported": true,
+        "update_status": "unconfigured",
+        "version": "0.1.2"
+      }
+    },
+    {
+      "mode": null,
+      "name": "axiom.exe",
+      "sha256": "51253872cfa4e6e71c98248874c71772451ecb9da0bce85713dde61f9bfc0e2e",
+      "size_bytes": 3679744,
+      "version_report": {
+        "build_revision": "d548bdfcd34975abf08d6a88de335f9ae432f55c",
+        "component": "axiom",
+        "control_api": 1,
+        "graph_schema": 1,
+        "queue_schema": 1,
+        "spec_version": "2.0.0-draft.1",
+        "update_status": "unconfigured",
+        "version": "0.1.2"
+      }
+    }
+  ],
+  "core_manifest_sha256": "32bb29fd94b5d981c17ab6317a33e883f3687dc51796ddd9505c2fa652303878",
+  "host": {
+    "machine": "AMD64",
+    "runtime": "10.0.26200",
+    "system": "Windows"
+  },
+  "kind": "unsigned-core-candidate",
+  "notarization": "not_notarized",
+  "platform": "windows-x64",
+  "publication": "not_published",
+  "sbom": {
+    "name": "axiom-0.1.2-windows-x64.sbom.json",
+    "package_count": 94,
+    "sha256": "572a74a18536e98952667f029d1af22cecd54e3f9cfb9deba1c4d198555de8ef",
+    "size_bytes": 12401
+  },
+  "schema_version": 1,
+  "signing": "unsigned",
+  "source_lock_sha256": "ca4291d16ddb16e9f964b9180888bd1d5a948bcc939c68e6a5768c34630a7f9c",
+  "source_revision": "d548bdfcd34975abf08d6a88de335f9ae432f55c",
+  "spec_revision": "9e34f1645414bf4502af417a95b9333cf2f86887",
+  "toolchain": {
+    "cargo": "cargo 1.85.0 (d73d2caf9 2024-12-31)",
+    "python": "3.13.14",
+    "rustc": "rustc 1.85.0 (4d91de4e4 2025-02-17)\nbinary: rustc\ncommit-hash: 4d91de4e48198da2e33413efdcd9cd2cc0c46688\ncommit-date: 2025-02-17\nhost: x86_64-pc-windows-msvc\nrelease: 1.85.0\nLLVM version: 19.1.7"
+  },
+  "version": "0.1.2"
+}

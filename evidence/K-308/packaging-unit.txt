@@ -1,0 +1,11 @@
+cwd=axiom-graphd
+command=python -m unittest discover -s tests -p test_package_core.py
+exit=0
+stdout:
+
+stderr:
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+OK

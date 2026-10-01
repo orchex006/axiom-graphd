@@ -1,0 +1,20 @@
+cwd=axiom-graphd
+command=cargo clippy --locked --all-targets -- -D warnings
+exit=0
+stdout:
+
+stderr:
+    Checking axiom-bootstrap v0.1.2 (<axiom-graphd>\crates\bootstrap)
+    Checking graph-core v0.1.2 (<axiom-graphd>\crates\graph-core)
+    Checking graph-analyze v0.1.2 (<axiom-graphd>\crates\graph-analyze)
+    Checking graph-export v0.1.2 (<axiom-graphd>\crates\graph-export)
+    Checking graph-store v0.1.2 (<axiom-graphd>\crates\graph-store)
+    Checking graph-queue v0.1.2 (<axiom-graphd>\crates\graph-queue)
+    Checking graph-watch v0.1.2 (<axiom-graphd>\crates\graph-watch)
+    Checking axiom-platform v0.1.2 (<axiom-graphd>\crates\platform)
+    Checking axiom-config v0.1.2 (<axiom-graphd>\crates\config)
+    Checking axiom-migration v0.1.2 (<axiom-graphd>\crates\migration)
+    Checking axiom v0.1.2 (<axiom-graphd>\crates\axiom)
+    Checking axiom-graphd v0.1.2 (<axiom-graphd>\crates\axiom-graphd)
+    Checking axiom-cli v0.1.2 (<axiom-graphd>\crates\axiom-cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 18.00s

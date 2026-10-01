@@ -1,0 +1,5 @@
+cwd=<isolated-run-logs>\K-308-clean-source2
+command=python tests/test_package_core.py --daemon <axiom-graphd>\target\release\axiom-graphd.exe --cli <axiom-graphd>\target\release\axiom.exe --source-revision d548bdfcd34975abf08d6a88de335f9ae432f55c
+exit=0
+{"archive_sha256": "981ea1a4433cad32fe3c0e2372d22e4c75440fe66efd3afaa428158456bd8744", "candidate_manifest_sha256": "62d25dae01c23a566d1157890c49a6ef572ff370003f09888504df3e5d1e73ee", "cases": [{"case": "build_candidate", "exit_code": 0}, {"case": "build_candidate", "exit_code": 0}, {"case": "verify_candidate", "exit_code": 0}, {"case": "wrong_source_revision", "exit_code": 9, "reason": "source revision differs"}, {"case": "corrupt_archive", "exit_code": 9, "reason": "digest/size mismatch"}, {"case": "incompatible_manifest_version", "exit_code": 9, "reason": "archive release identity mismatch"}], "ok": true, "package_count": 94, "sbom_sha256": "572a74a18536e98952667f029d1af22cecd54e3f9cfb9deba1c4d198555de8ef", "source_revision": "d548bdfcd34975abf08d6a88de335f9ae432f55c"}
+

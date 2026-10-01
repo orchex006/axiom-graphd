@@ -1,0 +1,392 @@
+cwd=axiom-graphd
+command=cargo test --locked --workspace --quiet
+exit=101
+stdout:
+
+running 588 tests
+....................................................................................... 87/588
+. 88/588
+hosts::antigravity::tests::a_plan_inserts_then_replaces_without_touching_other_servers --- FAILED
+.. 91/588
+hosts::antigravity::tests::an_insert_refuses_a_document_that_already_declares_the_server --- FAILED
+hosts::antigravity::tests::an_oversized_document_is_refused --- FAILED
+hosts::antigravity::tests::an_uncertified_skills_or_rules_path_is_refused --- FAILED
+.... 98/588
+hosts::antigravity::tests::every_rendered_entry_parses_back_to_the_same_server --- FAILED
+hosts::antigravity::tests::the_deprecated_legacy_skills_path_is_refused_not_translated --- FAILED
+.. 102/588
+hosts::antigravity::tests::the_scopes_pair_a_skills_dir_with_a_rules_dir --- FAILED
+hosts::antigravity::tests::the_instruction_fragment_uses_the_managed_block_markers --- FAILED
+hosts::claude::tests::a_document_outside_the_schema_is_refused_rather_than_guessed --- FAILED
+... 108/588
+hosts::claude::tests::a_stdio_entry_requires_an_absolute_shell_free_command --- FAILED
+hosts::claude::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server --- FAILED
+. 111/588
+hosts::claude::tests::appending_preserves_every_other_server_and_the_permissions_object --- FAILED
+hosts::claude::tests::replacing_the_managed_entry_changes_only_that_entry --- FAILED
+hosts::claude::tests::the_two_scopes_pair_a_config_file_with_an_instruction_file --- FAILED
+hosts::claude::tests::the_instruction_fragment_uses_the_managed_block_markers --- FAILED
+.. 117/588
+hosts::codex::tests::a_plan_refuses_an_existing_table_it_does_not_understand --- FAILED
+. 119/588
+hosts::codex::tests::a_stdio_transport_requires_an_absolute_shell_free_command --- FAILED
+hosts::codex::tests::a_rendered_block_parses_back_to_the_same_server --- FAILED
+hosts::codex::tests::an_append_plan_refuses_a_document_that_already_has_the_table --- FAILED
+hosts::codex::tests::appending_preserves_every_other_server_and_the_whole_document --- FAILED
+hosts::codex::tests::replacing_the_managed_table_moves_nothing_else --- FAILED
+hosts::codex::tests::the_instruction_fragment_uses_the_managed_block_markers --- FAILED
+.. 127/588
+hosts::detect::tests::a_denied_launch_reports_the_rule_instead_of_a_version --- FAILED
+. 129/588
+hosts::detect::tests::a_nonzero_exit_is_a_failed_launch_with_the_raw_line_kept --- FAILED
+hosts::detect::tests::a_reported_version_is_parsed_and_eligible_for_config --- FAILED
+hosts::detect::tests::an_unknown_version_stays_unconfigured_pending_review --- FAILED
+. 133/588
+hosts::detect::tests::oversized_and_empty_output_stay_unverified --- FAILED
+hosts::detect::tests::the_uncertified_stem_is_reported_for_agy --- FAILED
+.. 137/588
+hosts::gemini::tests::a_document_outside_the_schema_is_refused_rather_than_guessed --- FAILED
+. 139/588
+hosts::gemini::tests::a_stdio_transport_requires_an_absolute_shell_free_command --- FAILED
+. 141/588
+hosts::gemini::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server --- FAILED
+hosts::gemini::tests::an_uncertified_policy_path_is_refused --- FAILED
+. 144/588
+hosts::gemini::tests::appending_preserves_every_other_server --- FAILED
+hosts::gemini::tests::every_rendered_entry_parses_back_to_the_same_server --- FAILED
+hosts::gemini::tests::replacing_the_managed_entry_changes_only_that_entry --- FAILED
+. 148/588
+hosts::gemini::tests::the_instruction_fragment_uses_the_managed_block_markers --- FAILED
+hosts::gemini::tests::the_scopes_pair_a_settings_file_with_an_instruction_and_policy_path --- FAILED
+....................................................................... 221/588
+install::ecosystem::tests::the_production_filesystem_boundary_installs_and_reports_already_installed --- FAILED
+.............................. 252/588
+install::uninstall::tests::a_default_plan_separates_the_removal_classes_and_preserves_user_content --- FAILED
+....... 260/588
+install::uninstall::tests::an_uninstall_unregisters_only_the_owned_service_and_renders_the_report --- FAILED
+. 262/588
+install::uninstall::tests::an_empty_class_is_not_reported_as_removed --- FAILED
+.. 265/588
+install::uninstall::tests::the_uninstall_report_is_kept_and_cannot_be_removed --- FAILED
+..................................................... 319/588
+service::linux::tests::a_per_user_unit_is_rendered_under_the_user_systemd_directory --- FAILED
+............. 333/588
+service::macos::tests::a_per_user_agent_is_rendered_under_the_user_agent_directory --- FAILED
+....... 341/588
+service::macos::tests::an_install_loads_the_agent_and_reports_it --- FAILED
+....................................................................................... 429/588
+........................................... 472/588
+cli::tests::oversized_and_boundary_values_stay_honest --- FAILED
+....................................................................................... 560/588
+............................
+failures:
+
+---- hosts::antigravity::tests::a_plan_inserts_then_replaces_without_touching_other_servers stdout ----
+
+thread 'hosts::antigravity::tests::a_plan_inserts_then_replaces_without_touching_other_servers' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- hosts::antigravity::tests::an_insert_refuses_a_document_that_already_declares_the_server stdout ----
+
+thread 'hosts::antigravity::tests::an_insert_refuses_a_document_that_already_declares_the_server' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::antigravity::tests::an_oversized_document_is_refused stdout ----
+
+thread 'hosts::antigravity::tests::an_oversized_document_is_refused' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::antigravity::tests::an_uncertified_skills_or_rules_path_is_refused stdout ----
+
+thread 'hosts::antigravity::tests::an_uncertified_skills_or_rules_path_is_refused' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::antigravity::tests::every_rendered_entry_parses_back_to_the_same_server stdout ----
+
+thread 'hosts::antigravity::tests::every_rendered_entry_parses_back_to_the_same_server' panicked at crates\axiom\src\hosts\antigravity.rs:1191:65:
+a round trip: AxiomError { code: ValidationError, message: "the server entry does not satisfy the native AGY MCP schema", retryable: false, details: {"component": "axiom-graphd", "observed": "stdio-command-not-absolute", "rule": "stdio-command-not-absolute"}, dropped_details: 0, request_id: None }
+
+---- hosts::antigravity::tests::the_deprecated_legacy_skills_path_is_refused_not_translated stdout ----
+
+thread 'hosts::antigravity::tests::the_deprecated_legacy_skills_path_is_refused_not_translated' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::antigravity::tests::the_scopes_pair_a_skills_dir_with_a_rules_dir stdout ----
+
+thread 'hosts::antigravity::tests::the_scopes_pair_a_skills_dir_with_a_rules_dir' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::antigravity::tests::the_instruction_fragment_uses_the_managed_block_markers stdout ----
+
+thread 'hosts::antigravity::tests::the_instruction_fragment_uses_the_managed_block_markers' panicked at crates\axiom\src\hosts\antigravity.rs:1008:71:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::claude::tests::a_document_outside_the_schema_is_refused_rather_than_guessed stdout ----
+
+thread 'hosts::claude::tests::a_document_outside_the_schema_is_refused_rather_than_guessed' panicked at crates\axiom\src\hosts\claude.rs:865:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::claude::tests::a_stdio_entry_requires_an_absolute_shell_free_command stdout ----
+
+thread 'hosts::claude::tests::a_stdio_entry_requires_an_absolute_shell_free_command' panicked at crates\axiom\src\hosts\claude.rs:1075:9:
+assertion `left == right` failed
+  left: "stdio-command-not-absolute"
+ right: "stdio-command-has-shell-metacharacters"
+
+---- hosts::claude::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server stdout ----
+
+thread 'hosts::claude::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server' panicked at crates\axiom\src\hosts\claude.rs:865:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::claude::tests::appending_preserves_every_other_server_and_the_permissions_object stdout ----
+
+thread 'hosts::claude::tests::appending_preserves_every_other_server_and_the_permissions_object' panicked at crates\axiom\src\hosts\claude.rs:865:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::claude::tests::replacing_the_managed_entry_changes_only_that_entry stdout ----
+
+thread 'hosts::claude::tests::replacing_the_managed_entry_changes_only_that_entry' panicked at crates\axiom\src\hosts\claude.rs:865:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::claude::tests::the_two_scopes_pair_a_config_file_with_an_instruction_file stdout ----
+
+thread 'hosts::claude::tests::the_two_scopes_pair_a_config_file_with_an_instruction_file' panicked at crates\axiom\src\hosts\claude.rs:865:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::claude::tests::the_instruction_fragment_uses_the_managed_block_markers stdout ----
+
+thread 'hosts::claude::tests::the_instruction_fragment_uses_the_managed_block_markers' panicked at crates\axiom\src\hosts\claude.rs:865:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::codex::tests::a_plan_refuses_an_existing_table_it_does_not_understand stdout ----
+
+thread 'hosts::codex::tests::a_plan_refuses_an_existing_table_it_does_not_understand' panicked at crates\axiom\src\hosts\codex.rs:1088:73:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::codex::tests::a_stdio_transport_requires_an_absolute_shell_free_command stdout ----
+
+thread 'hosts::codex::tests::a_stdio_transport_requires_an_absolute_shell_free_command' panicked at crates\axiom\src\hosts\codex.rs:1260:9:
+assertion `left == right` failed
+  left: "stdio-command-not-absolute"
+ right: "stdio-command-has-shell-metacharacters"
+
+---- hosts::codex::tests::a_rendered_block_parses_back_to_the_same_server stdout ----
+
+thread 'hosts::codex::tests::a_rendered_block_parses_back_to_the_same_server' panicked at crates\axiom\src\hosts\codex.rs:1317:73:
+a server: AxiomError { code: ValidationError, message: "the server entry does not satisfy the documented Codex MCP schema", retryable: false, details: {"component": "axiom-graphd", "observed": "stdio-command-not-absolute", "rule": "stdio-command-not-absolute"}, dropped_details: 0, request_id: None }
+
+---- hosts::codex::tests::an_append_plan_refuses_a_document_that_already_has_the_table stdout ----
+
+thread 'hosts::codex::tests::an_append_plan_refuses_a_document_that_already_has_the_table' panicked at crates\axiom\src\hosts\codex.rs:1088:73:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::codex::tests::appending_preserves_every_other_server_and_the_whole_document stdout ----
+
+thread 'hosts::codex::tests::appending_preserves_every_other_server_and_the_whole_document' panicked at crates\axiom\src\hosts\codex.rs:1088:73:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::codex::tests::replacing_the_managed_table_moves_nothing_else stdout ----
+
+thread 'hosts::codex::tests::replacing_the_managed_table_moves_nothing_else' panicked at crates\axiom\src\hosts\codex.rs:1088:73:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::codex::tests::the_instruction_fragment_uses_the_managed_block_markers stdout ----
+
+thread 'hosts::codex::tests::the_instruction_fragment_uses_the_managed_block_markers' panicked at crates\axiom\src\hosts\codex.rs:1088:73:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::detect::tests::a_denied_launch_reports_the_rule_instead_of_a_version stdout ----
+
+thread 'hosts::detect::tests::a_denied_launch_reports_the_rule_instead_of_a_version' panicked at crates\axiom\src\hosts\detect.rs:828:9:
+assertion `left == right` failed
+  left: Missing
+ right: LaunchFailed
+
+---- hosts::detect::tests::a_nonzero_exit_is_a_failed_launch_with_the_raw_line_kept stdout ----
+
+thread 'hosts::detect::tests::a_nonzero_exit_is_a_failed_launch_with_the_raw_line_kept' panicked at crates\axiom\src\hosts\detect.rs:807:9:
+assertion `left == right` failed
+  left: Missing
+ right: LaunchFailed
+
+---- hosts::detect::tests::a_reported_version_is_parsed_and_eligible_for_config stdout ----
+
+thread 'hosts::detect::tests::a_reported_version_is_parsed_and_eligible_for_config' panicked at crates\axiom\src\hosts\detect.rs:752:9:
+assertion `left == right` failed
+  left: Missing
+ right: Detected
+
+---- hosts::detect::tests::an_unknown_version_stays_unconfigured_pending_review stdout ----
+
+thread 'hosts::detect::tests::an_unknown_version_stays_unconfigured_pending_review' panicked at crates\axiom\src\hosts\detect.rs:776:9:
+assertion `left == right` failed
+  left: Missing
+ right: VersionUnverified
+
+---- hosts::detect::tests::oversized_and_empty_output_stay_unverified stdout ----
+
+thread 'hosts::detect::tests::oversized_and_empty_output_stay_unverified' panicked at crates\axiom\src\hosts\detect.rs:840:9:
+assertion `left == right` failed
+  left: Missing
+ right: VersionUnverified
+
+---- hosts::detect::tests::the_uncertified_stem_is_reported_for_agy stdout ----
+
+thread 'hosts::detect::tests::the_uncertified_stem_is_reported_for_agy' panicked at crates\axiom\src\hosts\detect.rs:874:9:
+assertion `left == right` failed
+  left: Missing
+ right: Detected
+
+---- hosts::gemini::tests::a_document_outside_the_schema_is_refused_rather_than_guessed stdout ----
+
+thread 'hosts::gemini::tests::a_document_outside_the_schema_is_refused_rather_than_guessed' panicked at crates\axiom\src\hosts\gemini.rs:916:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::gemini::tests::a_stdio_transport_requires_an_absolute_shell_free_command stdout ----
+
+thread 'hosts::gemini::tests::a_stdio_transport_requires_an_absolute_shell_free_command' panicked at crates\axiom\src\hosts\gemini.rs:1230:9:
+assertion `left == right` failed
+  left: "stdio-command-not-absolute"
+ right: "stdio-command-has-shell-metacharacters"
+
+---- hosts::gemini::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server stdout ----
+
+thread 'hosts::gemini::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server' panicked at crates\axiom\src\hosts\gemini.rs:916:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::gemini::tests::an_uncertified_policy_path_is_refused stdout ----
+
+thread 'hosts::gemini::tests::an_uncertified_policy_path_is_refused' panicked at crates\axiom\src\hosts\gemini.rs:916:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::gemini::tests::appending_preserves_every_other_server stdout ----
+
+thread 'hosts::gemini::tests::appending_preserves_every_other_server' panicked at crates\axiom\src\hosts\gemini.rs:916:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::gemini::tests::every_rendered_entry_parses_back_to_the_same_server stdout ----
+
+thread 'hosts::gemini::tests::every_rendered_entry_parses_back_to_the_same_server' panicked at crates\axiom\src\hosts\gemini.rs:1264:68:
+a round trip: AxiomError { code: ValidationError, message: "the server entry does not satisfy the native Gemini MCP schema", retryable: false, details: {"component": "axiom-graphd", "observed": "stdio-command-not-absolute", "rule": "stdio-command-not-absolute"}, dropped_details: 0, request_id: None }
+
+---- hosts::gemini::tests::replacing_the_managed_entry_changes_only_that_entry stdout ----
+
+thread 'hosts::gemini::tests::replacing_the_managed_entry_changes_only_that_entry' panicked at crates\axiom\src\hosts\gemini.rs:916:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::gemini::tests::the_instruction_fragment_uses_the_managed_block_markers stdout ----
+
+thread 'hosts::gemini::tests::the_instruction_fragment_uses_the_managed_block_markers' panicked at crates\axiom\src\hosts\gemini.rs:916:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- hosts::gemini::tests::the_scopes_pair_a_settings_file_with_an_instruction_and_policy_path stdout ----
+
+thread 'hosts::gemini::tests::the_scopes_pair_a_settings_file_with_an_instruction_and_policy_path' panicked at crates\axiom\src\hosts\gemini.rs:916:74:
+safe roots: AxiomError { code: ValidationError, message: "a root must be an absolute host path", retryable: false, details: {"portable_path": "[path]", "rule": "unsafe-path"}, dropped_details: 0, request_id: None }
+
+---- install::ecosystem::tests::the_production_filesystem_boundary_installs_and_reports_already_installed stdout ----
+
+thread 'install::ecosystem::tests::the_production_filesystem_boundary_installs_and_reports_already_installed' panicked at crates\axiom\src\install\ecosystem.rs:3638:10:
+the production boundary installs: AxiomError { code: Internal, message: "the install could not be activated", retryable: false, details: {"actual": "permission denied", "expected": "[path]", "observed": "[path]", "rule": "rename"}, dropped_details: 0, request_id: None }
+
+---- install::uninstall::tests::a_default_plan_separates_the_removal_classes_and_preserves_user_content stdout ----
+
+thread 'install::uninstall::tests::a_default_plan_separates_the_removal_classes_and_preserves_user_content' panicked at crates\axiom\src\install\uninstall.rs:862:9:
+assertion `left == right` failed
+  left: "/srv/axiom\\uninstall-report.json"
+ right: "/srv/axiom/uninstall-report.json"
+
+---- install::uninstall::tests::an_uninstall_unregisters_only_the_owned_service_and_renders_the_report stdout ----
+
+thread 'install::uninstall::tests::an_uninstall_unregisters_only_the_owned_service_and_renders_the_report' panicked at crates\axiom\src\install\uninstall.rs:1095:9:
+assertion failed: report.contains("\"report_path\": \"/srv/axiom/uninstall-report.json\"")
+
+---- install::uninstall::tests::an_empty_class_is_not_reported_as_removed stdout ----
+
+thread 'install::uninstall::tests::an_empty_class_is_not_reported_as_removed' panicked at crates\axiom\src\install\uninstall.rs:1120:9:
+assertion failed: text.contains("report /srv/axiom/uninstall-report.json")
+
+---- install::uninstall::tests::the_uninstall_report_is_kept_and_cannot_be_removed stdout ----
+
+thread 'install::uninstall::tests::the_uninstall_report_is_kept_and_cannot_be_removed' panicked at crates\axiom\src\install\uninstall.rs:1001:9:
+assertion failed: json.contains("\"report_path\": \"/srv/axiom/uninstall-report.json\"")
+
+---- service::linux::tests::a_per_user_unit_is_rendered_under_the_user_systemd_directory stdout ----
+
+thread 'service::linux::tests::a_per_user_unit_is_rendered_under_the_user_systemd_directory' panicked at crates\axiom\src\service\linux.rs:801:9:
+assertion failed: unit.text.contains("StandardOutput=append:/opt/axiom/logs/axiom-graphd.log")
+
+---- service::macos::tests::a_per_user_agent_is_rendered_under_the_user_agent_directory stdout ----
+
+thread 'service::macos::tests::a_per_user_agent_is_rendered_under_the_user_agent_directory' panicked at crates\axiom\src\service\macos.rs:756:9:
+assertion `left == right` failed
+  left: "/Users/billy\\Library/LaunchAgents\\com.axiom.axiom-graphd.plist"
+ right: "/Users/billy/Library/LaunchAgents/com.axiom.axiom-graphd.plist"
+
+---- service::macos::tests::an_install_loads_the_agent_and_reports_it stdout ----
+
+thread 'service::macos::tests::an_install_loads_the_agent_and_reports_it' panicked at crates\axiom\src\service\macos.rs:800:9:
+assertion `left == right` failed
+  left: ["load", "-w", "/Users/billy\\Library/LaunchAgents\\com.axiom.axiom-graphd.plist"]
+ right: ["load", "-w", "/Users/billy/Library/LaunchAgents/com.axiom.axiom-graphd.plist"]
+
+---- cli::tests::oversized_and_boundary_values_stay_honest stdout ----
+
+thread 'cli::tests::oversized_and_boundary_values_stay_honest' panicked at crates\axiom\src\cli.rs:2031:37:
+a validation refusal must name the option it rejected
+
+
+failures:
+    cli::tests::oversized_and_boundary_values_stay_honest
+    hosts::antigravity::tests::a_plan_inserts_then_replaces_without_touching_other_servers
+    hosts::antigravity::tests::an_insert_refuses_a_document_that_already_declares_the_server
+    hosts::antigravity::tests::an_oversized_document_is_refused
+    hosts::antigravity::tests::an_uncertified_skills_or_rules_path_is_refused
+    hosts::antigravity::tests::every_rendered_entry_parses_back_to_the_same_server
+    hosts::antigravity::tests::the_deprecated_legacy_skills_path_is_refused_not_translated
+    hosts::antigravity::tests::the_instruction_fragment_uses_the_managed_block_markers
+    hosts::antigravity::tests::the_scopes_pair_a_skills_dir_with_a_rules_dir
+    hosts::claude::tests::a_document_outside_the_schema_is_refused_rather_than_guessed
+    hosts::claude::tests::a_stdio_entry_requires_an_absolute_shell_free_command
+    hosts::claude::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server
+    hosts::claude::tests::appending_preserves_every_other_server_and_the_permissions_object
+    hosts::claude::tests::replacing_the_managed_entry_changes_only_that_entry
+    hosts::claude::tests::the_instruction_fragment_uses_the_managed_block_markers
+    hosts::claude::tests::the_two_scopes_pair_a_config_file_with_an_instruction_file
+    hosts::codex::tests::a_plan_refuses_an_existing_table_it_does_not_understand
+    hosts::codex::tests::a_rendered_block_parses_back_to_the_same_server
+    hosts::codex::tests::a_stdio_transport_requires_an_absolute_shell_free_command
+    hosts::codex::tests::an_append_plan_refuses_a_document_that_already_has_the_table
+    hosts::codex::tests::appending_preserves_every_other_server_and_the_whole_document
+    hosts::codex::tests::replacing_the_managed_table_moves_nothing_else
+    hosts::codex::tests::the_instruction_fragment_uses_the_managed_block_markers
+    hosts::detect::tests::a_denied_launch_reports_the_rule_instead_of_a_version
+    hosts::detect::tests::a_nonzero_exit_is_a_failed_launch_with_the_raw_line_kept
+    hosts::detect::tests::a_reported_version_is_parsed_and_eligible_for_config
+    hosts::detect::tests::an_unknown_version_stays_unconfigured_pending_review
+    hosts::detect::tests::oversized_and_empty_output_stay_unverified
+    hosts::detect::tests::the_uncertified_stem_is_reported_for_agy
+    hosts::gemini::tests::a_document_outside_the_schema_is_refused_rather_than_guessed
+    hosts::gemini::tests::a_stdio_transport_requires_an_absolute_shell_free_command
+    hosts::gemini::tests::an_insert_plan_refuses_a_document_that_already_declares_the_server
+    hosts::gemini::tests::an_uncertified_policy_path_is_refused
+    hosts::gemini::tests::appending_preserves_every_other_server
+    hosts::gemini::tests::every_rendered_entry_parses_back_to_the_same_server
+    hosts::gemini::tests::replacing_the_managed_entry_changes_only_that_entry
+    hosts::gemini::tests::the_instruction_fragment_uses_the_managed_block_markers
+    hosts::gemini::tests::the_scopes_pair_a_settings_file_with_an_instruction_and_policy_path
+    install::ecosystem::tests::the_production_filesystem_boundary_installs_and_reports_already_installed
+    install::uninstall::tests::a_default_plan_separates_the_removal_classes_and_preserves_user_content
+    install::uninstall::tests::an_empty_class_is_not_reported_as_removed
+    install::uninstall::tests::an_uninstall_unregisters_only_the_owned_service_and_renders_the_report
+    install::uninstall::tests::the_uninstall_report_is_kept_and_cannot_be_removed
+    service::linux::tests::a_per_user_unit_is_rendered_under_the_user_systemd_directory
+    service::macos::tests::a_per_user_agent_is_rendered_under_the_user_agent_directory
+    service::macos::tests::an_install_loads_the_agent_and_reports_it
+
+test result: FAILED. 542 passed; 46 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.57s
+
+
+stderr:
+error: test failed, to rerun pass `-p axiom --lib`

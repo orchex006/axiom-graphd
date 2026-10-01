@@ -1,0 +1,11 @@
+cwd=axiom-graphd
+command=cargo test --locked -p axiom service::windows::tests --quiet
+exit=0
+stdout:
+
+running 18 tests
+..................
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 570 filtered out; finished in 0.00s
+
+
+stderr:

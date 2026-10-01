@@ -1,0 +1,12 @@
+{
+  "task_id": "K-308",
+  "owner": "axiom-graphd",
+  "branch": "feature/k-308-windows-core-candidate",
+  "source_revision": "d548bdfcd34975abf08d6a88de335f9ae432f55c",
+  "lane": "windows-x64",
+  "kind": "local_runtime",
+  "certified": false,
+  "archive_sha256": "981ea1a4433cad32fe3c0e2372d22e4c75440fe66efd3afaa428158456bd8744",
+  "fixture_sha256": "e4ce77fae1c3400c5d0582b308d8c942bf51ac6c7776a65e58694e45d04e7625",
+  "handoff": "evidence/K-308/handoff.json"
+}

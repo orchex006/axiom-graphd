@@ -1,0 +1,50 @@
+{
+  "task_id": "K-308",
+  "owner_repository": "axiom-graphd",
+  "source_revision": "d548bdfcd34975abf08d6a88de335f9ae432f55c",
+  "spec_revision": "9e34f1645414bf4502af417a95b9333cf2f86887",
+  "lane": "windows-x64",
+  "version": "0.1.2",
+  "candidate": true,
+  "certified": false,
+  "signing": "unsigned",
+  "publication": "not_published",
+  "a_input": {
+    "task_id": "K-305",
+    "core_version": "0.1.1",
+    "source_revision": "3e4671ae928abe04d8437074216fed6790fb57bd",
+    "archive_sha256": "1c834d5b3a594866183fca7356cb06a65443f8814dd29abc47c3bc6ef8c6ea29"
+  },
+  "b_outputs": {
+    "axiom-0.1.2-windows-x64.zip": {
+      "path": "evidence/K-308/axiom-0.1.2-windows-x64.zip",
+      "sha256": "981ea1a4433cad32fe3c0e2372d22e4c75440fe66efd3afaa428158456bd8744"
+    },
+    "axiom-0.1.2-windows-x64.sbom.json": {
+      "path": "evidence/K-308/axiom-0.1.2-windows-x64.sbom.json",
+      "sha256": "572a74a18536e98952667f029d1af22cecd54e3f9cfb9deba1c4d198555de8ef"
+    },
+    "candidate-manifest.json": {
+      "path": "evidence/K-308/candidate-manifest.json",
+      "sha256": "62d25dae01c23a566d1157890c49a6ef572ff370003f09888504df3e5d1e73ee"
+    },
+    "real-source-fixture.tar": {
+      "path": "evidence/K-308/real-source-fixture.tar",
+      "sha256": "e4ce77fae1c3400c5d0582b308d8c942bf51ac6c7776a65e58694e45d04e7625"
+    },
+    "real-source-report.json": {
+      "path": "evidence/K-308/real-source-report.json",
+      "sha256": "bf7bfdbc3cc993610f73cef87218cee52f50719faa9a1a45c2b556ede15fc193"
+    },
+    "compatibility-negative.json": {
+      "path": "evidence/K-308/compatibility-negative.json",
+      "sha256": "838f18a884955be53f0aeaee5ef7107d17f731860f94e9f6feda2dedc4ab28df"
+    },
+    "spec.lock.json": {
+      "path": "evidence/K-308/spec.lock.json",
+      "sha256": "45ef718fb5f9b581f63177786baaef3c1ba6cf2614749bb90dc0141cafe11133"
+    }
+  },
+  "build_recipe": "AXIOM_BUILD_REVISION=<source_revision> cargo build --release --locked -p axiom-cli --bin axiom -p axiom-graphd --bin axiom-graphd; python release/package_core.py --daemon target/release/axiom-graphd.exe --cli target/release/axiom.exe --source-revision <source_revision> --out-dir <empty-output>",
+  "consumer": "K-306"
+}
