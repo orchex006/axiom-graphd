@@ -92,7 +92,9 @@ bytes, exported scheduler task, and active generation before control/removal.
 The daemon's explicit `serve --axiom-home` argv carries the approved user root
 into a scheduler action without a shell wrapper or an ambient environment
 override. Graphd-owned update and rollback start the Windows task after
-reinstalling it; registration alone leaves it Ready. Task Scheduler imports
+reinstalling it; registration alone leaves it Ready. Stop/removal waits up to
+15 seconds for the daemon's exclusive writer lock after `schtasks /end`, so a
+new generation cannot race the old process. Task Scheduler imports
 the exact UTF-16/BOM definition; a failed
 registration cleans its own definition. The existing K-308 ZIP remains
 historical; any K-309 core candidate requires a new committed source revision

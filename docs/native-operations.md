@@ -161,7 +161,10 @@ startup records. K-309 has since exercised the public Windows `axiom service`
 path with `schtasks.exe` in an isolated per-user test root. That native spike
 exposed that update activation and rollback only re-registered the Windows task
 and left it Ready. `NativeLifecycle::reinstall` now starts the task after
-registration on Windows. K-309 still requires exact final core native rerun
+registration on Windows. A subsequent rollback run exposed an asynchronous
+`schtasks /end`: the old daemon still held its writer lock when the restored
+task started. Stop and owned removal now wait for that kernel claim to release
+before reporting success. K-309 still requires exact final core native rerun
 before completion. No Linux systemd or macOS launchd host run is claimed here.
 
 An operator needs two facts to reason about a startup record:

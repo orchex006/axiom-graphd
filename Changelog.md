@@ -15,7 +15,9 @@ daemon accepts an explicit `serve --axiom-home` for scheduler-launched
 instances. Windows task XML is encoded as UTF-16 with a BOM; registration
 never forces replacement of a foreign task. The graphd-owned update lifecycle
 starts the Windows task after reinstalling it on both activation and rollback;
-the prior native run only left the task Ready. This is a local candidate and
+service stop/removal also waits for the daemon's kernel writer lock to be
+released because `schtasks /end` can return before process exit. The prior
+native run only left the task Ready. This is a local candidate and
 does not establish a signed or published core release.
 
 ### K-308 Windows 0.1.2 core candidate

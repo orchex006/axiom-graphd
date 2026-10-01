@@ -127,6 +127,40 @@ fn generation(root: &Path) -> Result<String, AxiomError> {
     ))
 }
 
+/// `schtasks /end` can return while the daemon is still releasing its writer
+/// handle. Wait for that kernel-owned claim before a new generation starts.
+fn wait_for_daemon_exit(home: &Path) -> Result<(), AxiomError> {
+    use std::os::windows::fs::OpenOptionsExt;
+    use std::time::{Duration, Instant};
+
+    let lock = home.join("run/daemon.lock");
+    let deadline = Instant::now() + Duration::from_secs(15);
+    loop {
+        match std::fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .share_mode(0)
+            .open(&lock)
+        {
+            Ok(handle) => {
+                drop(handle);
+                return Ok(());
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+            Err(error) if matches!(error.raw_os_error(), Some(32 | 33)) => {
+                if Instant::now() >= deadline {
+                    return Err(refuse(
+                        ErrorCode::WriterAlreadyRunning,
+                        "Windows daemon did not release its writer lock after stop",
+                    ));
+                }
+                std::thread::sleep(Duration::from_millis(50));
+            }
+            Err(error) => return Err(io(error)),
+        }
+    }
+}
+
 /// Read the real token user's SID using a program/argv boundary. The second
 /// CSV field is the SID; the localized display name is never interpreted.
 fn current_sid() -> Result<String, AxiomError> {
@@ -514,6 +548,9 @@ pub fn run_with_identity(
                 .with_detail("code", output.code.to_string())
                 .with_detail("stderr", output.stderr));
             }
+            if action.as_str() == "stop" {
+                wait_for_daemon_exit(&home)?;
+            }
             Ok(json!({"component":component,"action":action.as_str(),
                       "code":output.code,"stdout":output.stdout,"stderr":output.stderr}))
         }
@@ -580,6 +617,7 @@ fn remove_with_identity(
         // A stopped task returns a non-zero `/end`; deleting its exact owned
         // name is still safe and removes the per-user registration.
         let _ = exec.run(&windows::stop_operation(&name)?);
+        wait_for_daemon_exit(&home)?;
         let deleted = exec.run(&windows::uninstall_operation(&name)?)?;
         if deleted.code != 0 {
             return Err(refuse(
