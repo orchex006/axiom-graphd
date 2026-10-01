@@ -1,0 +1,74 @@
+cwd=axiom-graphd
+command=cargo test --locked -p axiom-graphd serve
+exit=0
+
+running 9 tests
+test commands::changed::tests::a_hint_for_a_missing_file_is_not_reported_as_observed ... ok
+test serve::tests::an_unsupported_language_asserts_nothing ... ok
+test serve::tests::csharp_declarations_become_nodes_and_containment_edges ... ok
+test serve::tests::a_type_declaration_without_a_modifier_is_not_yet_analysed ... ok
+test commands::queue::tests::cancel_is_cooperative_and_preserves_unprocessed_state ... ok
+test serve::tests::an_unsealed_staging_directory_never_advances_the_pointer ... ok
+test serve::tests::a_lane_that_cannot_be_sealed_leaves_every_pointer_unmoved ... ok
+test serve::tests::sealed_manifest_makes_the_generation_readable ... ok
+test serve::tests::one_publication_publishes_both_lanes_with_the_same_generation ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 140 filtered out; finished in 0.08s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+   Compiling axiom-graphd v0.1.1 (<axiom-graphd>\crates\axiom-graphd)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.97s
+     Running unittests src\lib.rs (target\debug\deps\axiom_graphd-b3935f2200084ed2.exe)
+     Running unittests src\main.rs (target\debug\deps\axiom_graphd-b6a3024ed2bbb533.exe)
+     Running tests\bootstrap_fixtures.rs (target\debug\deps\bootstrap_fixtures-32783e040cbec834.exe)
+     Running tests\git_input_fixtures.rs (target\debug\deps\git_input_fixtures-4ebbbbec66e36208.exe)
+     Running tests\human_workflow_guide.rs (target\debug\deps\human_workflow_guide-f0010e8f26a29b8a.exe)
+     Running tests\native_matrix.rs (target\debug\deps\native_matrix-a3e61dacdbedb356.exe)
+     Running tests\solutions_guide.rs (target\debug\deps\solutions_guide-ad12524362e2ee33.exe)
+     Running tests\troubleshooting_guide.rs (target\debug\deps\troubleshooting_guide-1533f0ecb0bd8de6.exe)
+     Running tests\update_fixtures.rs (target\debug\deps\update_fixtures-6e13022e903f3d21.exe)
+     Running tests\workspace_foundation.rs (target\debug\deps\workspace_foundation-83b4e829ce22645a.exe)

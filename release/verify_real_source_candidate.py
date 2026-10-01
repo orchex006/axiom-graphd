@@ -12,6 +12,7 @@ import shutil
 import signal
 import subprocess
 import tarfile
+import zipfile
 import tempfile
 import time
 
@@ -21,7 +22,7 @@ def sha(path: Path) -> str:
 
 
 def call(argv: list[str], env: dict[str, str], expected: int = 0) -> dict:
-    result = subprocess.run(argv, env=env, capture_output=True, text=True)
+    result = subprocess.run(argv, env=env, capture_output=True, text=True, encoding="utf-8")
     if result.returncode != expected:
         raise AssertionError(f"{Path(argv[0]).name} returned {result.returncode}, expected {expected}: {result.stdout[-300:]} {result.stderr[-300:]}")
     return json.loads(result.stdout)
@@ -59,14 +60,27 @@ def main() -> int:
         root = Path(temporary)
         binary_dir = root / "core"
         binary_dir.mkdir()
-        with tarfile.open(candidate / manifest["archive"]["name"], "r:gz") as archive:
-            members = archive.getmembers()
-            if {row.name for row in members} != {"axiom", "axiom-graphd", "release-info.json"} or any(not row.isfile() for row in members):
-                raise AssertionError("candidate archive membership changed")
-            archive.extractall(binary_dir)
-        daemon = binary_dir / "axiom-graphd"
-        daemon.chmod(0o755)
-        if sha(daemon) != next(row["sha256"] for row in manifest["binaries"] if row["name"] == "axiom-graphd"):
+        windows = manifest["platform"] == "windows-x64"
+        names = {"axiom.exe", "axiom-graphd.exe"} if windows else {"axiom", "axiom-graphd"}
+        archive_path = candidate / manifest["archive"]["name"]
+        if windows:
+            with zipfile.ZipFile(archive_path) as archive:
+                members = archive.infolist()
+                if len(members) != 3 or {row.filename for row in members} != names | {"release-info.json"}:
+                    raise AssertionError("candidate archive membership changed")
+                for row in members:
+                    (binary_dir / row.filename).write_bytes(archive.read(row))
+        else:
+            with tarfile.open(archive_path, "r:gz") as archive:
+                members = archive.getmembers()
+                if {row.name for row in members} != names | {"release-info.json"} or any(not row.isfile() for row in members):
+                    raise AssertionError("candidate archive membership changed")
+                archive.extractall(binary_dir)
+        daemon_name = "axiom-graphd.exe" if windows else "axiom-graphd"
+        daemon = binary_dir / daemon_name
+        if not windows:
+            daemon.chmod(0o755)
+        if sha(daemon) != next(row["sha256"] for row in manifest["binaries"] if row["name"] == daemon_name):
             raise AssertionError("candidate daemon digest changed")
         home = root / "home"
         repo = root / "repo"
@@ -82,7 +96,8 @@ def main() -> int:
         registration = call([str(daemon), "solution", "register", "--config", str(solution), "--apply", "--json"], env)
         pointer = repo / ".axiom/graph/demo-solution/_catalog/live/current.json"
         project_pointer = repo / ".axiom/graph/demo-solution/demo-project/live/current.json"
-        process = subprocess.Popen([str(daemon), "serve", "--json"], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        process = subprocess.Popen([str(daemon), "serve", "--json"], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8",
+                                   creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if windows else 0)
         try:
             first = wait_generation(pointer, None)
             first_project = wait_generation(project_pointer, None)
@@ -90,7 +105,7 @@ def main() -> int:
             second = wait_generation(pointer, first)
             wait_generation(project_pointer, first_project)
         finally:
-            process.send_signal(signal.SIGINT)
+            process.send_signal(signal.CTRL_BREAK_EVENT if windows else signal.SIGINT)
             stdout, stderr = process.communicate(timeout=20)
         if process.returncode != 0:
             raise AssertionError(f"daemon exited {process.returncode}: {stderr[-300:]}")
@@ -117,7 +132,7 @@ def main() -> int:
         try:
             incompatible_query = subprocess.run(
                 [str(daemon), "query", "context", "--solution", "demo-solution",
-                 "--symbol", "Demo.TokenSource", "--json"], env=env, capture_output=True, text=True,
+                 "--symbol", "Demo.TokenSource", "--json"], env=env, capture_output=True, text=True, encoding="utf-8",
             )
         finally:
             checkpoint_pointer.write_bytes(original_pointer)

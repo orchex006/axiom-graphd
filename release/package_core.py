@@ -19,23 +19,34 @@ import re
 import subprocess
 import sys
 import tarfile
+import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 REVISION = re.compile(r"[0-9a-f]{40}\Z")
 MACHO_X64 = bytes.fromhex("cffaedfe07000001")
 ELF_X64_PREFIX = bytes.fromhex("7f454c460201")
 TARGETS = {("Darwin", "x86_64"): ("macos-x64", "x86_64-apple-darwin"),
-           ("Linux", "x86_64"): ("linux-x64", "x86_64-unknown-linux-gnu")}
+           ("Linux", "x86_64"): ("linux-x64", "x86_64-unknown-linux-gnu"),
+           ("Windows", "AMD64"): ("windows-x64", "x86_64-pc-windows-msvc"),
+           ("Windows", "x86_64"): ("windows-x64", "x86_64-pc-windows-msvc")}
 
 
 def native_target() -> tuple[str, str]:
     target = TARGETS.get((platform.system(), platform.machine()))
     if target is None:
-        raise ValueError("native Intel Mac or Linux x64 packaging host required")
+        raise ValueError("native x64 macOS, Linux or Windows packaging host required")
     return target
 
 
 def native_binary(data: bytes, target: str) -> bool:
+    if target == "windows-x64":
+        if len(data) < 0x40 or data[:2] != b"MZ":
+            return False
+        offset = int.from_bytes(data[0x3c:0x40], "little")
+        return (offset >= 0x40 and offset + 26 <= len(data)
+                and data[offset:offset + 4] == b"PE\0\0"
+                and data[offset + 4:offset + 6] == bytes.fromhex("6486")
+                and data[offset + 24:offset + 26] == bytes.fromhex("0b02"))
     if target == "macos-x64":
         return data[:8] == MACHO_X64
     return data[:6] == ELF_X64_PREFIX and data[18:20] == bytes.fromhex("3e00")
@@ -50,7 +61,8 @@ def read_json(path: Path) -> dict:
 
 
 def command(argv: list[str], *, cwd: Path = ROOT) -> str:
-    result = subprocess.run(argv, cwd=cwd, capture_output=True, text=True, check=False)
+    result = subprocess.run(argv, cwd=cwd, capture_output=True, text=True,
+                            encoding="utf-8", check=False)
     if result.returncode:
         raise ValueError(f"{Path(argv[0]).name} exited {result.returncode}: {result.stderr[-300:]}")
     return result.stdout.strip()
@@ -84,10 +96,20 @@ def binary(path: Path, component: str, revision: str, version: str, compatibilit
                           ("queue_schema", compatibility["queue_schema_version"])):
         if report.get(key) != expected:
             raise ValueError(f"{component} {key} is incompatible with the core manifest")
-    return {"name": component, "sha256": sha(data), "size_bytes": len(data), "mode": "0755", "version_report": report}
+    name = component + (".exe" if target == "windows-x64" else "")
+    return {"name": name, "sha256": sha(data), "size_bytes": len(data),
+            "mode": None if target == "windows-x64" else "0755", "version_report": report}
 
 
 def archive(path: Path, files: dict[str, bytes]) -> None:
+    if path.suffix == ".zip":
+        with zipfile.ZipFile(path, "w") as zipped:
+            for name, data in sorted(files.items()):
+                info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
+                info.compress_type = zipfile.ZIP_STORED
+                info.create_system = 0
+                zipped.writestr(info, data)
+        return
     with path.open("wb") as output:
         with gzip.GzipFile(filename="", mode="wb", fileobj=output, mtime=0) as zipped:
             with tarfile.open(fileobj=zipped, mode="w", format=tarfile.USTAR_FORMAT) as tar:
@@ -145,9 +167,9 @@ def main() -> int:
                     "binaries": [{k: row[k] for k in ("name", "sha256", "size_bytes", "mode")} for row in binaries],
                     "sbom_sha256": sha(sbom_bytes)}
     info_bytes = (json.dumps(release_info, sort_keys=True, separators=(",", ":")) + "\n").encode()
-    archive_name = f"axiom-{version}-{platform_id}.tar.gz"
-    archive(output / archive_name, {"axiom": args.cli.read_bytes(),
-                                    "axiom-graphd": args.daemon.read_bytes(),
+    archive_name = f"axiom-{version}-{platform_id}" + (".zip" if platform_id == "windows-x64" else ".tar.gz")
+    archive(output / archive_name, {binaries[1]["name"]: args.cli.read_bytes(),
+                                    binaries[0]["name"]: args.daemon.read_bytes(),
                                     "release-info.json": info_bytes})
     candidate = {
         "schema_version": 1, "kind": "unsigned-core-candidate", "platform": platform_id,
@@ -159,7 +181,8 @@ def main() -> int:
                  "package_count": len(packages)},
         "binaries": binaries,
         "host": {"system": platform.system(), "machine": platform.machine(),
-                 "runtime": platform.mac_ver()[0] if platform_id == "macos-x64" else " ".join(platform.libc_ver())},
+                 "runtime": (platform.mac_ver()[0] if platform_id == "macos-x64" else
+                             platform.version() if platform_id == "windows-x64" else " ".join(platform.libc_ver()))},
         "toolchain": {"rustc": command(["rustc", "--version", "--verbose"]),
                       "cargo": command(["cargo", "--version"]), "python": platform.python_version()},
         "signing": "unsigned", "notarization": "not_notarized", "publication": "not_published",

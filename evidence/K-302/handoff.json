@@ -1,0 +1,30 @@
+{
+  "task_id": "K-302",
+  "candidate": true,
+  "certified": false,
+  "source_revision": "e399a6c1300642b0af41c52afe00606cc22f64f1",
+  "platform": "windows-x64",
+  "archive": {
+    "path": "evidence/K-302/axiom-0.1.1-windows-x64.zip",
+    "sha256": "bd18ddd78a5902313564bf02589e5ed4758611456f981e47535ab0706bc4a68c"
+  },
+  "fixture": {
+    "path": "evidence/K-302/real-source-fixture.tar",
+    "sha256": "095d36a3db66f81b3db8df8d96e4f312c6ea5e91e80ccb6bc635d6538522fade"
+  },
+  "manifest": {
+    "path": "evidence/K-302/candidate-manifest.json",
+    "sha256": "b7d60ab62ec58e16489ed0dccef379d0bee841f60b9fdf11f19ebf905aa76c44"
+  },
+  "query_watcher_report": {
+    "path": "evidence/K-302/real-source-report.json",
+    "sha256": "e279f5724d064a071531d49d2ace4ec50818e8783430e19659816ae9e89715cf"
+  },
+  "source_project": "isolated C# project, Demo.TokenSource and WatcherAdded; exact source bytes in fixture",
+  "signed": false,
+  "published": false,
+  "downstream": [
+    "K-305",
+    "K-307"
+  ]
+}

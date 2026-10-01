@@ -1,0 +1,4 @@
+cwd=axiom-graphd
+command=axiom-graphd\target\release\axiom.exe version --json
+exit=0
+{"component":"axiom","version":"0.1.1","spec_version":"2.0.0-draft.1","graph_schema":1,"control_api":1,"queue_schema":1,"build_revision":"e399a6c1300642b0af41c52afe00606cc22f64f1","update_status":"unconfigured"}

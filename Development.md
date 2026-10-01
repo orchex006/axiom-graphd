@@ -60,6 +60,13 @@ Merge เข้า `release/vX.Y.Z`, การ tag และ publish MUST มี
 
 Daemon plus CLI share one core release; MCP and skills version independently. Documentation follows its component version. Do not invent a remote, push credentials or release version. No production action is authorized by copying this seed.
 
+## K-302 Windows x64 core candidate
+
+The Windows packager and verifier consume native MSVC x64 PE binaries, create
+and inspect a deterministic ZIP archive, and refuse incompatible architecture or
+manifest data. The owner candidate remains unsigned and unpublished. Runtime
+graph/watch and installed consumer checks require their own native evidence.
+
 ## K-402 Linux x64 candidate handoff
 
 `evidence/K-402/` contains the unsigned core `0.1.1` Linux x64 candidate,

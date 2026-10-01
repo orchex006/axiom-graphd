@@ -1,0 +1,4 @@
+cwd=axiom-graphd
+command=cargo build --locked --release -p axiom-cli --bin axiom -p axiom-graphd --bin axiom-graphd
+exit=0
+    Finished `release` profile [optimized] target(s) in 0.10s
