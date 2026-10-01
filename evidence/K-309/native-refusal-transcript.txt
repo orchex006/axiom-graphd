@@ -1,0 +1,42 @@
+**********************
+PowerShell transcript start
+Start time: 20261001233049
+Username: THANATMET-T\006006
+RunAs User: THANATMET-T\006006
+Configuration Name: 
+Machine: THANATMET-T (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll -Command try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}
+& 'D:\SP-Billy\axiom\goals\run-logs\K-309\refusal-transcript.ps1'
+Process ID: 25988
+PSVersion: 7.6.6
+PSEdition: Core
+GitCommitId: 7.6.6
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+COMMAND python native-package-setup.py --name native-refusal-transcript-6223
+
+DAEMON_SHA 2DFEF43F80D1E69B8BAF773646A7C04955C8DC7EDBABC225D805BDFC205ABFD7
+PRINCIPAL Limited 006006
+COMMAND axiom service status --component axiom-graphd --json (disabled task)
+{"code":"CONFLICT","message":"registered Windows task differs from its owned definition","retryable":true,"details":{},"request_id":null}
+CONFLICT: registered Windows task differs from its owned definition
+DISABLED_EXIT 6
+XML_RESTORED True
+COMMAND axiom service status --component axiom-graphd --json (foreign SID)
+{"code":"FORBIDDEN","message":"Windows service state belongs to another user","retryable":false,"details":{},"request_id":null}
+FORBIDDEN: Windows service state belongs to another user
+FOREIGN_SID_EXIT 5
+COMMAND axiom service uninstall --component axiom-graphd --json (restored owner)
+{"component":"axiom-graphd","definition_removed":true,"removed":true}
+UNINSTALL_EXIT 0
+TASK_PRESENT False
+USER_DATA_PRESENT True
+**********************
+PowerShell transcript end
+End time: 20261001233056
+**********************

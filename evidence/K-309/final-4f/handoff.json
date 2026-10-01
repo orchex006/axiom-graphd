@@ -1,0 +1,27 @@
+{
+  "task_id": "K-309",
+  "status": "local_verified",
+  "certified": false,
+  "provenance": "candidate",
+  "platform": "windows-x64",
+  "version": "0.1.2",
+  "source_revision": "4f8765a74ae5f077f53d092ddb4fea40d0c44fe3",
+  "spec_revision": "1fa70816b81479fe1969d8673ef699eba15646d8",
+  "archive": {
+    "path": "evidence/K-309/final-4f/axiom-0.1.2-windows-x64.zip",
+    "sha256": "ba9e294cd112c7311b755ab9aad2d3713502c68925febb48359fec0fe1cc2c53"
+  },
+  "manifest": {
+    "path": "evidence/K-309/final-4f/candidate-manifest.json",
+    "sha256": "b33999d07c1a71d3ce00c93620870d08948eec6f0e010f7891d6c630717af7df"
+  },
+  "sbom": {
+    "path": "evidence/K-309/final-4f/axiom-0.1.2-windows-x64.sbom.json",
+    "sha256": "04e1356239dc2bfc061caa06b32f8073537a728a6e64fc5b9b5491565c2a7f5f"
+  },
+  "limitations": [
+    "Unsigned and unpublished; this is not a released-fixture or release certification result.",
+    "Native graphd-owned update lifecycle used a separate service-capable debug A fixture so the exact 0.1.2 B candidate could be exercised with distinct versioned destinations.",
+    "K-010 still owns the final Windows distribution and installed MCP/migration lifecycle."
+  ]
+}

@@ -1,0 +1,12 @@
+release: name=axiom-core version=0.1.2 revision=unpinned publication=not_published
+component: axiom-graphd role=daemon version=0.1.2 revision=unpinned
+component: axiom role=cli version=0.1.2 revision=unpinned
+host: os=windows arch=x86_64 -> windows-x64
+publication: state=not_published publishable=False first_refusal=revision is not pinned
+not_run: signing, tagging and publishing: revision is not pinned (the release gate is closed for this workstream: no tag, no release, no publish)
+not_run: building and hashing all four released-target archives (this manifest checker does not package artifacts)
+not_run: producing and hashing the per-target SBOMs
+not_run: signing the release and each archive with the release key
+not_run: clean-user installation evidence from a signed artifact: every target records installation_evidence.state = not_run with the command it would run
+not_run: cargo test --locked -p axiom-graphd (this Python manifest checker does not run Rust tests; record those separately)
+ok: E-048/V2-021 one core release carries axiom-graphd and axiom from the same version and revision, with per-target provenance, executable metadata and honest installation evidence; 3 positive legs hold and 12 negative legs were rejected as required

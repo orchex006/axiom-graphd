@@ -1,0 +1,48 @@
+**********************
+PowerShell transcript start
+Start time: 20261001235537
+Username: THANATMET-T\006006
+RunAs User: THANATMET-T\006006
+Configuration Name: 
+Machine: THANATMET-T (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll -Command try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}
+& 'D:\SP-Billy\axiom\goals\run-logs\K-309\native-service-4f.ps1'
+Process ID: 40076
+PSVersion: 7.6.6
+PSEdition: Core
+GitCommitId: 7.6.6
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+COMMAND python native-package-setup.py --name native-service-4f
+
+DAEMON_SHA 2C85A61A8F03F433B5CDE82BA05E70EEABDC4E3A56FD4C003CC733A023F86164
+PRINCIPAL Limited
+COMMAND axiom service start --component axiom-graphd --json
+
+START_EXIT 0
+REAL_SOURCE_QUERY True
+WATCHER_QUERY True
+COMMAND axiom service status --component axiom-graphd --json
+{"action":"status","code":0,"component":"axiom-graphd","stderr":"","stdout":"\r\nFolder: Axiom\r\nHostName:                             THANATMET-T\r\nTaskName:                             Axiom\\axiom-graphd\r\nNext Run Time:                        N/A\r\nStatus:                               Running\r\nLogon Mode:                           Interactive only\r\nLast Run Time:                        1/10/2569 23:55:41\r\nLast Result:                          267009\r\nAuthor:                               N/A\r\nTask To Run:                          \\\\?\\D:\\SP-Billy\\axiom\\goals\\run-logs\\K-309\\native-service-4f\\home\\installs\\ecosystem\\versions\\0.1.2\\bin\\axiom-graphd serve --axiom-home D:\\SP-Billy\\axiom\\goals\\run-logs\\K-309\\native-service-4f\\home\r\nStart In:                             D:\\SP-Billy\\axiom\\goals\\run-logs\\K-309\\native-service-4f\\home\\installs\\ecosystem\r\nComment:                              Axiom managed process for axiom-graphd (per-user).\r\nScheduled Task State:                 Enabled\r\nIdle Time:                            Disabled\r\nPower Management:                     \r\nRun As User:                          006006\r\nDelete Task If Not Rescheduled:       Disabled\r\nStop Task If Runs X Hours and X Mins: Disabled\r\nSchedule:                             Scheduling data is not available in this format.\r\nSchedule Type:                        At logon time\r\nStart Time:                           N/A\r\nStart Date:                           N/A\r\nEnd Date:                             N/A\r\nDays:                                 N/A\r\nMonths:                               N/A\r\nRepeat: Every:                        N/A\r\nRepeat: Until: Time:                  N/A\r\nRepeat: Until: Duration:              N/A\r\nRepeat: Stop If Still Running:        N/A\r\n"}
+STATUS_EXIT 0
+COMMAND axiom service stop --component axiom-graphd --json
+
+STOP_EXIT 0
+STOPPED_PROCESSES 0
+COMMAND axiom service install --component axiom-graphd --user --json (idempotent)
+
+IDEMPOTENT_EXIT 0
+COMMAND axiom service uninstall --component axiom-graphd --json
+
+UNINSTALL_EXIT 0
+FINAL_TASK_PRESENT False
+USER_DATA_PRESENT True
+**********************
+PowerShell transcript end
+End time: 20261001235549
+**********************

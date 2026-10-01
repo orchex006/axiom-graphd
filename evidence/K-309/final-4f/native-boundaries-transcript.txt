@@ -1,0 +1,46 @@
+**********************
+PowerShell transcript start
+Start time: 20261001235408
+Username: THANATMET-T\006006
+RunAs User: THANATMET-T\006006
+Configuration Name: 
+Machine: THANATMET-T (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll -Command try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}
+& 'D:\SP-Billy\axiom\goals\run-logs\K-309\native-boundaries-4f.ps1'
+Process ID: 46316
+PSVersion: 7.6.6
+PSEdition: Core
+GitCommitId: 7.6.6
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+
+COMMAND axiom service status (changed definition)
+{"code":"CONFLICT","message":"owned Windows task definition changed","retryable":true,"details":{},"request_id":null}
+CONFLICT: owned Windows task definition changed
+CHANGED_DEFINITION_EXIT 6
+COMMAND axiom service install (missing owner, task present)
+{"code":"CONFLICT","message":"an unowned Windows task already has the canonical name","retryable":true,"details":{},"request_id":null}
+CONFLICT: an unowned Windows task already has the canonical name
+MISSING_OWNER_INSTALL_EXIT 6
+COMMAND axiom service uninstall (missing owner, task present)
+{"code":"CONFLICT","message":"missing ownership cannot remove an existing Windows task","retryable":true,"details":{},"request_id":null}
+CONFLICT: missing ownership cannot remove an existing Windows task
+MISSING_OWNER_UNINSTALL_EXIT 6
+COMMAND axiom service start (stale generation)
+{"code":"CONFLICT","message":"owned Windows service targets a stale core generation","retryable":true,"details":{},"request_id":null}
+CONFLICT: owned Windows service targets a stale core generation
+STALE_GENERATION_EXIT 6
+COMMAND axiom service uninstall (restored owner)
+
+UNINSTALL_EXIT 0
+FINAL_TASK_PRESENT False
+USER_DATA_PRESENT True
+**********************
+PowerShell transcript end
+End time: 20261001235412
+**********************

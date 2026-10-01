@@ -1,5 +1,9 @@
 # K-309 Windows owner review — in progress
 
+Historical first candidate only. The final owner candidate and review are in
+`final-4f/`; this file records the earlier source revision and its discovery
+work without changing those bytes.
+
 Source revision: `6223daa59e0bcc0f3c5312c1801fbd5a5783aa34` on
 `feature/k-309-windows-service-core`. The unsigned core archive in this
 directory has SHA-256
@@ -33,11 +37,16 @@ user data was removed.
 The exact packaged-binary rerun refused a changed definition on `service
 status`, missing ownership with an existing task on both install and
 uninstall, and stale active generation on start. Each returned `CONFLICT`
-(exit 6) without replacing or removing the task. Original bytes were restored
+(exit 6) without replacing or removing the task. Disabling the registered
+Scheduled Task changed its exported fingerprint; `service status` returned
+`CONFLICT` (exit 6). Re-enabling it restored the exact export XML and owned
+status/uninstall succeeded. Replacing the owner SID with a different valid SID
+made `service status` return `FORBIDDEN` (exit 5). Original bytes were restored
 from local backups before owned uninstall, which left no task or graphd
-process. The earlier debug-binary spike also tested a changed scheduler task;
-that scheduler-export fingerprint refusal and wrong-user handling still need
-retained exact-binary evidence. Graphd-owned native service update/restart and
+process and preserved user data. The replay output is retained in
+`native-refusal-transcript.txt` (SHA-256
+`c059c254a5fb592b96b7ff79fe774af964bd1f26e3e714db51dffe4efc64eeb5`).
+Graphd-owned native service update/restart and
 rollback remain unverified. Therefore K-309
 stays `in_progress`; do not hand this archive to K-010 as a final accepted
 service candidate. K-010 and released-fixture K-601/K-602 remain open.

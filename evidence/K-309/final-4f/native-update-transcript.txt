@@ -1,0 +1,48 @@
+**********************
+PowerShell transcript start
+Start time: 20261001235004
+Username: THANATMET-T\006006
+RunAs User: THANATMET-T\006006
+Configuration Name: 
+Machine: THANATMET-T (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll -Command try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}
+& 'D:\SP-Billy\axiom\goals\run-logs\K-309\native-update-4f.ps1'
+Process ID: 44432
+PSVersion: 7.6.6
+PSEdition: Core
+GitCommitId: 7.6.6
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+COMMAND python native-update-a-setup.py --name native-update-4f
+
+A_SHA 24046E5F4B8BE75AA2CE4DB5C186A1668DAA5636748D38AAE9D95B4BB99C5C18
+B_SHA 2C85A61A8F03F433B5CDE82BA05E70EEABDC4E3A56FD4C003CC733A023F86164
+COMMAND axiom service start --component axiom-graphd --json
+
+A_STATE Running
+COMMAND axiom update plan --to 0.1.2 --bundle bundle-b --out plan-b.json --json
+{"plan_digest":"3af43f24bbafa914b7e7295638efe497565d49e24be2958429ba448515cd1846","plan_file":"D:\\SP-Billy\\axiom\\goals\\run-logs\\K-309\\native-update-4f\\plan-b.json","status":"planned"}
+COMMAND axiom update apply --plan plan-b.json --approve-digest <exact plan digest> --json
+{"journal_path":"D:\\SP-Billy\\axiom\\goals\\run-logs\\K-309\\native-update-4f\\home\\installs\\ecosystem\\journal\\ecosystem-update-update-1790873414-aebcbd99b2877a53.json","plan_digest":"3af43f24bbafa914b7e7295638efe497565d49e24be2958429ba448515cd1846","transaction_id":"update-1790873414-aebcbd99b2877a53"}
+B_STATE Running
+B_PROCESSES 1
+B_ACTION \\?\D:\SP-Billy\axiom\goals\run-logs\K-309\native-update-4f\home\installs\ecosystem\versions\0.1.2\bin\axiom-graphd
+COMMAND axiom update rollback --transaction <exact transaction> --json
+{"journal_path":"D:\\SP-Billy\\axiom\\goals\\run-logs\\K-309\\native-update-4f\\home\\installs\\ecosystem\\journal\\ecosystem-update-update-1790873414-aebcbd99b2877a53.json","restored_pointer_sha256":"86392e3cafc446c452850003aaddf50d915f7ba223fc7766b18255bf0987b220","transaction_id":"update-1790873414-aebcbd99b2877a53"}
+A_RESTORED_STATE Running
+A_RESTORED_PROCESSES 1
+A_RESTORED_ACTION \\?\D:\SP-Billy\axiom\goals\run-logs\K-309\native-update-4f\home\installs\ecosystem\versions\0.1.1-k309-test\bin\axiom-graphd
+USER_DATA_PRESENT True
+COMMAND axiom service uninstall --component axiom-graphd --json
+
+FINAL_TASK_PRESENT False
+FINAL_PROCESSES 0
+**********************
+PowerShell transcript end
+End time: 20261001235038
+**********************
