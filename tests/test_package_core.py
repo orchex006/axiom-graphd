@@ -13,10 +13,10 @@ import sys
 import tempfile
 import unittest
 
-from release.package_core import native_binary as package_native_binary
-from release.verify_core_candidate import native_binary as verify_native_binary
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from release.package_core import native_binary as package_native_binary  # noqa: E402
+from release.verify_core_candidate import native_binary as verify_native_binary  # noqa: E402
 BUILD = ROOT / "release/package_core.py"
 VERIFY = ROOT / "release/verify_core_candidate.py"
 
