@@ -112,6 +112,12 @@ manifest describes the next unpublished workspace version, while the K-308
 evidence names the exact candidate ZIP, SBOM and hashes. It does not claim a
 published `v0.1.2` release.
 
+K-309 prepares a later Windows `0.1.2` core candidate for K-010 after the
+public per-user service lifecycle is verified. Its source revision, ZIP, SBOM,
+native service and update/rollback evidence must be recorded separately from
+the K-308/K-306/K-307 historical candidate. This row remains unsigned and
+unpublished until release authority and the aggregate gates are satisfied.
+
 - Exit codes: `docs/CLI-EXIT-CODES.md`.
 - Update delegation and approval binding: `docs/16-CLI-AND-CONTROL-API.md`
   section 7, implemented in `crates/axiom-graphd/src/commands/update.rs`.

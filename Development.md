@@ -83,6 +83,20 @@ signing or three-lane certification claim.
 `Cargo.lock` has a fixed LF checkout so the SBOM byte hash reproduces from the
 same commit on Windows. The manifest hashes the checked-out LF workspace bytes.
 
+## K-309 Windows public service lifecycle candidate
+
+The public graphd-owned `axiom service` runtime now dispatches Windows to its
+per-user Task Scheduler adapter. It stores a separate Windows identity record
+at the existing owned service-state path and verifies user SID, definition
+bytes, exported scheduler task, and active generation before control/removal.
+The daemon's explicit `serve --axiom-home` argv carries the approved user root
+into a scheduler action without a shell wrapper or an ambient environment
+override. Task Scheduler imports the exact UTF-16/BOM definition; a failed
+registration cleans its own definition. The existing K-308 ZIP remains
+historical; any K-309 core candidate requires a new committed source revision
+and hashes. Native Task Scheduler, update/restart and rollback evidence gate
+K-309 completion separately from unit checks and unsigned packaging.
+
 ## K-402 Linux x64 candidate handoff
 
 `evidence/K-402/` contains the unsigned core `0.1.1` Linux x64 candidate,

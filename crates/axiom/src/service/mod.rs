@@ -32,6 +32,10 @@ pub mod owned_state;
 pub mod runtime;
 pub mod startup;
 pub mod windows;
+#[cfg(windows)]
+pub mod windows_runtime;
+#[cfg(windows)]
+pub mod windows_state;
 
 /// Directory, relative to the install root, that holds service definitions and
 /// their rendered task/unit files.

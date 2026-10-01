@@ -37,7 +37,7 @@ use graph_core::bindings::{resolve_binding, resolve_project_root, CatalogRepoRef
 use graph_core::config::ServiceConfig;
 use graph_core::error::{AxiomError, ErrorCode};
 use graph_core::locks::{default_lock_path, LockMode, SolutionGuard};
-use graph_core::paths::AxiomHome;
+use graph_core::paths::{AxiomHome, PathEnvironment};
 use graph_export::manifest::ManifestHeader;
 use graph_export::staging::StagingLayout;
 use graph_export::{pointer, reader, recovery};
@@ -153,8 +153,18 @@ struct Selection {
 ///   registered project cannot be resolved;
 /// * the store, inventory, analysis and publication errors of the pipeline.
 pub fn serve(config: &ServiceConfig, telemetry: &mut Telemetry) -> Result<ServeReport, AxiomError> {
-    let home = AxiomHome::resolve(&graph_core::paths::PathEnvironment::for_current_process())?;
-    home.verify_destination()?;
+    serve_with_home(config, telemetry, None)
+}
+
+/// Run the daemon in an explicitly reviewed per-user home. A startup scheduler
+/// passes this argv value because it cannot supply a task-specific environment.
+/// A conflicting ambient `AXIOM_HOME` is refused before taking any lock.
+pub fn serve_with_home(
+    config: &ServiceConfig,
+    telemetry: &mut Telemetry,
+    explicit: Option<&Path>,
+) -> Result<ServeReport, AxiomError> {
+    let home = home_for_service(PathEnvironment::for_current_process(), explicit)?;
     let lock = DaemonLock::acquire(&home, config.daemon().instance_id())?;
     let _ = telemetry.record(
         LogLevel::Info,
@@ -211,6 +221,42 @@ pub fn serve(config: &ServiceConfig, telemetry: &mut Telemetry) -> Result<ServeR
     signal_listener.stop();
     drop(lock);
     result
+}
+
+fn home_for_service(
+    mut environment: PathEnvironment,
+    explicit: Option<&Path>,
+) -> Result<AxiomHome, AxiomError> {
+    if let Some(path) = explicit {
+        let ambient = environment.axiom_home.clone();
+        environment.axiom_home = Some(path.to_string_lossy().into_owned());
+        let requested = AxiomHome::resolve(&environment)?;
+        requested.verify_destination()?;
+        if let Some(value) = ambient {
+            environment.axiom_home = Some(value);
+            let current = AxiomHome::resolve(&environment)?;
+            current.verify_destination()?;
+            let current_path = current.root().canonicalize().map_err(|_| {
+                AxiomError::new(
+                    ErrorCode::UnsafeHomePath,
+                    "ambient AXIOM_HOME cannot be resolved",
+                )
+            })?;
+            let requested_path = requested.root().canonicalize().map_err(|_| {
+                AxiomError::new(ErrorCode::UnsafeHomePath, "--axiom-home cannot be resolved")
+            })?;
+            if current_path != requested_path {
+                return Err(AxiomError::new(
+                    ErrorCode::Conflict,
+                    "--axiom-home differs from ambient AXIOM_HOME",
+                ));
+            }
+        }
+        environment.axiom_home = Some(path.to_string_lossy().into_owned());
+    }
+    let home = AxiomHome::resolve(&environment)?;
+    home.verify_destination()?;
+    Ok(home)
 }
 
 struct FilesystemSnapshot;
@@ -1482,6 +1528,44 @@ mod tests {
     use super::*;
 
     use graph_export::manifest::Coverage;
+
+    #[test]
+    fn scheduler_home_is_explicit_local_and_cannot_conflict_with_ambient_home() {
+        let temp = tempfile::tempdir().unwrap();
+        let a = temp.path().join("home-a");
+        let b = temp.path().join("home-b");
+        std::fs::create_dir_all(&a).unwrap();
+        std::fs::create_dir_all(&b).unwrap();
+        let mut facts = PathEnvironment {
+            platform: graph_core::paths::Platform::Windows,
+            axiom_home: None,
+            local_app_data: None,
+            xdg_state_home: None,
+            home_dir: None,
+        };
+        assert_eq!(home_for_service(facts.clone(), Some(&a)).unwrap().root(), a);
+        facts.axiom_home = Some(a.to_string_lossy().into_owned());
+        assert_eq!(home_for_service(facts.clone(), Some(&a)).unwrap().root(), a);
+        assert_eq!(
+            home_for_service(facts, Some(&b)).unwrap_err().code(),
+            ErrorCode::Conflict
+        );
+        assert_eq!(
+            home_for_service(
+                PathEnvironment {
+                    platform: graph_core::paths::Platform::Windows,
+                    axiom_home: None,
+                    local_app_data: None,
+                    xdg_state_home: None,
+                    home_dir: None,
+                },
+                Some(Path::new("relative"))
+            )
+            .unwrap_err()
+            .code(),
+            ErrorCode::UnsafeHomePath
+        );
+    }
 
     /// A payload holding exactly the documents a serve fixture publishes.
     fn payload_of(nodes: Vec<serde_json::Value>, edges: Vec<serde_json::Value>) -> Payload {

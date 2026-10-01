@@ -32,7 +32,7 @@ and `query` do work; `changed` and `update` are wired but still answer
 
 | Verb | State | Source |
 | --- | --- | --- |
-| `axiom-graphd serve [--registry <path>] [--json]` | available | `cli.rs` arm `["serve"]`; acquires the instance lock and runs one bounded reconcile pass, publishing a generation |
+| `axiom-graphd serve [--registry <path>] [--axiom-home <path>] [--json]` | available | `cli.rs` arm `["serve"]`; an explicit local home is accepted only for this verb and must agree with ambient `AXIOM_HOME` |
 | `axiom-graphd version [--json]` | available | `cli.rs` arm `["version"]` |
 | `axiom-graphd help` (also `--help`, `-h`) | available | `cli.rs` arm `["help"]` and the empty argv case |
 | `axiom-graphd doctor [--solution <id>] [--json]` | available | `cli.rs` slice `doctor`; prints a diagnostic report from the open store (`overall` may be `degraded`) |
@@ -156,17 +156,17 @@ instead. Refusal reasons carried on the error: `not-per-user-mechanism`,
 `unsupported-scope`, `unknown-component`, `unsafe-definition-path`,
 `foreign-definition`, `empty-definition`, `registry-exit`, `definition-io`.
 
-**UNVERIFIED**: `schtasks.exe` (Windows), `systemctl --user` (Linux) and
-`launchctl` (macOS) were never really executed. The adapters render the host
-command and hand it to an injected `ServiceExec`; the real `SysExec`
-(`crates/axiom/src/service/mod.rs`) spawns a process, but no test or command in
-this tree binds it, so no startup record was ever created on a real host.
+The original adapter tests only injected `ServiceExec` and did not register
+startup records. K-309 has since exercised the public Windows `axiom service`
+path with `schtasks.exe` in an isolated per-user test root. That native spike
+does not complete K-309 until its exact final core, update/restart and rollback
+gates pass. No Linux systemd or macOS launchd host run is claimed here.
 
 An operator needs two facts to reason about a startup record:
 
 | Host | Mechanism (`ServiceKind`) | Program | Definition location | Documented foreground fallback |
 | --- | --- | --- | --- | --- |
-| Windows | `PerUserStartup` | `schtasks.exe` | inside the CLI install root | `axiom-graphd serve --registry <registry.json>` |
+| Windows | `PerUserStartup` | `schtasks.exe` | inside the engine install root | `axiom-graphd serve --axiom-home <user-state-root>` |
 | Linux | `SystemdUserUnit` | `systemctl` | `~/.config/systemd/user/<component>.service` | `axiom-graphd serve --registry <registry.json>` |
 | macOS | `LaunchAgent` | `launchctl` | `~/Library/LaunchAgents/<component>.plist` | `axiom-graphd serve --registry <registry.json>` |
 

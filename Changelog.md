@@ -6,6 +6,16 @@ Owner-authorized publication of current code; see release/v0.1.1-notes.md.
 
 ## Unreleased
 
+### K-309 Windows public service lifecycle candidate
+
+Route the public `axiom service` verbs through the per-user Windows Scheduled
+Task adapter and an engine-owned state bound to the current user SID, exact
+task definition, registered task fingerprint and active core generation. The
+daemon accepts an explicit `serve --axiom-home` for scheduler-launched
+instances. Windows task XML is encoded as UTF-16 with a BOM; registration
+never forces replacement of a foreign task. This is a local candidate and
+does not establish a signed or published core release.
+
 ### K-308 Windows 0.1.2 core candidate
 
 Advance the shared daemon and engine CLI workspace version to 0.1.2 for the

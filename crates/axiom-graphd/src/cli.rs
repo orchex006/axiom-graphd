@@ -175,7 +175,7 @@ axiom-graphd - Axiom graph engine daemon
 Usage: axiom-graphd <command> [options]
 
 Commands:
-  serve [--registry <path>] [--json]   run the foreground daemon
+  serve [--registry <path>] [--axiom-home <path>] [--json]   run the foreground daemon
   version [--json]                     print component, build and runtime versions
   doctor [--solution <id>] [--json]    print diagnostics (never repairs automatically)
   status --solution <id> [--json]      print queue, freshness and coverage state
@@ -422,6 +422,8 @@ pub enum Command {
     Serve {
         /// Explicit `--registry <path>` value.
         registry: Option<PathBuf>,
+        /// Explicit per-user home for a scheduler-launched daemon.
+        axiom_home: Option<PathBuf>,
     },
     /// Print version and build information.
     Version,
@@ -503,6 +505,7 @@ const FLAGS: &[&str] = &[
 /// being silently ignored, which is the section 1 contract.
 const KNOWN_OPTIONS: &[&str] = &[
     "--registry",
+    "--axiom-home",
     "--solution",
     "--project",
     "--path",
@@ -756,8 +759,12 @@ fn parse_verb(verb: &str, tokens: &mut Tokens) -> Result<Command, AxiomError> {
         }
         "serve" => {
             let registry = tokens.take("--registry").map(PathBuf::from);
+            let axiom_home = tokens.take("--axiom-home").map(PathBuf::from);
             tokens.finish("the serve command")?;
-            Ok(Command::Serve { registry })
+            Ok(Command::Serve {
+                registry,
+                axiom_home,
+            })
         }
         "doctor" => {
             let solution = tokens.take("--solution");
@@ -1225,9 +1232,13 @@ fn read_document(path: &Path, label: &str) -> Result<serde_json::Value, AxiomErr
 }
 
 /// Run one bounded foreground reconcile pass over every registered solution.
-fn serve_command(registry: Option<&Path>, telemetry: &mut Telemetry) -> Result<String, AxiomError> {
+fn serve_command(
+    registry: Option<&Path>,
+    axiom_home: Option<&Path>,
+    telemetry: &mut Telemetry,
+) -> Result<String, AxiomError> {
     let config = ServiceConfig::load(registry)?;
-    let report = serve::serve(&config, telemetry)?;
+    let report = serve::serve_with_home(&config, telemetry, axiom_home)?;
     report_json(&report)
 }
 
@@ -1597,7 +1608,10 @@ fn execute(command: &Command, telemetry: &mut Telemetry) -> Result<String, Axiom
                 )
             })
         }
-        Command::Serve { registry } => serve_command(registry.as_deref(), telemetry),
+        Command::Serve {
+            registry,
+            axiom_home,
+        } => serve_command(registry.as_deref(), axiom_home.as_deref(), telemetry),
         Command::Doctor { solution } => doctor_command(solution.as_deref()),
         Command::Status { solution } => status_command(solution),
         Command::Solution(command) => solution_command(command),
@@ -1770,7 +1784,10 @@ mod tests {
         ));
         assert!(matches!(
             parse(&argv(&["serve"])).command(),
-            Command::Serve { registry: None }
+            Command::Serve {
+                registry: None,
+                axiom_home: None
+            }
         ));
         let serve = parse(&argv(&[
             "serve",
@@ -1779,15 +1796,39 @@ mod tests {
             "cfg\\registry.json",
         ]));
         match serve.command() {
-            Command::Serve { registry } => {
+            Command::Serve {
+                registry,
+                axiom_home,
+            } => {
                 assert_eq!(
                     registry.as_deref(),
                     Some(std::path::Path::new("cfg\\registry.json"))
                 );
+                assert!(axiom_home.is_none());
             }
             other => panic!("expected serve, got {other:?}"),
         }
         assert!(serve.json());
+        let service = parse(&argv(&[
+            "serve",
+            "--axiom-home",
+            "C:\\Users\\Example\\AppData\\Local\\Axiom",
+        ]));
+        match service.command() {
+            Command::Serve {
+                registry,
+                axiom_home,
+            } => {
+                assert!(registry.is_none());
+                assert_eq!(
+                    axiom_home.as_deref(),
+                    Some(std::path::Path::new(
+                        "C:\\Users\\Example\\AppData\\Local\\Axiom"
+                    ))
+                );
+            }
+            other => panic!("expected serve with explicit home, got {other:?}"),
+        }
     }
 
     #[test]
@@ -1890,7 +1931,9 @@ mod tests {
             vec!["version", "extra"],
             vec!["--registry"],
             vec!["version", "--registry", "x"],
+            vec!["version", "--axiom-home", "C:\\Axiom"],
             vec!["serve", "--registry"],
+            vec!["serve", "--axiom-home"],
             vec!["status"],
             vec!["status", "--solution"],
             vec!["doctor", "--solution"],

@@ -79,6 +79,8 @@ pub const REASON_UNSAFE_PATH: &str = "unsafe-path";
 
 /// Reason recorded when a program argument is not a safe command-line argument.
 pub const REASON_UNSAFE_ARGUMENT: &str = "unsafe-argument";
+/// Reason recorded when the task principal is not a native Windows user SID.
+pub const REASON_UNSAFE_USER_SID: &str = "unsafe-user-sid";
 
 /// Reason recorded when a log file is not inside the install root's log tree.
 pub const REASON_LOG_OUTSIDE_ROOT: &str = "log-outside-install-root";
@@ -113,6 +115,8 @@ pub struct WindowsServiceRequest {
     pub restart: RestartPolicy,
     /// A caller asking for elevation; must be `false`.
     pub request_elevation: bool,
+    /// Current Windows token SID for the task's logon trigger and principal.
+    pub user_sid: Option<String>,
 }
 
 impl WindowsServiceRequest {
@@ -145,7 +149,15 @@ impl WindowsServiceRequest {
             trigger: StartupTrigger::Logon,
             restart: RestartPolicy::never(),
             request_elevation: false,
+            user_sid: None,
         }
+    }
+
+    /// Bind a production registration to one native Windows user token.
+    #[must_use]
+    pub fn with_user_sid(mut self, sid: impl Into<String>) -> Self {
+        self.user_sid = Some(sid.into());
+        self
     }
 
     /// Replace the program arguments.
@@ -227,7 +239,6 @@ impl WindowsTaskDefinition {
                 self.task_name.clone(),
                 "/xml".to_owned(),
                 self.definition_path.clone(),
-                "/f".to_owned(),
             ],
         }
     }
@@ -265,6 +276,19 @@ pub fn task_name(component: &str) -> Result<String, AxiomError> {
     Ok(format!("{TASK_NAME_PREFIX}{component}"))
 }
 
+/// Accept one token-user SID without trusting names or localized output.
+#[must_use]
+pub fn valid_user_sid(sid: &str) -> bool {
+    let parts: Vec<&str> = sid.split('-').collect();
+    parts.len() >= 4
+        && parts[0] == "S"
+        && parts[1] == "1"
+        && parts[2..]
+            .iter()
+            .all(|part| !part.is_empty() && part.bytes().all(|b| b.is_ascii_digit()))
+        && sid.len() <= 184
+}
+
 /// Render one command-line argument using the standard Windows rule: quote an
 /// argument that is empty or contains space or tab, and double embedded quotes.
 fn quote_argument(argument: &str) -> String {
@@ -294,9 +318,10 @@ fn render_task_xml(
     args: &[String],
     working_directory: &str,
     restart: RestartPolicy,
+    user_sid: Option<&str>,
 ) -> String {
     let mut lines: Vec<String> = Vec::new();
-    lines.push(r#"<?xml version="1.0" encoding="UTF-8"?>"#.to_owned());
+    lines.push(r#"<?xml version="1.0" encoding="UTF-16"?>"#.to_owned());
     lines.push(format!(
         r#"<Task version="{TASK_XML_VERSION}" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">"#
     ));
@@ -309,11 +334,17 @@ fn render_task_xml(
     lines.push("  </RegistrationInfo>".to_owned());
     lines.push("  <Triggers>".to_owned());
     lines.push("    <LogonTrigger>".to_owned());
+    if let Some(sid) = user_sid {
+        lines.push(format!("      <UserId>{}</UserId>", xml_escape(sid)));
+    }
     lines.push("      <Enabled>true</Enabled>".to_owned());
     lines.push("    </LogonTrigger>".to_owned());
     lines.push("  </Triggers>".to_owned());
     lines.push("  <Principals>".to_owned());
     lines.push(r#"    <Principal id="Author">"#.to_owned());
+    if let Some(sid) = user_sid {
+        lines.push(format!("      <UserId>{}</UserId>", xml_escape(sid)));
+    }
     lines.push("      <LogonType>InteractiveToken</LogonType>".to_owned());
     lines.push("      <RunLevel>LeastPrivilege</RunLevel>".to_owned());
     lines.push("    </Principal>".to_owned());
@@ -401,6 +432,18 @@ pub fn plan_task(request: &WindowsServiceRequest) -> Result<WindowsTaskDefinitio
             "the log file must live under the install root",
         ));
     }
+    if request
+        .user_sid
+        .as_deref()
+        .is_some_and(|sid| !valid_user_sid(sid))
+    {
+        return Err(refuse(
+            ErrorCode::ValidationError,
+            REASON_UNSAFE_USER_SID,
+            "invalid-sid",
+            "the task principal must be one native Windows user SID",
+        ));
+    }
     for argument in &request.args {
         if argument.contains('\0') {
             return Err(refuse(
@@ -433,6 +476,7 @@ pub fn plan_task(request: &WindowsServiceRequest) -> Result<WindowsTaskDefinitio
         &request.args,
         &request.working_directory,
         request.restart,
+        request.user_sid.as_deref(),
     );
     Ok(WindowsTaskDefinition {
         component: request.component.clone(),
@@ -557,6 +601,21 @@ pub fn status_operation(task_name: &str) -> Result<ServiceOperation, AxiomError>
     })
 }
 
+/// Export the registered task definition for an exact ownership fingerprint.
+pub fn export_operation(task_name: &str) -> Result<ServiceOperation, AxiomError> {
+    owned_task(task_name)?;
+    Ok(ServiceOperation {
+        description: "export".to_owned(),
+        program: SCHEDULER_PROGRAM.to_owned(),
+        args: vec![
+            "/query".to_owned(),
+            "/tn".to_owned(),
+            task_name.to_owned(),
+            "/xml".to_owned(),
+        ],
+    })
+}
+
 /// The scheduler operation that removes one owned task.
 ///
 /// # Errors
@@ -675,6 +734,36 @@ mod tests {
             .ends_with("axiom-graphd.task.xml"));
         assert!(is_under(ROOT, &definition.log_file));
         assert!(definition.log_file.ends_with("axiom-graphd.log"));
+    }
+
+    #[test]
+    fn production_task_binds_one_user_and_never_forces_a_foreign_registration() {
+        let sid = "S-1-5-21-100-200-300-1001";
+        let definition = plan_task(&sample().with_user_sid(sid).with_args(vec![
+            "serve".into(),
+            "--axiom-home".into(),
+            r"C:\User Data\Axiom".into(),
+        ]))
+        .unwrap();
+        assert_eq!(
+            definition
+                .xml
+                .matches(&format!("<UserId>{sid}</UserId>"))
+                .count(),
+            2
+        );
+        assert!(definition
+            .xml
+            .contains("<RunLevel>LeastPrivilege</RunLevel>"));
+        assert!(definition
+            .xml
+            .contains(r"serve --axiom-home &quot;C:\User Data\Axiom&quot;"));
+        assert!(!definition
+            .register_operation()
+            .args
+            .contains(&"/f".to_owned()));
+        let error = plan_task(&sample().with_user_sid("not-a-sid")).unwrap_err();
+        assert_eq!(rule(&error), REASON_UNSAFE_USER_SID);
     }
 
     #[test]

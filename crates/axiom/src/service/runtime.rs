@@ -3,10 +3,15 @@
 use std::path::{Path, PathBuf};
 
 use graph_core::error::{AxiomError, ErrorCode};
+#[cfg(not(windows))]
 use graph_core::paths::PathEnvironment;
-use serde_json::{json, Value};
+#[cfg(not(windows))]
+use serde_json::json;
+use serde_json::Value;
 
-use super::{control, macos, owned_state, startup, Consent, ServiceExec, SysExec};
+#[cfg(not(windows))]
+use super::{control, macos, owned_state, startup, Consent};
+use super::{ServiceExec, SysExec};
 
 /// Run a service verb against state owned by `root`.
 pub fn run(action: &str, component: &str, user: bool, root: &Path) -> Result<Value, AxiomError> {
@@ -26,137 +31,157 @@ pub fn run_with_exec(
     root: &Path,
     exec: &impl ServiceExec,
 ) -> Result<Value, AxiomError> {
-    let (uid, home) = current_identity()?;
-    let identity = macos::LaunchdIdentity::new(uid)?;
-    match action {
-        "install" => {
-            if !user {
-                return Err(AxiomError::new(
-                    ErrorCode::Forbidden,
-                    "service install requires explicit --user",
-                ));
-            }
-            let executable = active_graphd(root)?;
-            let request = macos::MacosServiceRequest::new(
-                component,
-                &executable,
-                root.to_string_lossy(),
-                root.to_string_lossy(),
-                home.to_string_lossy(),
-            );
-            let agent = macos::plan_agent(&request)?;
-            // A label is global to the GUI domain. Refuse before writing when
-            // anything already owns the canonical label, even at another path.
-            let existing_label =
-                exec.run(&macos::status_operation_for_user(&agent.label, identity)?)?;
-            if existing_label.code == 0 && owned_state::read_with_home(root, uid, &home).is_err() {
-                return Err(AxiomError::new(
-                    ErrorCode::Conflict,
-                    "the canonical LaunchAgent label is already registered",
-                ));
-            }
-            if std::fs::symlink_metadata(&agent.plist_path).is_ok() {
-                let existing = owned_state::read_with_home(root, uid, &home).map_err(|_| {
-                    AxiomError::new(
-                        ErrorCode::Conflict,
-                        "existing LaunchAgent definition is not owned by this install",
-                    )
-                })?;
-                if existing.installed.definition_path != agent.plist_path {
+    #[cfg(windows)]
+    {
+        super::windows_runtime::run_with_exec(action, component, user, root, exec)
+    }
+    #[cfg(not(windows))]
+    {
+        let (uid, home) = current_identity()?;
+        let identity = macos::LaunchdIdentity::new(uid)?;
+        match action {
+            "install" => {
+                if !user {
                     return Err(AxiomError::new(
-                        ErrorCode::Conflict,
-                        "existing LaunchAgent definition belongs to another component",
+                        ErrorCode::Forbidden,
+                        "service install requires explicit --user",
                     ));
                 }
-            }
-            let registration = startup::StartupRegistration::for_agent_with_identity(
-                &agent,
-                &home.to_string_lossy(),
-                identity,
-            )?;
-            let outcome = startup::ensure_registered(
-                &registration,
-                Consent::explicit(),
-                &startup::BackendSupport::available(),
-                &startup::SysDefinitions,
-                exec,
-            )?;
-            if let Some(installed) = outcome.installed() {
-                let bytes = std::fs::read(&installed.definition_path).map_err(io)?;
-                let state = owned_state::OwnedServiceState::new(
-                    installed.clone(),
-                    uid,
-                    graph_export::sha256_hex(&bytes),
-                    graph_export::sha256_hex(&std::fs::read(root.join("current")).map_err(io)?),
+                let executable = active_graphd(root)?;
+                let request = macos::MacosServiceRequest::new(
+                    component,
+                    &executable,
+                    root.to_string_lossy(),
+                    root.to_string_lossy(),
+                    home.to_string_lossy(),
+                );
+                let agent = macos::plan_agent(&request)?;
+                // A label is global to the GUI domain. Refuse before writing when
+                // anything already owns the canonical label, even at another path.
+                let existing_label =
+                    exec.run(&macos::status_operation_for_user(&agent.label, identity)?)?;
+                if existing_label.code == 0
+                    && owned_state::read_with_home(root, uid, &home).is_err()
+                {
+                    return Err(AxiomError::new(
+                        ErrorCode::Conflict,
+                        "the canonical LaunchAgent label is already registered",
+                    ));
+                }
+                if std::fs::symlink_metadata(&agent.plist_path).is_ok() {
+                    let existing = owned_state::read_with_home(root, uid, &home).map_err(|_| {
+                        AxiomError::new(
+                            ErrorCode::Conflict,
+                            "existing LaunchAgent definition is not owned by this install",
+                        )
+                    })?;
+                    if existing.installed.definition_path != agent.plist_path {
+                        return Err(AxiomError::new(
+                            ErrorCode::Conflict,
+                            "existing LaunchAgent definition belongs to another component",
+                        ));
+                    }
+                }
+                let registration = startup::StartupRegistration::for_agent_with_identity(
+                    &agent,
+                    &home.to_string_lossy(),
+                    identity,
                 )?;
-                if let Err(error) = owned_state::write(root, &state) {
-                    let _ =
-                        startup::remove_registered(&registration, &startup::SysDefinitions, exec);
-                    return Err(error);
+                let outcome = startup::ensure_registered(
+                    &registration,
+                    Consent::explicit(),
+                    &startup::BackendSupport::available(),
+                    &startup::SysDefinitions,
+                    exec,
+                )?;
+                if let Some(installed) = outcome.installed() {
+                    let bytes = std::fs::read(&installed.definition_path).map_err(io)?;
+                    let state = owned_state::OwnedServiceState::new(
+                        installed.clone(),
+                        uid,
+                        graph_export::sha256_hex(&bytes),
+                        graph_export::sha256_hex(&std::fs::read(root.join("current")).map_err(io)?),
+                    )?;
+                    if let Err(error) = owned_state::write(root, &state) {
+                        let _ = startup::remove_registered(
+                            &registration,
+                            &startup::SysDefinitions,
+                            exec,
+                        );
+                        return Err(error);
+                    }
                 }
+                Ok(serde_json::to_value(outcome).map_err(|_| {
+                    AxiomError::new(ErrorCode::Internal, "service result serialization failed")
+                })?)
             }
-            Ok(serde_json::to_value(outcome).map_err(|_| {
-                AxiomError::new(ErrorCode::Internal, "service result serialization failed")
-            })?)
-        }
-        "start" | "stop" | "status" => {
-            let state = owned_state::read_with_home(root, uid, &home)?;
-            if state.generation
-                != graph_export::sha256_hex(&std::fs::read(root.join("current")).map_err(io)?)
-            {
-                return Err(AxiomError::new(
-                    ErrorCode::Conflict,
-                    "owned service state names a different active generation",
-                ));
-            }
-            if state.installed.component != component {
-                return Err(AxiomError::new(
-                    ErrorCode::Forbidden,
-                    "service component is not owned by this state",
-                ));
-            }
-            let action = control::ControlAction::parse(action)?;
-            let ownership = control::ServiceOwnership::claim(
-                &state.installed,
-                &control::ControlRoots::new(root.to_string_lossy(), home.to_string_lossy()),
-            )?;
-            let operation = match action {
-                control::ControlAction::Start => {
-                    macos::kickstart_operation(&ownership.owned_name, identity)?
+            "start" | "stop" | "status" => {
+                let state = owned_state::read_with_home(root, uid, &home)?;
+                if state.generation
+                    != graph_export::sha256_hex(&std::fs::read(root.join("current")).map_err(io)?)
+                {
+                    return Err(AxiomError::new(
+                        ErrorCode::Conflict,
+                        "owned service state names a different active generation",
+                    ));
                 }
-                control::ControlAction::Stop => {
-                    macos::kill_operation(&ownership.owned_name, identity)?
+                if state.installed.component != component {
+                    return Err(AxiomError::new(
+                        ErrorCode::Forbidden,
+                        "service component is not owned by this state",
+                    ));
                 }
-                control::ControlAction::Status => {
-                    macos::status_operation_for_user(&ownership.owned_name, identity)?
+                let action = control::ControlAction::parse(action)?;
+                let ownership = control::ServiceOwnership::claim(
+                    &state.installed,
+                    &control::ControlRoots::new(root.to_string_lossy(), home.to_string_lossy()),
+                )?;
+                let operation = match action {
+                    control::ControlAction::Start => {
+                        macos::kickstart_operation(&ownership.owned_name, identity)?
+                    }
+                    control::ControlAction::Stop => {
+                        macos::kill_operation(&ownership.owned_name, identity)?
+                    }
+                    control::ControlAction::Status => {
+                        macos::status_operation_for_user(&ownership.owned_name, identity)?
+                    }
+                };
+                let output = exec.run(&operation)?;
+                if output.code != 0 {
+                    return Err(AxiomError::new(
+                        ErrorCode::Internal,
+                        "launchctl refused service control",
+                    )
+                    .with_detail("code", output.code.to_string())
+                    .with_detail("stderr", output.stderr));
                 }
-            };
-            let output = exec.run(&operation)?;
-            if output.code != 0 {
-                return Err(AxiomError::new(
-                    ErrorCode::Internal,
-                    "launchctl refused service control",
+                Ok(
+                    json!({"component": component, "action": action.as_str(), "code": output.code, "stdout": output.stdout, "stderr": output.stderr}),
                 )
-                .with_detail("code", output.code.to_string())
-                .with_detail("stderr", output.stderr));
             }
-            Ok(
-                json!({"component": component, "action": action.as_str(), "code": output.code, "stdout": output.stdout, "stderr": output.stderr}),
-            )
+            "uninstall" => remove_with_exec(root, exec),
+            _ => Err(AxiomError::new(
+                ErrorCode::ValidationError,
+                "unknown service action",
+            )),
         }
-        "uninstall" => remove_with_exec(root, exec),
-        _ => Err(AxiomError::new(
-            ErrorCode::ValidationError,
-            "unknown service action",
-        )),
     }
 }
 
 /// Remove the owned registration, without touching a foreign service.
 pub fn remove(root: &Path) -> Result<(), AxiomError> {
-    remove_with_exec(root, &SysExec).map(|_| ())
+    #[cfg(windows)]
+    {
+        super::windows_runtime::remove(root)
+    }
+    #[cfg(not(windows))]
+    {
+        remove_with_exec(root, &SysExec).map(|_| ())
+    }
 }
 
+#[cfg(not(windows))]
 fn remove_with_exec(root: &Path, exec: &impl ServiceExec) -> Result<Value, AxiomError> {
     let (uid, home) = current_identity()?;
     let state = match owned_state::read_record(root, uid, &home) {
@@ -250,7 +275,7 @@ fn remove_with_exec(root: &Path, exec: &impl ServiceExec) -> Result<Value, Axiom
         .map_err(|_| AxiomError::new(ErrorCode::Internal, "service result serialization failed"))
 }
 
-fn active_graphd(root: &Path) -> Result<String, AxiomError> {
+pub(super) fn active_graphd(root: &Path) -> Result<String, AxiomError> {
     let pointer = root.join("current");
     let value: Value = serde_json::from_slice(&std::fs::read(&pointer).map_err(io)?)
         .map_err(|_| AxiomError::new(ErrorCode::ConfigInvalid, "active core pointer is invalid"))?;
@@ -332,6 +357,7 @@ fn active_graphd(root: &Path) -> Result<String, AxiomError> {
     Ok(canonical.to_string_lossy().into_owned())
 }
 
+#[cfg(not(windows))]
 fn current_identity() -> Result<(u32, PathBuf), AxiomError> {
     let output = std::process::Command::new("/usr/bin/id")
         .arg("-u")

@@ -56,6 +56,7 @@ Global arguments:
 | -------- | ----- | ---------- | --------- |
 | `--json` | available | every command | Machine-readable mode. Writes exactly one JSON object to stdout; diagnostics stay on stderr. |
 | `--registry <path>` | available | `serve` only | Explicit registry config path, passed as argv. Supplying it for any other command is rejected. |
+| `--axiom-home <path>` | available | `serve` only | Explicit absolute local per-user state root for a scheduler-launched daemon. A conflicting ambient `AXIOM_HOME` is refused before the instance lock. |
 | `--help`, `-h` | available | - | Same as the `help` command. |
 | `--version`, `-V` | available | - | Same as the `version` command. |
 | `--solution <id>` | available | `doctor`, `status`, `changed`, `reconcile`, `queue`, `query`, `render` | Named solution scope. Rejected for a verb that does not accept it. |
@@ -95,7 +96,7 @@ axiom-graphd - Axiom graph engine daemon
 Usage: axiom-graphd <command> [options]
 
 Commands:
-  serve [--registry <path>] [--json]   run the foreground daemon
+  serve [--registry <path>] [--axiom-home <path>] [--json]   run the foreground daemon
   version [--json]                     print component, build and runtime versions
   doctor [--solution <id>] [--json]    print diagnostics (never repairs automatically)
   status --solution <id> [--json]      print queue, freshness and coverage state
@@ -202,11 +203,14 @@ axiom-graphd doctor --json
 axiom-graphd serve
 axiom-graphd serve --registry <path>
 axiom-graphd serve --json --registry <path>
+axiom-graphd serve --axiom-home <absolute-local-path> --json
 ```
 
-- Arguments: optional `--registry <path>`. A path may contain spaces, Thai
+- Arguments: optional `--registry <path>` and `--axiom-home <path>`. A path may contain spaces, Thai
   characters, apostrophes, ampersands or parentheses; it is passed as an argv
-  element and is never concatenated into a shell command.
+  element and is never concatenated into a shell command. The latter is only
+  for an explicit local Axiom home; if ambient `AXIOM_HOME` is also set it must
+  resolve to the same directory.
 - Behaviour: resolves `AXIOM_HOME`, verifies the destination, loads the service
   config, takes the single-owner instance lock at `AXIOM_HOME/run/daemon.lock`,
   then runs an initial bounded reconcile pass and remains in the foreground.
@@ -521,7 +525,6 @@ a rejection, and so a future implementation has a documented target.
 
 | Proposed command | Target contract | Current behaviour |
 | ---------------- | --------------- | ----------------- |
-| `axiom service install`, then `axiom service start` / `status` / `uninstall --user` | [../21-INSTALLATION-QUICKSTART.md](../21-INSTALLATION-QUICKSTART.md) | Not accepted as a command. |
 | `axiom host detect`, and `axiom bootstrap plan` / `apply` / `verify` | [../18-BOOTSTRAP-AND-MANAGED-INSTRUCTIONS](../18-BOOTSTRAP-AND-MANAGED-INSTRUCTIONS.md) | Not accepted as commands. |
 | `axiom-graphd checkpoint create\|verify`, `axiom-graphd snapshot read\|export\|gc` | CLI contract `docs/16-CLI-AND-CONTROL-API.md` in `axiom-specs` | Documented in the contract, but no module owns them in this revision, so `parse` rejects them as an unrecognised command (`VALIDATION_ERROR`, exit 2). |
 | `axiom-mcp serve --host 127.0.0.1 --port 8766` | Owned by `axiom-mcp`, not this repository. | Out of scope for this reference; loopback-only binding is contract. |
