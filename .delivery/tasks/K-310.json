@@ -5,7 +5,9 @@
   "feature_payload": "78a3000e950af85b527c57b7b90924a0baaf3cd3",
   "verified_remote_payload": "78a3000e950af85b527c57b7b90924a0baaf3cd3",
   "remote": "https://github.com/orchex006/axiom-graphd.git",
-  "status": "pushed",
+  "status": "integrated",
   "review": "Independent workspace-owner endorsement recorded in evidence/K-310/integration/review.md",
-  "remaining_scope": "Mac runtime not_run, immutable graph import only; production publication and certification unpassed. Main integration receipt follows."
+  "remaining_scope": "Mac runtime not_run, immutable graph import only; production publication and certification unpassed. Main integration receipt follows.",
+  "main_merge": "d2b1662004023906bb2811b63a4d36730e5ec662",
+  "main_remote_sha": "d2b1662004023906bb2811b63a4d36730e5ec662"
 }
