@@ -1,0 +1,11 @@
+{
+  "task_id": "K-310",
+  "branch": "feature/k-310-migration-runtime",
+  "source_revision": "bea74ff3a6593985403fd93c326b4647a134240c",
+  "feature_payload": "78a3000e950af85b527c57b7b90924a0baaf3cd3",
+  "verified_remote_payload": "78a3000e950af85b527c57b7b90924a0baaf3cd3",
+  "remote": "https://github.com/orchex006/axiom-graphd.git",
+  "status": "pushed",
+  "review": "Independent workspace-owner endorsement recorded in evidence/K-310/integration/review.md",
+  "remaining_scope": "Mac runtime not_run, immutable graph import only; production publication and certification unpassed. Main integration receipt follows."
+}

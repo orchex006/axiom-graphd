@@ -7,6 +7,7 @@ name = "axiom"
 version = "0.1.1"
 dependencies = [
  "axiom-graphd",
+ "axiom-migration",
  "axiom-platform",
  "getrandom",
  "graph-core",
@@ -29,6 +30,7 @@ dependencies = [
  "axiom-graphd",
  "graph-core",
  "serde_json",
+ "tempfile",
 ]
 
 [[package]]

@@ -17,6 +17,7 @@ pub mod cli;
 pub mod discovery;
 pub mod hosts;
 pub mod install;
+pub mod migration_runtime;
 pub mod packages;
 pub mod plan;
 pub mod service;

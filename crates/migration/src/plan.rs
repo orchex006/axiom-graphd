@@ -926,7 +926,8 @@ impl MigrationPlan {
     /// Every write the plan authorises, in plan order.
     #[must_use]
     pub fn planned_writes(&self) -> Vec<PlannedWrite> {
-        self.repositories
+        let mut writes: Vec<PlannedWrite> = self
+            .repositories
             .iter()
             .flat_map(|repo| {
                 repo.changes.iter().map(move |change| PlannedWrite {
@@ -936,7 +937,18 @@ impl MigrationPlan {
                     source: change.source().map(str::to_string),
                 })
             })
-            .collect()
+            .collect();
+        // Publish each small current pointer only after every immutable file
+        // it may expose has completed cutover. The approved byte identities
+        // stay unchanged; only the safe deterministic execution order changes.
+        writes.sort_by(|a, b| {
+            (a.path.ends_with("/current.json"), &a.repo_id, &a.path).cmp(&(
+                b.path.ends_with("/current.json"),
+                &b.repo_id,
+                &b.path,
+            ))
+        });
+        writes
     }
 
     /// The writes this plan authorises against the bytes on disk right now.

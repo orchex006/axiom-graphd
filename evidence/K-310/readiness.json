@@ -1,0 +1,54 @@
+{
+  "task_id": "K-310",
+  "status": "ready",
+  "scope": "immutable_graph_import",
+  "source_revision": "bea74ff3a6593985403fd93c326b4647a134240c",
+  "certified": false,
+  "signing": "unsigned",
+  "publication": "not_published",
+  "macos_x64": "not_run",
+  "historical_not_ready_preserved": true,
+  "platforms": [
+    {
+      "environment": {
+        "os": "Windows",
+        "arch": "AMD64",
+        "os_version": "Windows-11-10.0.26200-SP0",
+        "uid": null,
+        "execution": "native"
+      },
+      "cli_sha256": "4d1b83ebc603264fce83e65486420d911eef0be87f9fd654593a737281af200d",
+      "report": {
+        "path": "evidence/K-310/windows-native-report.json",
+        "sha256": "56e2436a95eb49080684aeb398bf9323372768b0f876db50a7d2cb8e93aeebab"
+      },
+      "artifact": {
+        "path": "evidence/K-310/axiom-k310-windows-x64.zip",
+        "sha256": "a437be8f2ce1f3819965126815ac92f3c6bab10139c77385770cadc1ebad3b65"
+      }
+    },
+    {
+      "environment": {
+        "os": "Linux",
+        "arch": "x86_64",
+        "os_version": "Linux-6.18.40.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+        "uid": 1000,
+        "execution": "wsl2"
+      },
+      "cli_sha256": "a3fc82925a0baaa71b470ff4e80d9bc3481df0adde12aa934c2e6d0e7a1385d8",
+      "report": {
+        "path": "evidence/K-310/linux-native-report.json",
+        "sha256": "305d5e0a0a6f3601fad568b4c6adef010363c10baaa9bd19bfbee9d598486c09"
+      },
+      "artifact": {
+        "path": "evidence/K-310/axiom-k310-wsl2-linux-x64.zip",
+        "sha256": "968f663f2a572ae67c6d99a88dd5ae9a8cbb74cd7af0b9ec7fbb88a70dbdab2f"
+      }
+    }
+  ],
+  "mac_reproduction": {
+    "path": "evidence/K-310/mac-intel-reproduction.zip",
+    "sha256": "49af543a0ff8b34ed8f44b58fb097f3174e1d5d23ec754a31502116a218333fb"
+  },
+  "limitations": "Standalone task builds from core 0.1.1 release base; do not replace immutable released artifacts or installed user versions. Linux is Ubuntu WSL2/glibc 2.39, not a current container-lane claim. DB/host/instruction migration and production release readiness are not claimed. Broad Windows legacy POSIX-fixture failures are retained; full Linux owner suite passes."
+}

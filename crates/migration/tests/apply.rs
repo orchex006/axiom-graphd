@@ -41,6 +41,32 @@ const DEST_B: &str = ".axiom/graph/b.json";
 const SRC_A: &str = ".axiom/graph/legacy-a.json";
 const SRC_B: &str = ".axiom/graph/legacy-b.json";
 
+#[test]
+fn migration_publishes_current_pointer_after_immutable_generation_files() {
+    let mut repo = RepoPlan::new("sample-repo", DiscoveryDecision::Fresh).expect("repo");
+    for suffix in ["current.json", "generations/a/manifest.json"] {
+        let source = format!(".agrimap-agent/knowledge/references/graph/{suffix}");
+        repo.add_source(SourceArtifact::new(&source, &hash_of(b"source"), 6).expect("source"))
+            .expect("inventory");
+        repo.add_change(
+            DestinationChange::new(
+                &format!(".axiom/graph/{suffix}"),
+                ChangeAction::Create,
+                Some(&source),
+                DestinationOwnership::Managed {
+                    previous_sha256: None,
+                },
+            )
+            .expect("change"),
+        )
+        .expect("plan change");
+    }
+    let plan = build_plan("sample-solution", 1000, 3600, vec![repo]).expect("plan");
+    let writes = plan.planned_writes();
+    assert!(writes[0].path().ends_with("manifest.json"));
+    assert!(writes[1].path().ends_with("current.json"));
+}
+
 fn hash_of(bytes: &[u8]) -> String {
     ContentHash::of_bytes(bytes).as_str().to_string()
 }
