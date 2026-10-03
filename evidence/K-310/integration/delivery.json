@@ -1,0 +1,14 @@
+{
+  "task_id": "K-310",
+  "source_payload": "bea74ff3a6593985403fd93c326b4647a134240c",
+  "branch": "feature/k-310-migration-runtime",
+  "feature_commit": "808bfa28d7dee010171e18a96d73a957f62dba71",
+  "feature_remote_sha": "808bfa28d7dee010171e18a96d73a957f62dba71",
+  "main_merge": "d2b1662004023906bb2811b63a4d36730e5ec662",
+  "main_remote_sha": "d2b1662004023906bb2811b63a4d36730e5ec662",
+  "remote": "https://github.com/orchex006/axiom-graphd.git",
+  "delivery_state": "integrated",
+  "primary_checkout": "axiom-graphd",
+  "source_scope": "immutable graph import; Mac not_run; no installed-user update",
+  "note": "Payload merge and main remote verified. Receipt-only final merge checked separately; existing K-309 branch preserved."
+}
