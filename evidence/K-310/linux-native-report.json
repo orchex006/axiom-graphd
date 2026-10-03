@@ -1,0 +1,2876 @@
+{
+  "task_id": "K-310",
+  "status": "ready",
+  "certified": false,
+  "native_runtime": true,
+  "plan_response_paths_redacted": true,
+  "environment": {
+    "os": "Linux",
+    "arch": "x86_64",
+    "os_version": "Linux-6.18.40.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "uid": 1000,
+    "execution": "wsl2"
+  },
+  "cli_sha256": "a3fc82925a0baaa71b470ff4e80d9bc3481df0adde12aa934c2e6d0e7a1385d8",
+  "fixture_sha256": "095d36a3db66f81b3db8df8d96e4f312c6ea5e91e80ccb6bc635d6538522fade",
+  "cases": [
+    {
+      "id": "fresh-plan-apply-status-rollback",
+      "passed": true,
+      "command_ids": [
+        "command-0",
+        "command-1",
+        "command-2",
+        "command-3"
+      ]
+    },
+    {
+      "id": "graph-import-idempotency-rollback-preservation",
+      "passed": true,
+      "command_ids": [
+        "command-4",
+        "command-5",
+        "command-6",
+        "command-7",
+        "command-8",
+        "command-9"
+      ]
+    },
+    {
+      "id": "grahp-import-idempotency-rollback-preservation",
+      "passed": true,
+      "command_ids": [
+        "command-10",
+        "command-11",
+        "command-12",
+        "command-13",
+        "command-14",
+        "command-15"
+      ]
+    },
+    {
+      "id": "equal-both-spellings",
+      "passed": true,
+      "command_ids": [
+        "command-16",
+        "command-17"
+      ]
+    },
+    {
+      "id": "conflict-corrupt-no-destination-writes",
+      "passed": true,
+      "command_ids": [
+        "command-18"
+      ]
+    },
+    {
+      "id": "unsafe-link-junction-refused",
+      "passed": true,
+      "command_ids": [
+        "command-19"
+      ]
+    },
+    {
+      "id": "source-changed-after-plan",
+      "passed": true,
+      "command_ids": [
+        "command-20",
+        "command-21"
+      ]
+    },
+    {
+      "id": "target-appeared-preserved",
+      "passed": true,
+      "command_ids": [
+        "command-22",
+        "command-23"
+      ]
+    },
+    {
+      "id": "native-stage-failure-and-journal-resume",
+      "passed": true,
+      "command_ids": [
+        "command-24",
+        "command-25",
+        "command-26"
+      ]
+    },
+    {
+      "id": "rollback-refuses-later-human-edit",
+      "passed": true,
+      "command_ids": [
+        "command-27",
+        "command-28"
+      ]
+    },
+    {
+      "id": "actual-native-writer-claim-refusal",
+      "passed": true,
+      "command_ids": [
+        "command-29",
+        "command-30",
+        "command-31"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "id": "command-0",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "plan",
+        "--solution",
+        "demo-solution",
+        "--out",
+        "plan.json",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "changes": [],
+        "created_epoch_seconds": 1791024227,
+        "engine_digest": "f04933ef8b5ad9d54a2a4027dac8afba32f6ddb2fe5670f00afbe5666f033c17",
+        "migration_needed": false,
+        "migration_scope": "immutable_graph_import",
+        "plan_digest": "e0ad545a67a7bb47f04c2a852e8890bbcbace6584792e6d5a4f5483029c704fb",
+        "required_free_bytes": 0,
+        "root": "<test-root>/fresh",
+        "schema_version": 1,
+        "selected_source": null,
+        "solution_id": "demo-solution",
+        "sources": [],
+        "status": "ready",
+        "target_core": {
+          "build_revision": "bea74ff3a6593985403fd93c326b4647a134240c",
+          "component": "axiom",
+          "control_api": 1,
+          "graph_schema": 1,
+          "queue_schema": 1,
+          "spec_version": "2.0.0-draft.1",
+          "update_status": "unconfigured",
+          "version": "0.1.1"
+        },
+        "target_layout": 2,
+        "transaction": "migration-e0ad545a67a7bb47f04c2a852e8890bb",
+        "ttl_seconds": 3600
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-1",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "apply",
+        "--plan",
+        "plan.json",
+        "--approve-digest",
+        "e0ad545a67a7bb47f04c2a852e8890bbcbace6584792e6d5a4f5483029c704fb",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "files": 0,
+        "plan_digest": "e0ad545a67a7bb47f04c2a852e8890bbcbace6584792e6d5a4f5483029c704fb",
+        "readiness": "ready",
+        "status": "applied",
+        "transaction": "migration-e0ad545a67a7bb47f04c2a852e8890bb"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-2",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "status",
+        "--transaction",
+        "migration-e0ad545a67a7bb47f04c2a852e8890bb",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "files": 0,
+        "plan_digest": "e0ad545a67a7bb47f04c2a852e8890bbcbace6584792e6d5a4f5483029c704fb",
+        "status": "complete",
+        "transaction": "migration-e0ad545a67a7bb47f04c2a852e8890bb"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-3",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "rollback",
+        "--transaction",
+        "migration-e0ad545a67a7bb47f04c2a852e8890bb",
+        "--approve-digest",
+        "e0ad545a67a7bb47f04c2a852e8890bbcbace6584792e6d5a4f5483029c704fb",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "removed": 0,
+        "restored": 0,
+        "status": "rolled-back",
+        "transaction": "migration-e0ad545a67a7bb47f04c2a852e8890bb"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-4",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "plan",
+        "--solution",
+        "demo-solution",
+        "--out",
+        "plan.json",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "changes": [
+          {
+            "action": "create",
+            "after_sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/current.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/current.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/current.json"
+          }
+        ],
+        "created_epoch_seconds": 1791024227,
+        "engine_digest": "4ba9e3c5f1d7d881e4c0e9476b6c9f2df0409c278a8994b72535783a958e8cd7",
+        "migration_needed": true,
+        "migration_scope": "immutable_graph_import",
+        "plan_digest": "9fb01bdfed4bd83d0b49075612345d6eb571872a0a9564e4b6b198603087c8c9",
+        "required_free_bytes": 23594,
+        "root": "<test-root>/graph",
+        "schema_version": 1,
+        "selected_source": ".agrimap-agent/knowledge/references/graph",
+        "solution_id": "demo-solution",
+        "sources": [
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/current.json",
+            "sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          }
+        ],
+        "status": "ready",
+        "target_core": {
+          "build_revision": "bea74ff3a6593985403fd93c326b4647a134240c",
+          "component": "axiom",
+          "control_api": 1,
+          "graph_schema": 1,
+          "queue_schema": 1,
+          "spec_version": "2.0.0-draft.1",
+          "update_status": "unconfigured",
+          "version": "0.1.1"
+        },
+        "target_layout": 2,
+        "transaction": "migration-9fb01bdfed4bd83d0b49075612345d6e",
+        "ttl_seconds": 3600
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-5",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "apply",
+        "--plan",
+        "plan.json",
+        "--approve-digest",
+        "0000000000000000000000000000000000000000000000000000000000000000",
+        "--json"
+      ],
+      "exit_code": 5,
+      "response": {
+        "code": "FORBIDDEN",
+        "message": "migration approval: explicit exact plan digest required",
+        "retryable": false,
+        "details": {
+          "rule": "approval"
+        },
+        "request_id": null
+      },
+      "stderr": "FORBIDDEN: migration approval: explicit exact plan digest required\n"
+    },
+    {
+      "id": "command-6",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "apply",
+        "--plan",
+        "plan.json",
+        "--approve-digest",
+        "9fb01bdfed4bd83d0b49075612345d6eb571872a0a9564e4b6b198603087c8c9",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "files": 21,
+        "plan_digest": "9fb01bdfed4bd83d0b49075612345d6eb571872a0a9564e4b6b198603087c8c9",
+        "readiness": "ready",
+        "status": "applied",
+        "transaction": "migration-9fb01bdfed4bd83d0b49075612345d6e"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-7",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "apply",
+        "--plan",
+        "plan.json",
+        "--approve-digest",
+        "9fb01bdfed4bd83d0b49075612345d6eb571872a0a9564e4b6b198603087c8c9",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "files": 21,
+        "plan_digest": "9fb01bdfed4bd83d0b49075612345d6eb571872a0a9564e4b6b198603087c8c9",
+        "readiness": "ready",
+        "status": "already-complete",
+        "transaction": "migration-9fb01bdfed4bd83d0b49075612345d6e"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-8",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "status",
+        "--transaction",
+        "migration-9fb01bdfed4bd83d0b49075612345d6e",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "files": 21,
+        "plan_digest": "9fb01bdfed4bd83d0b49075612345d6eb571872a0a9564e4b6b198603087c8c9",
+        "status": "complete",
+        "transaction": "migration-9fb01bdfed4bd83d0b49075612345d6e"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-9",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "rollback",
+        "--transaction",
+        "migration-9fb01bdfed4bd83d0b49075612345d6e",
+        "--approve-digest",
+        "9fb01bdfed4bd83d0b49075612345d6eb571872a0a9564e4b6b198603087c8c9",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "removed": 21,
+        "restored": 0,
+        "status": "rolled-back",
+        "transaction": "migration-9fb01bdfed4bd83d0b49075612345d6e"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-10",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "plan",
+        "--solution",
+        "demo-solution",
+        "--out",
+        "plan.json",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "changes": [
+          {
+            "action": "create",
+            "after_sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/current.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/_catalog/live/current.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/current.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/current.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/current.json",
+            "source": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/current.json"
+          }
+        ],
+        "created_epoch_seconds": 1791024228,
+        "engine_digest": "1f141a0aa23f7a238fd2233ddbd2f8d979ad21f5f6ce2acbdfe37ff31a98685b",
+        "migration_needed": true,
+        "migration_scope": "immutable_graph_import",
+        "plan_digest": "b04de45f76a0d1a0dc741a0c00d1678c1db3e99099893f46bc66272ac9b08f29",
+        "required_free_bytes": 23594,
+        "root": "<test-root>/grahp",
+        "schema_version": 1,
+        "selected_source": ".agrimap-agent/knowledge/references/grahp",
+        "solution_id": "demo-solution",
+        "sources": [
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/_catalog/live/current.json",
+            "sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          }
+        ],
+        "status": "ready",
+        "target_core": {
+          "build_revision": "bea74ff3a6593985403fd93c326b4647a134240c",
+          "component": "axiom",
+          "control_api": 1,
+          "graph_schema": 1,
+          "queue_schema": 1,
+          "spec_version": "2.0.0-draft.1",
+          "update_status": "unconfigured",
+          "version": "0.1.1"
+        },
+        "target_layout": 2,
+        "transaction": "migration-b04de45f76a0d1a0dc741a0c00d1678c",
+        "ttl_seconds": 3600
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-11",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "apply",
+        "--plan",
+        "plan.json",
+        "--approve-digest",
+        "0000000000000000000000000000000000000000000000000000000000000000",
+        "--json"
+      ],
+      "exit_code": 5,
+      "response": {
+        "code": "FORBIDDEN",
+        "message": "migration approval: explicit exact plan digest required",
+        "retryable": false,
+        "details": {
+          "rule": "approval"
+        },
+        "request_id": null
+      },
+      "stderr": "FORBIDDEN: migration approval: explicit exact plan digest required\n"
+    },
+    {
+      "id": "command-12",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "apply",
+        "--plan",
+        "plan.json",
+        "--approve-digest",
+        "b04de45f76a0d1a0dc741a0c00d1678c1db3e99099893f46bc66272ac9b08f29",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "files": 21,
+        "plan_digest": "b04de45f76a0d1a0dc741a0c00d1678c1db3e99099893f46bc66272ac9b08f29",
+        "readiness": "ready",
+        "status": "applied",
+        "transaction": "migration-b04de45f76a0d1a0dc741a0c00d1678c"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-13",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "apply",
+        "--plan",
+        "plan.json",
+        "--approve-digest",
+        "b04de45f76a0d1a0dc741a0c00d1678c1db3e99099893f46bc66272ac9b08f29",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "files": 21,
+        "plan_digest": "b04de45f76a0d1a0dc741a0c00d1678c1db3e99099893f46bc66272ac9b08f29",
+        "readiness": "ready",
+        "status": "already-complete",
+        "transaction": "migration-b04de45f76a0d1a0dc741a0c00d1678c"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-14",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "status",
+        "--transaction",
+        "migration-b04de45f76a0d1a0dc741a0c00d1678c",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "files": 21,
+        "plan_digest": "b04de45f76a0d1a0dc741a0c00d1678c1db3e99099893f46bc66272ac9b08f29",
+        "status": "complete",
+        "transaction": "migration-b04de45f76a0d1a0dc741a0c00d1678c"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-15",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "rollback",
+        "--transaction",
+        "migration-b04de45f76a0d1a0dc741a0c00d1678c",
+        "--approve-digest",
+        "b04de45f76a0d1a0dc741a0c00d1678c1db3e99099893f46bc66272ac9b08f29",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "removed": 21,
+        "restored": 0,
+        "status": "rolled-back",
+        "transaction": "migration-b04de45f76a0d1a0dc741a0c00d1678c"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-16",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "plan",
+        "--solution",
+        "demo-solution",
+        "--out",
+        "plan.json",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "changes": [
+          {
+            "action": "create",
+            "after_sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/current.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/current.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/current.json"
+          }
+        ],
+        "created_epoch_seconds": 1791024229,
+        "engine_digest": "c557f3d323da4149c74de94590ab082ab835e20bece56e8ff47e1691e7d54446",
+        "migration_needed": true,
+        "migration_scope": "immutable_graph_import",
+        "plan_digest": "09aa92dc6eec29768c32c3d1a0e9931b6a3291f0d664cf6a81cc85df9cadd7a7",
+        "required_free_bytes": 23594,
+        "root": "<test-root>/equal",
+        "schema_version": 1,
+        "selected_source": ".agrimap-agent/knowledge/references/graph",
+        "solution_id": "demo-solution",
+        "sources": [
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/_catalog/live/current.json",
+            "sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/grahp/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/current.json",
+            "sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          }
+        ],
+        "status": "ready",
+        "target_core": {
+          "build_revision": "bea74ff3a6593985403fd93c326b4647a134240c",
+          "component": "axiom",
+          "control_api": 1,
+          "graph_schema": 1,
+          "queue_schema": 1,
+          "spec_version": "2.0.0-draft.1",
+          "update_status": "unconfigured",
+          "version": "0.1.1"
+        },
+        "target_layout": 2,
+        "transaction": "migration-09aa92dc6eec29768c32c3d1a0e9931b",
+        "ttl_seconds": 3600
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-17",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "apply",
+        "--plan",
+        "plan.json",
+        "--approve-digest",
+        "09aa92dc6eec29768c32c3d1a0e9931b6a3291f0d664cf6a81cc85df9cadd7a7",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "files": 21,
+        "plan_digest": "09aa92dc6eec29768c32c3d1a0e9931b6a3291f0d664cf6a81cc85df9cadd7a7",
+        "readiness": "ready",
+        "status": "applied",
+        "transaction": "migration-09aa92dc6eec29768c32c3d1a0e9931b"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-18",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "plan",
+        "--solution",
+        "demo-solution",
+        "--json"
+      ],
+      "exit_code": 6,
+      "response": {
+        "code": "CONFLICT",
+        "message": "migration MIGRATION_CONFLICT: generation digest",
+        "retryable": true,
+        "details": {
+          "rule": "MIGRATION_CONFLICT"
+        },
+        "request_id": null
+      },
+      "stderr": "CONFLICT: migration MIGRATION_CONFLICT: generation digest\n"
+    },
+    {
+      "id": "command-19",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "plan",
+        "--solution",
+        "demo-solution",
+        "--json"
+      ],
+      "exit_code": 6,
+      "response": {
+        "code": "CONFLICT",
+        "message": "migration MIGRATION_CONFLICT: link/junction in migration path",
+        "retryable": true,
+        "details": {
+          "rule": "MIGRATION_CONFLICT"
+        },
+        "request_id": null
+      },
+      "stderr": "CONFLICT: migration MIGRATION_CONFLICT: link/junction in migration path\n"
+    },
+    {
+      "id": "command-20",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "plan",
+        "--solution",
+        "demo-solution",
+        "--out",
+        "plan.json",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "changes": [
+          {
+            "action": "create",
+            "after_sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/current.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/current.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/current.json"
+          }
+        ],
+        "created_epoch_seconds": 1791024230,
+        "engine_digest": "175e0f04b247b0f3ad3beb678b8c92484f961265927deb30e276192935f2e327",
+        "migration_needed": true,
+        "migration_scope": "immutable_graph_import",
+        "plan_digest": "d11fd82137eb04dc3bcf39965e14c41f93c2572710c6c45afd4be044ea4a742e",
+        "required_free_bytes": 23594,
+        "root": "<test-root>/stale",
+        "schema_version": 1,
+        "selected_source": ".agrimap-agent/knowledge/references/graph",
+        "solution_id": "demo-solution",
+        "sources": [
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/current.json",
+            "sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          }
+        ],
+        "status": "ready",
+        "target_core": {
+          "build_revision": "bea74ff3a6593985403fd93c326b4647a134240c",
+          "component": "axiom",
+          "control_api": 1,
+          "graph_schema": 1,
+          "queue_schema": 1,
+          "spec_version": "2.0.0-draft.1",
+          "update_status": "unconfigured",
+          "version": "0.1.1"
+        },
+        "target_layout": 2,
+        "transaction": "migration-d11fd82137eb04dc3bcf39965e14c41f",
+        "ttl_seconds": 3600
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-21",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "apply",
+        "--plan",
+        "plan.json",
+        "--approve-digest",
+        "d11fd82137eb04dc3bcf39965e14c41f93c2572710c6c45afd4be044ea4a742e",
+        "--json"
+      ],
+      "exit_code": 6,
+      "response": {
+        "code": "CONFLICT",
+        "message": "migration MIGRATION_CONFLICT: generation digest",
+        "retryable": true,
+        "details": {
+          "rule": "MIGRATION_CONFLICT"
+        },
+        "request_id": null
+      },
+      "stderr": "CONFLICT: migration MIGRATION_CONFLICT: generation digest\n"
+    },
+    {
+      "id": "command-22",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "plan",
+        "--solution",
+        "demo-solution",
+        "--out",
+        "plan.json",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "changes": [
+          {
+            "action": "create",
+            "after_sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/current.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/current.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/current.json"
+          }
+        ],
+        "created_epoch_seconds": 1791024230,
+        "engine_digest": "175e0f04b247b0f3ad3beb678b8c92484f961265927deb30e276192935f2e327",
+        "migration_needed": true,
+        "migration_scope": "immutable_graph_import",
+        "plan_digest": "f8a205cbc6e88f0bf27379bba1093cd8fbb5f49ef76dfe8fad49db36004ce2ff",
+        "required_free_bytes": 23594,
+        "root": "<test-root>/target-conflict",
+        "schema_version": 1,
+        "selected_source": ".agrimap-agent/knowledge/references/graph",
+        "solution_id": "demo-solution",
+        "sources": [
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/current.json",
+            "sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          }
+        ],
+        "status": "ready",
+        "target_core": {
+          "build_revision": "bea74ff3a6593985403fd93c326b4647a134240c",
+          "component": "axiom",
+          "control_api": 1,
+          "graph_schema": 1,
+          "queue_schema": 1,
+          "spec_version": "2.0.0-draft.1",
+          "update_status": "unconfigured",
+          "version": "0.1.1"
+        },
+        "target_layout": 2,
+        "transaction": "migration-f8a205cbc6e88f0bf27379bba1093cd8",
+        "ttl_seconds": 3600
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-23",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "apply",
+        "--plan",
+        "plan.json",
+        "--approve-digest",
+        "f8a205cbc6e88f0bf27379bba1093cd8fbb5f49ef76dfe8fad49db36004ce2ff",
+        "--json"
+      ],
+      "exit_code": 6,
+      "response": {
+        "code": "CONFLICT",
+        "message": "migration MIGRATION_CONFLICT: target appeared or changed outside the owned journal",
+        "retryable": true,
+        "details": {
+          "rule": "MIGRATION_CONFLICT"
+        },
+        "request_id": null
+      },
+      "stderr": "CONFLICT: migration MIGRATION_CONFLICT: target appeared or changed outside the owned journal\n"
+    },
+    {
+      "id": "command-24",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "plan",
+        "--solution",
+        "demo-solution",
+        "--out",
+        "plan.json",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "changes": [
+          {
+            "action": "create",
+            "after_sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/current.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/current.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/current.json"
+          }
+        ],
+        "created_epoch_seconds": 1791024230,
+        "engine_digest": "175e0f04b247b0f3ad3beb678b8c92484f961265927deb30e276192935f2e327",
+        "migration_needed": true,
+        "migration_scope": "immutable_graph_import",
+        "plan_digest": "c2fb7d0a9891bb59bcbb5eb85bba9b223ec0282210ea5f59ad3442790994a7d5",
+        "required_free_bytes": 23594,
+        "root": "<test-root>/resume",
+        "schema_version": 1,
+        "selected_source": ".agrimap-agent/knowledge/references/graph",
+        "solution_id": "demo-solution",
+        "sources": [
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/current.json",
+            "sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          }
+        ],
+        "status": "ready",
+        "target_core": {
+          "build_revision": "bea74ff3a6593985403fd93c326b4647a134240c",
+          "component": "axiom",
+          "control_api": 1,
+          "graph_schema": 1,
+          "queue_schema": 1,
+          "spec_version": "2.0.0-draft.1",
+          "update_status": "unconfigured",
+          "version": "0.1.1"
+        },
+        "target_layout": 2,
+        "transaction": "migration-c2fb7d0a9891bb59bcbb5eb85bba9b22",
+        "ttl_seconds": 3600
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-25",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "apply",
+        "--plan",
+        "plan.json",
+        "--approve-digest",
+        "c2fb7d0a9891bb59bcbb5eb85bba9b223ec0282210ea5f59ad3442790994a7d5",
+        "--json"
+      ],
+      "exit_code": 8,
+      "response": {
+        "code": "INTERNAL",
+        "message": "migration filesystem: Not a directory (os error 20)",
+        "retryable": false,
+        "details": {
+          "rule": "filesystem"
+        },
+        "request_id": null
+      },
+      "stderr": "INTERNAL: migration filesystem: Not a directory (os error 20)\n"
+    },
+    {
+      "id": "command-26",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "apply",
+        "--plan",
+        "plan.json",
+        "--approve-digest",
+        "c2fb7d0a9891bb59bcbb5eb85bba9b223ec0282210ea5f59ad3442790994a7d5",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "files": 21,
+        "plan_digest": "c2fb7d0a9891bb59bcbb5eb85bba9b223ec0282210ea5f59ad3442790994a7d5",
+        "readiness": "ready",
+        "status": "resumed",
+        "transaction": "migration-c2fb7d0a9891bb59bcbb5eb85bba9b22"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-27",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "rollback",
+        "--transaction",
+        "migration-c2fb7d0a9891bb59bcbb5eb85bba9b22",
+        "--approve-digest",
+        "c2fb7d0a9891bb59bcbb5eb85bba9b223ec0282210ea5f59ad3442790994a7d5",
+        "--json"
+      ],
+      "exit_code": 6,
+      "response": {
+        "code": "CONFLICT",
+        "message": "MIGRATION_ROLLBACK_BLOCKED: the migration did not apply",
+        "retryable": true,
+        "details": {
+          "observed": "1 file(s) were changed after the cutover and are left as they are; the first is .axiom/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+          "portable_path": ".axiom/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+          "rule": "rollback-blocked"
+        },
+        "request_id": null
+      },
+      "stderr": "CONFLICT: MIGRATION_ROLLBACK_BLOCKED: the migration did not apply\n"
+    },
+    {
+      "id": "command-28",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "rollback",
+        "--transaction",
+        "migration-c2fb7d0a9891bb59bcbb5eb85bba9b22",
+        "--approve-digest",
+        "c2fb7d0a9891bb59bcbb5eb85bba9b223ec0282210ea5f59ad3442790994a7d5",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "removed": 1,
+        "restored": 0,
+        "status": "rolled-back",
+        "transaction": "migration-c2fb7d0a9891bb59bcbb5eb85bba9b22"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-29",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "plan",
+        "--solution",
+        "demo-solution",
+        "--out",
+        "plan.json",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "changes": [
+          {
+            "action": "create",
+            "after_sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/_catalog/live/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/current.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/checkpoint/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/current.json"
+          },
+          {
+            "action": "create",
+            "after_sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "before_sha256": null,
+            "destination": ".axiom/graph/demo-solution/demo-project/live/current.json",
+            "source": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/current.json"
+          }
+        ],
+        "created_epoch_seconds": 1791024231,
+        "engine_digest": "c28e9bedfd363f599531929a6fef3e183bbeff9f49e85dae73afb28bba13adc5",
+        "migration_needed": true,
+        "migration_scope": "immutable_graph_import",
+        "plan_digest": "e49bbcb60dfb48beaea576f459e36c610ac849738f8f0a1109bdf31f50a5d70e",
+        "required_free_bytes": 23594,
+        "root": "<test-root>/busy",
+        "schema_version": 1,
+        "selected_source": ".agrimap-agent/knowledge/references/graph",
+        "solution_id": "demo-solution",
+        "sources": [
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/current.json",
+            "sha256": "d30dffce6f265946245137288270f4273988517ea5fe116585772cf1f35d0021",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403/manifest.json",
+            "sha256": "116537a402de314e57b2d173e11c6065d466f7ddb50ba1f20aca30cd92ca3403",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/_catalog/live/generations/4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9/manifest.json",
+            "sha256": "4c4f33fddea1f4b9c15d9ef09039ebc44e20247c993ce4d35f2782ec7ec152f9",
+            "size_bytes": 328
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/checkpoint/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/current.json",
+            "sha256": "d9c774b099c43ffb61f9b8e3a9a511961180cd17ab1151d6d2caf4721e597965",
+            "size_bytes": 189
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/edges/000000.json",
+            "sha256": "086e46a9c1d8bba2058d267bf3280f383095f15ad9cd6fb18cd40e513d666369",
+            "size_bytes": 934
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/manifest.json",
+            "sha256": "0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/0b9a8ec7fdddc9ecae15bb4cd7b9b94b86f38b9572fa4c9b5bad7b99bba00973/nodes/000000.json",
+            "sha256": "eca026d5be1e660537fc04142ff880e4a1bd322b0d2e13d6c9c63ee9dbd4f872",
+            "size_bytes": 910
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/coverage.json",
+            "sha256": "91c70e8b78e2a2d938e8cfb2a21542d19dc706bba7a9e61c21ed9be81fd76347",
+            "size_bytes": 122
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/edges/000000.json",
+            "sha256": "bb4591247b1cddb4a4b4f09b41a705faa507e19401b45488b3db719e3494b593",
+            "size_bytes": 468
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/manifest.json",
+            "sha256": "db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341",
+            "size_bytes": 1065
+          },
+          {
+            "path": ".agrimap-agent/knowledge/references/graph/demo-solution/demo-project/live/generations/db8c2d3be63f7508d404bc484bd4ee4f1bd4eae2bc599fd33ca71f5560842341/nodes/000000.json",
+            "sha256": "833145fcd76dfe1295c8f9d076e6a0fa2cf2788fec300b1f4c798e89ff37025c",
+            "size_bytes": 601
+          }
+        ],
+        "status": "ready",
+        "target_core": {
+          "build_revision": "bea74ff3a6593985403fd93c326b4647a134240c",
+          "component": "axiom",
+          "control_api": 1,
+          "graph_schema": 1,
+          "queue_schema": 1,
+          "spec_version": "2.0.0-draft.1",
+          "update_status": "unconfigured",
+          "version": "0.1.1"
+        },
+        "target_layout": 2,
+        "transaction": "migration-e49bbcb60dfb48beaea576f459e36c61",
+        "ttl_seconds": 3600
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-30",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "apply",
+        "--plan",
+        "plan.json",
+        "--approve-digest",
+        "e49bbcb60dfb48beaea576f459e36c610ac849738f8f0a1109bdf31f50a5d70e",
+        "--json"
+      ],
+      "exit_code": 0,
+      "response": {
+        "files": 21,
+        "plan_digest": "e49bbcb60dfb48beaea576f459e36c610ac849738f8f0a1109bdf31f50a5d70e",
+        "readiness": "ready",
+        "status": "applied",
+        "transaction": "migration-e49bbcb60dfb48beaea576f459e36c61"
+      },
+      "stderr": ""
+    },
+    {
+      "id": "command-31",
+      "argv": [
+        "<cli>",
+        "migrate",
+        "apply",
+        "--plan",
+        "plan.json",
+        "--approve-digest",
+        "e49bbcb60dfb48beaea576f459e36c610ac849738f8f0a1109bdf31f50a5d70e",
+        "--json"
+      ],
+      "exit_code": 10,
+      "response": {
+        "code": "WRITER_ALREADY_RUNNING",
+        "message": "another axiom-graphd process already owns this Axiom home; refusing to become a second writer",
+        "retryable": false,
+        "details": {
+          "observed": "holder=native-test-writer pid=9165 host=thanatmet-t started_at=test"
+        },
+        "request_id": null
+      },
+      "stderr": "WRITER_ALREADY_RUNNING: another axiom-graphd process already owns this Axiom home; refusing to become a second writer\n"
+    }
+  ]
+}

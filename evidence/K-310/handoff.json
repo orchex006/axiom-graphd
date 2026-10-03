@@ -1,0 +1,16 @@
+{
+  "task_id": "K-310",
+  "owner": "axiom-graphd",
+  "branch": "feature/k-310-migration-runtime",
+  "source_revision": "bea74ff3a6593985403fd93c326b4647a134240c",
+  "spec_revision": "b00878fb52e273f990d815b8444bf57a38b9bed8",
+  "status": "ready",
+  "verification_scope": "Windows native and Linux WSL2 immutable graph import",
+  "certified": false,
+  "macos_x64": "not_run",
+  "readiness": {
+    "path": "evidence/K-310/readiness.json",
+    "sha256": "0ed702533577ed4412d62abdc96128a99817d7327ab9b790c13157c03b1ef72f"
+  },
+  "review": "Author scoped review and real positive/negative/recovery tests complete; independent owner code/implementation endorsement pending."
+}
