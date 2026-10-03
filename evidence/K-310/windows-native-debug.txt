@@ -1,0 +1,1 @@
+{"task_id": "K-310", "status": "ready", "cases": 11, "commands": 32, "cli_sha256": "1fae83fe0ce2d1d150311393b05cc2b596ddb57f6d0d336db57f02e012ea0adb", "fixture_sha256": "095d36a3db66f81b3db8df8d96e4f312c6ea5e91e80ccb6bc635d6538522fade", "environment": {"os": "Windows", "arch": "AMD64", "os_version": "Windows-11-10.0.26200-SP0", "uid": null, "execution": "native"}}

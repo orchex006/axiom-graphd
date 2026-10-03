@@ -117,9 +117,6 @@ const NOT_READY_SPECS: &str = "the managed specification bundle slice is not com
 const NOT_READY_DOCTOR: &str = "the diagnostics slice is not composed into the `axiom` entrypoint in this build (task I-003 exposes the argv surface only)";
 /// Why the `support-bundle` form is reachable but does no work yet.
 const NOT_READY_SUPPORT: &str = "the `crate::support` bundle slice is unit tested, but writing a support bundle from the documented entrypoint is not composed in this build (task I-003 exposes the argv surface only)";
-/// Why the `migrate` forms are reachable but do no work yet.
-const NOT_READY_MIGRATE: &str = "`docs/16-CLI-AND-CONTROL-API.md` V2 migration commands are intended interfaces rather than shipped commands, so `migrate` is not composed in this build (task I-003 exposes the argv surface only)";
-
 /// `--all`, accepted by `version`, `update check` and `doctor`.
 const OPT_ALL: OptionSpec = OptionSpec {
     name: "--all",
@@ -444,25 +441,25 @@ pub const VERBS: &[FormSpec] = &[
         verb: "migrate",
         subcommands: &["plan"],
         options: &[OPT_SOLUTION, OPT_FROM, OPT_TO_LAYOUT, OPT_OUT],
-        not_ready: Some(NOT_READY_MIGRATE),
+        not_ready: None,
     },
     FormSpec {
         verb: "migrate",
         subcommands: &["apply"],
         options: &[OPT_PLAN, OPT_APPROVE_DIGEST],
-        not_ready: Some(NOT_READY_MIGRATE),
+        not_ready: None,
     },
     FormSpec {
         verb: "migrate",
         subcommands: &["status"],
         options: &[OPT_TRANSACTION],
-        not_ready: Some(NOT_READY_MIGRATE),
+        not_ready: None,
     },
     FormSpec {
         verb: "migrate",
         subcommands: &["rollback"],
         options: &[OPT_TRANSACTION, OPT_APPROVE_DIGEST],
-        not_ready: Some(NOT_READY_MIGRATE),
+        not_ready: None,
     },
 ];
 
@@ -542,7 +539,6 @@ pub const PENDING_VERBS: &[&str] = &[
     "specs",
     "doctor",
     "support-bundle",
-    "migrate",
 ];
 
 /// The frozen exit-code table, rendered from [`ExitCode`] itself.
@@ -628,6 +624,25 @@ pub enum Command {
         component: String,
         /// Explicit per-user registration consent.
         user: bool,
+    },
+    /// Run one approved native migration operation.
+    Migration {
+        /// Public operation.
+        action: String,
+        /// Stable solution identity for planning.
+        solution: Option<String>,
+        /// Declared source layout.
+        from: Option<String>,
+        /// Declared destination layout major.
+        layout: Option<String>,
+        /// Explicit plan output.
+        out: Option<String>,
+        /// Reviewed plan input.
+        plan: Option<String>,
+        /// Existing transaction.
+        transaction: Option<String>,
+        /// Exact reviewed digest.
+        approval: Option<String>,
     },
     /// A declared form whose production behaviour is not built yet.
     Slice {
@@ -880,6 +895,16 @@ fn resolve(arguments: &[String]) -> Result<Command, AxiomError> {
                 component: required("--component")?,
                 user: seen.contains(&"--user"),
             }),
+            path if path.starts_with("migrate ") => Ok(Command::Migration {
+                action: form.subcommands[0].to_owned(),
+                solution: optional("--solution"),
+                from: optional("--from"),
+                layout: optional("--to-layout"),
+                out: optional("--out"),
+                plan: optional("--plan"),
+                transaction: optional("--transaction"),
+                approval: optional("--approve-digest"),
+            }),
             other => Err(AxiomError::new(
                 ErrorCode::Internal,
                 format!("the {other} command is declared implemented but has no executor"),
@@ -1036,6 +1061,33 @@ fn execute(command: &Command, json: bool) -> Result<String, AxiomError> {
                 form.path()
             ),
         )),
+        Command::Migration {
+            action,
+            solution,
+            from,
+            layout,
+            out,
+            plan,
+            transaction,
+            approval,
+        } => {
+            let value = if action == "plan" {
+                crate::migration_runtime::plan(
+                    solution.as_deref().unwrap_or_default(),
+                    from.as_deref(),
+                    layout.as_deref(),
+                    out.as_deref(),
+                )?
+            } else {
+                crate::migration_runtime::operate(
+                    action,
+                    plan.as_deref(),
+                    transaction.as_deref(),
+                    approval.as_deref(),
+                )?
+            };
+            serde_json::to_string(&value).map_err(|e| internal_serialisation(&e))
+        }
         Command::UpdateCheck => {
             let root = ecosystem_install_root()?;
             let value: serde_json::Value = serde_json::from_slice(&read_host_file(
@@ -1661,6 +1713,11 @@ mod tests {
                 .map(|subcommand| String::from(*subcommand)),
         );
         for option in form.options {
+            // The surface smoke test must remain read-only. Explicit plan
+            // output is exercised by the isolated process/native harness.
+            if form.verb == "migrate" && form.subcommands == ["plan"] && option.name == "--out" {
+                continue;
+            }
             argv.push(String::from(option.name));
             if option.takes_value {
                 argv.push(sample_value(option.name));

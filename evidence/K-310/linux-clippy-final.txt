@@ -1,0 +1,3 @@
+    Checking axiom v0.1.1 (<owner-linux>/crates/axiom)
+    Checking axiom-cli v0.1.1 (<owner-linux>/crates/axiom-cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.52s

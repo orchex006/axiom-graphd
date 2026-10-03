@@ -77,3 +77,7 @@ Downstream CLI and MCP container work may use these as candidate inputs after
 verifying their SHA-256 values. This handoff does not grant release or signing
 authority. The local candidate check is independent of the parent K-005
 four-lane release gate.
+
+## K-310 migration runtime
+
+K-310 composes the public four migration forms for immutable graph import with exact native approvals, journaled cutover and rollback. Use docs/migration-runtime.md and tests/native/capture_migration_k310.py. Record actual Windows/Linux runtime and compiler/source/binary/fixture hashes; Mac Intel is a reproduction handoff, not a passing execution claim. Preserve historical NOT_READY artifacts. Windows broad legacy tests with POSIX-only fixture roots are recorded separately; migration/dispatcher checks run on Windows and the full owner suite runs on native Linux. Required format/clippy checks still cover all targets. No release/tag or automatic installed-user upgrade follows.

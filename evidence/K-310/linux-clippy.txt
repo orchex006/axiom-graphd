@@ -1,0 +1,55 @@
+    Checking libc v0.2.189
+    Checking typenum v1.20.1
+    Checking generic-array v0.14.7
+    Checking cfg-if v1.0.5
+    Checking serde_core v1.0.229
+    Checking crypto-common v0.1.7
+    Checking block-buffer v0.10.4
+    Checking digest v0.10.7
+    Checking zmij v1.0.23
+    Checking memchr v2.8.3
+    Checking itoa v1.0.18
+    Checking cpufeatures v0.2.17
+    Checking sha2 v0.10.9
+    Checking serde_json v1.0.151
+    Checking serde v1.0.229
+    Checking graph-core v0.1.1 (<owner-linux>/crates/graph-core)
+    Checking bitflags v2.13.2
+    Checking linux-raw-sys v0.12.1
+    Checking rustix v1.1.5
+    Checking getrandom v0.4.3
+    Checking fastrand v2.5.0
+    Checking once_cell v1.21.4
+    Checking tempfile v3.27.0
+    Checking foldhash v0.2.0
+    Checking hashbrown v0.16.1
+    Checking inotify-sys v0.1.8
+    Checking same-file v1.0.6
+    Checking log v0.4.34
+    Checking mio v1.2.3
+    Checking walkdir v2.5.0
+    Checking inotify v0.11.5
+    Checking libsqlite3-sys v0.37.0
+    Checking hashlink v0.11.1
+    Checking notify-types v2.1.0
+    Checking graph-analyze v0.1.1 (<owner-linux>/crates/graph-analyze)
+    Checking smallvec v1.16.1
+    Checking fallible-streaming-iterator v0.1.9
+    Checking fallible-iterator v0.3.0
+    Checking rusqlite v0.39.0
+    Checking notify v8.2.0
+    Checking errno v0.3.14
+    Checking signal-hook-registry v1.4.8
+    Checking signal-hook v0.3.18
+    Checking graph-watch v0.1.1 (<owner-linux>/crates/graph-watch)
+    Checking graph-store v0.1.1 (<owner-linux>/crates/graph-store)
+    Checking graph-queue v0.1.1 (<owner-linux>/crates/graph-queue)
+    Checking graph-export v0.1.1 (<owner-linux>/crates/graph-export)
+    Checking axiom-graphd v0.1.1 (<owner-linux>/crates/axiom-graphd)
+    Checking axiom-platform v0.1.1 (<owner-linux>/crates/platform)
+    Checking axiom-migration v0.1.1 (<owner-linux>/crates/migration)
+    Checking axiom v0.1.1 (<owner-linux>/crates/axiom)
+    Checking axiom-config v0.1.1 (<owner-linux>/crates/config)
+    Checking axiom-bootstrap v0.1.1 (<owner-linux>/crates/bootstrap)
+    Checking axiom-cli v0.1.1 (<owner-linux>/crates/axiom-cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 27.26s

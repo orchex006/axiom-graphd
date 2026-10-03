@@ -21,6 +21,8 @@ graph-export.workspace = true
 # prerequisite report renders its WAL baseline from the store's own constant
 # instead of copying the version, so a baseline change moves the report with it.
 graph-store.workspace = true
+axiom-migration = { version = "0.1.1", path = "../migration" }
+axiom-graphd = { version = "0.1.1", path = "../axiom-graphd" }
 serde.workspace = true
 serde_json.workspace = true
 axiom-platform = { version = "0.1.1", path = "../platform" }
@@ -30,6 +32,5 @@ tempfile.workspace = true
 [dev-dependencies]
 # The daemon is the other half of the core release; tests compare both halves
 # so a drifting second version fails here instead of at release time.
-axiom-graphd = { version = "0.1.1", path = "../axiom-graphd" }
 # Fixture trees for the read-only discovery tests (E-003): tests build a home
 # in a temporary directory so nothing under the real AXIOM_HOME is touched.
