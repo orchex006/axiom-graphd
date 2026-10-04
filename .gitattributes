@@ -14,3 +14,5 @@ evidence/** text eol=lf
 
 # Release source hashes bind identical Cargo.lock bytes on every native lane.
 Cargo.lock text eol=lf
+# Keep downloaded Windows manifest proof byte-for-byte (its source uses CRLF).
+evidence/K-607/windows-x64-candidate-manifest.json -text
