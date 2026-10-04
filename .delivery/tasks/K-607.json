@@ -1,0 +1,19 @@
+{
+  "task_id": "K-607",
+  "status": "done",
+  "branch": "feature/k-607-graphd-public-readiness",
+  "checked_source_revision": "846ce6fda31f8589c97f882286590efa3320f277",
+  "ci_url": "https://github.com/orchex006/axiom-graphd/actions/runs/37199262460",
+  "readiness": "READY",
+  "public_cases_per_lane": 37,
+  "migration_cases_per_lane": 11,
+  "native_lanes": [
+    "linux-x64",
+    "macos-x64",
+    "windows-x64"
+  ],
+  "mac_arm": "deferred",
+  "certification_required": false,
+  "published": false,
+  "delivery_state": "checked-source-pushed; metadata receipt follows"
+}

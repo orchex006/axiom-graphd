@@ -1,0 +1,23 @@
+{
+  "state": "READY",
+  "ready": true,
+  "certification_required": false,
+  "source_revision": "846ce6fda31f8589c97f882286590efa3320f277",
+  "github_actions": "https://github.com/orchex006/axiom-graphd/actions/runs/37199262460",
+  "native_lanes": [
+    {
+      "platform": "linux-x64",
+      "report_sha256": "42c52f1e6d644a27ae8802775992673c1a133c2487304796e5df4feda28dcb71"
+    },
+    {
+      "platform": "macos-x64",
+      "report_sha256": "24c0b5d073f39c4cd48b92fff1d27641c0c5a23b78ef61ffc938494d87019909"
+    },
+    {
+      "platform": "windows-x64",
+      "report_sha256": "62d5235ef87ac338b811a95e75dd05c4a1b525c92b706780c2356962088f0ec6"
+    }
+  ],
+  "macos_arm64": "deferred",
+  "published": false
+}
