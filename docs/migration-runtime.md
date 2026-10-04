@@ -52,3 +52,7 @@ python3 tests/native/capture_migration_k310.py --cli /absolute/path/to/axiom --f
 Mac execution remains `not_run` until this native run exists. These are unsigned
 development builds. Existing immutable release artifacts and installed user
 versions are not overwritten by the test harness.
+
+## K-607 native CI completion
+
+Current public readiness requires the K-310 executable harness on actual Windows x64, Linux x64 and Mac Intel GitHub runners at the chosen source revision. Mac ARM remains deferred. This augments the immutable K-310 historical handoff without relabeling its unrun Mac record. Fresh native reports are emitted as CI artifacts; certification is not required.

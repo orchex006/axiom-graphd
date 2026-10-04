@@ -1,0 +1,48 @@
+name: Core GitHub Release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing immutable tag for this verified core version
+        type: string
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: core-release-${{ inputs.tag }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    uses: ./.github/workflows/core-ci.yml
+  publish:
+    needs: verify
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify existing tag and source
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          python -c "import os,re; assert re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?',os.environ['RELEASE_TAG'])"
+          test "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")" = "$GITHUB_SHA"
+          test "$RELEASE_TAG" = "v$(python -c "import tomllib; print(tomllib.load(open('Cargo.toml','rb'))['workspace']['package']['version'])")"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: native-*-${{ github.sha }}
+          path: checked-assets
+      - name: Bind assets to native proof and publish a new immutable Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          python release/collect_assets.py --input checked-assets --source-revision "$GITHUB_SHA" --out release-assets
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo 'Existing Release is immutable; refusing replacement' >&2
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" release-assets/* --verify-tag --title "Axiom core $RELEASE_TAG" --notes-file release-assets/RELEASE-NOTES.md

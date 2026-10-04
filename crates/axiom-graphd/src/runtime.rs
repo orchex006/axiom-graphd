@@ -31,6 +31,64 @@ pub fn bindings_document_path(home: &AxiomHome) -> PathBuf {
     home.root().join("config").join("bindings.json")
 }
 
+/// Persist approved local bindings without silently rebinding an existing repository.
+pub fn persist_bindings(home: &AxiomHome, bindings: &[LocalBinding]) -> Result<(), AxiomError> {
+    let path = bindings_document_path(home);
+    axiom_platform::atomic_file::reject_links(&path)
+        .map_err(|_| AxiomError::new(ErrorCode::Forbidden, "unsafe bindings destination"))?;
+    let mut document: serde_json::Value = if path.exists() {
+        serde_json::from_slice(
+            &std::fs::read(&path).map_err(|e| storage_error("bindings read", &e))?,
+        )
+        .map_err(|e| storage_error("bindings JSON", &e))?
+    } else {
+        serde_json::json!({"bindings":{}})
+    };
+    let table = document
+        .get_mut("bindings")
+        .and_then(serde_json::Value::as_object_mut)
+        .ok_or_else(|| AxiomError::new(ErrorCode::ConfigInvalid, "bindings must be an object"))?;
+    for binding in bindings {
+        if let Some(existing) = table.get(binding.repo_id()) {
+            if existing.as_str() != Some(binding.root()) {
+                return Err(AxiomError::new(
+                    ErrorCode::Conflict,
+                    "an existing repository binding cannot be silently changed",
+                ));
+            }
+        }
+        table.insert(
+            binding.repo_id().to_owned(),
+            serde_json::json!(binding.root()),
+        );
+    }
+    let parent = path
+        .parent()
+        .ok_or_else(|| AxiomError::new(ErrorCode::ConfigInvalid, "bindings parent missing"))?;
+    std::fs::create_dir_all(parent).map_err(|e| storage_error("bindings directory", &e))?;
+    let temporary = path.with_extension(format!(
+        "{}-{}.next",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |v| v.as_nanos())
+    ));
+    let bytes =
+        serde_json::to_vec(&document).map_err(|e| storage_error("bindings encoding", &e))?;
+    use std::io::Write;
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&temporary)
+        .map_err(|e| storage_error("bindings stage", &e))?;
+    file.write_all(&bytes)
+        .and_then(|()| file.sync_all())
+        .map_err(|e| storage_error("bindings synchronize", &e))?;
+    drop(file);
+    axiom_platform::atomic_file::replace(&temporary, &path)
+        .map_err(|e| storage_error("bindings replace", &e))
+}
+
 const REGISTERED_SOLUTIONS_DIRECTORY: &str = "config/registered-solutions";
 
 #[derive(Debug, Deserialize)]

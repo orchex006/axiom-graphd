@@ -127,17 +127,8 @@ impl BootstrapHost for LocalBootstrapHost {
     fn write_atomic(&self, path: &Path, bytes: &[u8]) -> Result<(), AxiomError> {
         let temporary = path.with_extension(format!("axiom-{}.tmp", std::process::id()));
         std::fs::write(&temporary, bytes).map_err(|error| apply_io(path, "write", &error))?;
-        match std::fs::rename(&temporary, path) {
-            Ok(()) => Ok(()),
-            // A platform that refuses to rename onto an existing destination is
-            // completed by removing the file this run is replacing; the bytes
-            // were already backed up before any write.
-            Err(_) if path.exists() => {
-                std::fs::remove_file(path).map_err(|error| apply_io(path, "replace", &error))?;
-                std::fs::rename(&temporary, path).map_err(|error| apply_io(path, "write", &error))
-            }
-            Err(error) => Err(apply_io(path, "write", &error)),
-        }
+        axiom_platform::atomic_file::replace(&temporary, path)
+            .map_err(|error| apply_io(path, "write", &error))
     }
 
     fn remove_file(&self, path: &Path) -> Result<(), AxiomError> {

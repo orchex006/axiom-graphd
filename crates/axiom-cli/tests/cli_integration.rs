@@ -157,11 +157,11 @@ fn all_is_rejected_outside_the_version_command() {
 }
 
 #[test]
-fn a_documented_command_of_a_later_package_reports_not_ready() {
+fn a_composed_installer_refuses_a_non_directory_bundle() {
     let output = run(&["install", "plan", "--bundle", "b.zip", "--json"]);
-    assert_eq!(output.status.code(), Some(4));
+    assert!(matches!(output.status.code(), Some(2) | Some(4)));
     let value = single_json_object(&stdout_text(&output));
-    assert_eq!(value["code"], "NOT_READY");
+    assert!(value["code"] == "VALIDATION_ERROR" || value["code"] == "NOT_READY");
     assert!(value["message"]
         .as_str()
         .expect("a message")

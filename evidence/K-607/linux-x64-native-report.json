@@ -1,0 +1,297 @@
+{
+  "platform": "linux-x64",
+  "execution": "native",
+  "source_revision": "846ce6fda31f8589c97f882286590efa3320f277",
+  "public_forms": [
+    "bootstrap plan",
+    "bootstrap apply",
+    "bootstrap verify",
+    "bootstrap update plan",
+    "bootstrap update apply",
+    "host detect",
+    "host configure",
+    "host verify",
+    "skills version",
+    "skills check",
+    "skills update plan",
+    "skills update apply",
+    "specs version",
+    "specs check",
+    "specs update plan",
+    "specs update apply",
+    "doctor",
+    "support-bundle",
+    "changed",
+    "daemon update"
+  ],
+  "cli_sha256": "8654b5e6f4aefe5e17fa59336d74d9fed547cb56e26b785201427f1a0718ec59",
+  "daemon_sha256": "1c57da114064e372a6776506a31a3f103d8184ae0f49d85ced79060d3f7c6e6f",
+  "arch": "x86_64",
+  "cases": [
+    {
+      "id": "core version",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "84d81d1836476ba957b499ad084729d7ddd3f43772aac20d0e305953ce67d6f1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "register",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "e15cfa8e290dbba8135efdc44bc0c94b91373f1ad9a4838b1c79c3654142601e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "host detect",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "46e642d9e2f38c6a732c56988e67405e4339bc995875a85b6d54ccfa9a5c6ff9",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "bootstrap plan",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "14b5526adc87fe142dd353b12d4addef5b10fa7b801fd48ddc06bdf7978a5ca8",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "bootstrap wrong approval",
+      "exit_code": 5,
+      "expected_exit_code": 5,
+      "stdout_sha256": "3d92e25849f09a91720f440d23637e93ef5bd92b331491d603820d98d119491d",
+      "stderr_sha256": "15bfe16dfb5fa95eb713b1d70184ac975277366e170bd725615960d532131f0b"
+    },
+    {
+      "id": "bootstrap apply",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "4c3a101d760ce114ebf8260227c4b100e85abd9b52b684923f7242a40026a36e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "bootstrap apply replay",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "2f2a931330fd987974f1ee4d87a637fcda165ae0da03d96fdf8fec412a009c42",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "bootstrap verify",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "8e7f27b5af747722b5cd6cf105a1dc7eab63cf78093bc6e958d8eafad801098f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "bootstrap human edit refusal",
+      "exit_code": 6,
+      "expected_exit_code": 6,
+      "stdout_sha256": "3e5a0f560c2c35587cc5c87da8c6cecde07918bac8d5bfc67d748c34cbae75bf",
+      "stderr_sha256": "4f3a8641fb8aa4b63d51c302ce84ebf04fc931b0aa42f46140a9aa18a1514bb6"
+    },
+    {
+      "id": "bootstrap update plan",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "521df0ab65b97d6f41b945da0a6c1d3e21c0851e0dff429b403be7ad4ff83241",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "bootstrap update apply",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "0a963e7334dd27e3d69bc113bb33895e8aec2cb235026c0db5d696754af17ca9",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "host configure",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "4392c2c9917b2fa9c06825dd6c56d4266442b6d2b9adc4b2c254dfcc7dce6dce",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "host apply",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "6f0e5467bb5fe721a3387f1cbce78d9a2d3600b97baf2c4131fc8a8b4c5777ea",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "host apply replay",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "6822ceb306015daf88ea5031698c71050b923d03515f14e6e04387d92515b0f5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "host dry-run cannot apply",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout_sha256": "287ff80c6d050edb022d725530aafd2261ea8d88c9962d600ad1e24c20731785",
+      "stderr_sha256": "88a2d986b50d863640e05b7a7f5025887bb705d0b2c99bb5cc95cbf35836048c"
+    },
+    {
+      "id": "host verify",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "dd48d547a97b07e555f47d8cdd71116e1663db3e7f4d9204e9c36e10adca907a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "host peer mismatch",
+      "exit_code": 6,
+      "expected_exit_code": 6,
+      "stdout_sha256": "27f90e2068f96b87ebf638050e3346174a842f2bd346d5a2a1f6a027e4e3d2f8",
+      "stderr_sha256": "7f3c9ccdd57b7396117c6611c62035f71905f6e235708ac6769a04bd170eb220"
+    },
+    {
+      "id": "skills version",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "4cb0d5fb4e40326649e0a7be6ace19d899b4694c4c47e52b8fcb97b9c96615bc",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "skills check",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "c6de0c048799ef6c69e8ead6381635e67ea8dc698960231e29afa5e835b1c8bc",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "skills update plan",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "845320cb41644fd97405c4d9f66c3d1dc54e742299f1b2da8f90f4351033690d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "skills wrong approval",
+      "exit_code": 5,
+      "expected_exit_code": 5,
+      "stdout_sha256": "3d92e25849f09a91720f440d23637e93ef5bd92b331491d603820d98d119491d",
+      "stderr_sha256": "15bfe16dfb5fa95eb713b1d70184ac975277366e170bd725615960d532131f0b"
+    },
+    {
+      "id": "skills update apply",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "afc858a70fe06ed84306a1fd6537e60cb06f0d5ec19e6f81f538b82b2a9dd9e7",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "skills apply replay",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "34e20a260e2c68d8be51e833700af094cac3bead1ff15f02fe977e08e80752df",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "skills human edit refusal",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout_sha256": "e0b4481ba8f03fe197f1b1bd8276041e904b4d71ebb90480470e9376a73602d0",
+      "stderr_sha256": "34025bbee6b4625a9c55726855e48e11630f169211d1bca64470f5e2faa6c29c"
+    },
+    {
+      "id": "specs version",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "d8fde42c12a883075c56de261951153afa669551f62bb481eae81a7c2a03bca5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "specs check",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "a6b16b811f97552eef7ad428bfbc80099406760a4611932101aa529d3655c593",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "specs update plan",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "0c1e085fd0e40ad5ea6cabe13ee3f6de1c1d8d39210ddd90208a307b5303c303",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "specs wrong approval",
+      "exit_code": 5,
+      "expected_exit_code": 5,
+      "stdout_sha256": "3d92e25849f09a91720f440d23637e93ef5bd92b331491d603820d98d119491d",
+      "stderr_sha256": "15bfe16dfb5fa95eb713b1d70184ac975277366e170bd725615960d532131f0b"
+    },
+    {
+      "id": "specs update apply",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "14eb4a82afbc36f7ff66b8f5a9d62c01bc50837befa42eb677e67935f095f827",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "specs apply replay",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "a8bdbe278a52916e821fbb79f47e4b8ce589903dd39e07092f2ee3f0e556b021",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "specs human edit refusal",
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout_sha256": "e0b4481ba8f03fe197f1b1bd8276041e904b4d71ebb90480470e9376a73602d0",
+      "stderr_sha256": "34025bbee6b4625a9c55726855e48e11630f169211d1bca64470f5e2faa6c29c"
+    },
+    {
+      "id": "doctor",
+      "exit_code": 3,
+      "expected_exit_code": 3,
+      "stdout_sha256": "ff4a06a902d11e5b8db494d07e543bbaa189930b1865a32ee38eb82a5b02cf9d",
+      "stderr_sha256": "f2389bfbd7883276b9614305e1b9cde2dda5e9ea1c5ed53df5d6c409ee1e8040"
+    },
+    {
+      "id": "support-bundle",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "ef25699aa0e54d9549294371b55fd98923fe09f7ea10a52ccb0b00d8e1c04628",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "support existing output",
+      "exit_code": 6,
+      "expected_exit_code": 6,
+      "stdout_sha256": "dad44e9f108e284026c47a4a3cf4b5e8b11d1b347da18da8a00fd473c8da781b",
+      "stderr_sha256": "8b81af19213ecf266d42a2c64da85b9085310c3ebf6999673a5d705c21d9aaf3"
+    },
+    {
+      "id": "changed",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "6d3bc551dd57a2aa08efb7bdd7861537ddd11327374c764bd36eb6ddfa66ef0c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "reconcile pending hint",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "21d9fa85a4ba2b7caa4688682464d7a93dba4ae9d34c4435df6a9d412b7d9261",
+      "stderr_sha256": "9709fad4c98c99f397315db6978812ebd0b9932bc97e869a056d5bbf438ff0c8"
+    },
+    {
+      "id": "daemon update",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout_sha256": "aa59528f579e21c397c52f2019be8a401811f7119d8f604ccb276440961ef1d0",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "negative_cases_verified": true,
+  "host_runtime_claim": "fixture-gateway-only",
+  "development_candidate": false,
+  "migration_verified": true,
+  "migration_report_sha256": "18cd0e735125fbecc8d923b5445bbdc64eeb2f4e1c371322c5ce6f44f18345ea",
+  "public_report_sha256": "32905e7bdfb9c5dde4cfeeb556d2a7de6045090464ed08ae55b9568a1a1dd487"
+}

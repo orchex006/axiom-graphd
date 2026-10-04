@@ -11,3 +11,8 @@
 # platform so the recorded sha256 digests stay reproducible and the WSL
 # runner (evidence/V2-030/run-wsl-linux.sh) is not broken by CRLF.
 evidence/** text eol=lf
+
+# Release source hashes bind identical Cargo.lock bytes on every native lane.
+Cargo.lock text eol=lf
+# Keep downloaded Windows manifest proof byte-for-byte (its source uses CRLF).
+evidence/K-607/windows-x64-candidate-manifest.json -text

@@ -1,0 +1,107 @@
+name: Core native CI
+on:
+  push:
+    branches: [main, 'feature/**']
+  pull_request:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  native:
+    name: native (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-x64
+            os: windows-2025
+            extension: .exe
+          - platform: linux-x64
+            os: ubuntu-24.04
+            extension: ''
+          - platform: macos-x64
+            os: macos-15-intel
+            extension: ''
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 50
+    env:
+      AXIOM_BUILD_REVISION: ${{ github.sha }}
+      PYTHONUTF8: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      GIT_CONFIG_COUNT: '1'
+      GIT_CONFIG_KEY_0: core.autocrlf
+      GIT_CONFIG_VALUE_0: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: orchex006/axiom-skills
+          ref: 00c6a281ecb0d2803d10456dc6650465bbdcc0f7
+          path: _ci/skills
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Isolate the pinned owner input outside product source
+        shell: python
+        run: |
+          import os, pathlib, shutil
+          workspace = pathlib.Path(os.environ['GITHUB_WORKSPACE']).resolve()
+          source = (workspace / '_ci' / 'skills').resolve()
+          destination = pathlib.Path(os.environ['RUNNER_TEMP']).resolve() / 'canonical-skills'
+          assert source.is_relative_to(workspace) and (source / '.git').is_dir()
+          assert not destination.exists()
+          shutil.move(str(source), str(destination))
+          (workspace / '_ci').rmdir()
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: core-${{ matrix.os }}-rust185-${{ hashFiles('Cargo.lock') }}
+      - name: Verify toolchain
+        shell: bash
+        run: rustup toolchain install 1.85.0 --profile minimal --component rustfmt --component clippy
+      - name: Format and lint
+        shell: bash
+        run: |
+          cargo +1.85.0 fmt --all -- --check
+          cargo +1.85.0 clippy --locked --all-targets -- -D warnings
+      - name: Complete owner tests
+        shell: bash
+        run: cargo +1.85.0 test --locked --all-targets -- --test-threads=1
+      - name: Release source and asset refusal tests
+        shell: bash
+        run: |
+          python -m unittest discover -s tests -p test_release_delivery.py -q
+          python tests/core_manifest.py
+      - name: Dependency audit with a current pinned parser
+        shell: bash
+        run: |
+          rustup toolchain install 1.88.0 --profile minimal
+          cargo +1.88.0 install cargo-deny --version 0.20.2 --locked --root "${{ runner.temp }}/audit-tools"
+          "${{ runner.temp }}/audit-tools/bin/cargo-deny${{ matrix.extension }}" check
+      - name: Build the exact core pair
+        shell: bash
+        run: cargo +1.85.0 build --locked --release -p axiom-cli -p axiom-graphd
+      - name: Native public commands and migration
+        shell: bash
+        env:
+          CLI: target/release/axiom${{ matrix.extension }}
+          DAEMON: target/release/axiom-graphd${{ matrix.extension }}
+          OUT: ${{ runner.temp }}/core-evidence
+        run: |
+          set -euo pipefail
+          python tests/native/public_readiness.py --cli "$CLI" --daemon "$DAEMON" --skills "${{ runner.temp }}/canonical-skills" --source-revision "$GITHUB_SHA" --out "$OUT/public"
+          python tests/native/capture_migration_k310.py --cli "$CLI" --fixture evidence/K-302/real-source-fixture.tar --fixture-sha256 095d36a3db66f81b3db8df8d96e4f312c6ea5e91e80ccb6bc635d6538522fade --out "$OUT/migration" --scratch "$OUT/migration-scratch"
+          python release/native_report.py --public "$OUT/public/public-report.json" --migration "$OUT/migration/native-report.json" --out "$OUT/native-report.json"
+          python release/package_core.py --daemon "$DAEMON" --cli "$CLI" --source-revision "$GITHUB_SHA" --out-dir "${{ runner.temp }}/core-assets"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.platform }}-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/core-evidence/native-report.json
+            ${{ runner.temp }}/core-evidence/public/public-report.json
+            ${{ runner.temp }}/core-evidence/migration/native-report.json
+            ${{ runner.temp }}/core-assets/*
+          if-no-files-found: error

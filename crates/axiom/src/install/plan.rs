@@ -1102,7 +1102,7 @@ pub(crate) fn under(root: &str, segments: &[&str]) -> String {
     for segment in segments {
         path.push(segment);
     }
-    path.to_string_lossy().into_owned()
+    path.to_string_lossy().replace('\\', "/")
 }
 
 impl InstallPlan {

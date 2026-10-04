@@ -230,8 +230,22 @@ impl ResolvedStateRoot {
     /// Returns [`ErrorCode::UnsafeHomePath`] only if the recorded root is no
     /// longer usable as a state home.
     pub fn home(&self) -> Result<AxiomHome, AxiomError> {
+        let rendered = self.root.display().to_string();
+        #[cfg(windows)]
+        let rendered = match rendered.strip_prefix(r"\\?\") {
+            Some(drive)
+                if drive.as_bytes().get(1) == Some(&b':')
+                    && drive
+                        .as_bytes()
+                        .first()
+                        .is_some_and(u8::is_ascii_alphabetic) =>
+            {
+                drive.to_owned()
+            }
+            _ => rendered,
+        };
         let environment = StateEnvironment {
-            axiom_home: Some(self.root.display().to_string()),
+            axiom_home: Some(rendered),
             ..StateEnvironment::default()
         };
         AxiomHome::resolve(&environment)

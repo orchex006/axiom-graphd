@@ -1,3 +1,8 @@
+## Unreleased — K-607
+
+- Compose all public operator forms, durable changed intents and same-release sibling updates; verify native x64 READY through GitHub CI without certification.
+- Preserve exact approvals, human-owned content and pointer/transaction failure boundaries; use native atomic replacement and portable planning paths.
+
 # 0.1.1 MacIntel test release
 
 Owner-authorized publication of current code; see release/v0.1.1-notes.md.

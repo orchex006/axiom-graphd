@@ -139,7 +139,7 @@ def main() -> int:
     target = next((row for row in release["targets"] if row["platform"] == platform_id), None)
     if target is None or target["rust_target"] != triple:
         raise ValueError(f"{platform_id} target is absent from the checked-in core manifest")
-    if release["publication"]["state"] != "not_published" or release["signature"]["state"] != "required":
+    if release["publication"]["state"] != "not_published" or release["signature"]["state"] not in ("required", "optional", "unsigned"):
         raise ValueError("candidate packager refuses a claimed published/signed release")
     compatibility = release["compatibility"]
     binaries = [binary(args.daemon, "axiom-graphd", revision, version, compatibility, platform_id),
