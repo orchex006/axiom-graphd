@@ -18,10 +18,17 @@ def collect(root, revision, output):
     selected = []
     seen = set()
     for directory in root.iterdir():
-        candidate = directory / "candidate-manifest.json"
-        report = directory / "native-report.json"
-        if not candidate.is_file() or not report.is_file():
+        manifests = list(directory.rglob("candidate-manifest.json"))
+        proofs = []
+        for proof_path in directory.rglob("native-report.json"):
+            value = json.loads(proof_path.read_text(encoding="utf-8"))
+            if "platform" in value:
+                proofs.append(proof_path)
+        if not manifests or not proofs:
             continue
+        if len(manifests) != 1 or len(proofs) != 1:
+            raise ValueError("duplicate candidate or native proof")
+        candidate, report = manifests[0], proofs[0]
         manifest = json.loads(candidate.read_text(encoding="utf-8"))
         proof = json.loads(report.read_text(encoding="utf-8"))
         lane = manifest["platform"]
@@ -37,7 +44,7 @@ def collect(root, revision, output):
             name = entry["name"]
             if Path(name).name != name or "/" in name or "\\" in name:
                 raise ValueError("unsafe asset name")
-            path = directory / name
+            path = candidate.parent / name
             if sha(path) != entry["sha256"]:
                 raise ValueError("asset hash changed")
             selected.append((path, name))

@@ -53,6 +53,20 @@ class ReleaseDeliveryTests(unittest.TestCase):
                     COLLECTOR.collect(root / "inputs", SOURCE, root / "out")
                 self.assertFalse((root / "out").exists())
 
+    def test_github_artifact_nested_layout_is_supported(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.inputs(root / "inputs")
+            for directory in (root / "inputs").iterdir():
+                assets, evidence = directory / "core-assets", directory / "core-evidence"
+                assets.mkdir()
+                evidence.mkdir()
+                for path in list(directory.iterdir()):
+                    if path.is_file():
+                        path.rename((evidence if path.name == "native-report.json" else assets) / path.name)
+            COLLECTOR.collect(root / "inputs", SOURCE, root / "out")
+            self.assertTrue((root / "out/SHA256SUMS").is_file())
+
     def test_existing_output_is_preserved(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

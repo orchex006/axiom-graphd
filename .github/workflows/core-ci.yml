@@ -70,6 +70,11 @@ jobs:
       - name: Complete owner tests
         shell: bash
         run: cargo +1.85.0 test --locked --all-targets -- --test-threads=1
+      - name: Release source and asset refusal tests
+        shell: bash
+        run: |
+          python -m unittest discover -s tests -p test_release_delivery.py -q
+          python tests/core_manifest.py
       - name: Dependency audit with a current pinned parser
         shell: bash
         run: |
