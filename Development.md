@@ -81,3 +81,9 @@ four-lane release gate.
 ## K-310 migration runtime
 
 K-310 composes the public four migration forms for immutable graph import with exact native approvals, journaled cutover and rollback. Use docs/migration-runtime.md and tests/native/capture_migration_k310.py. Record actual Windows/Linux runtime and compiler/source/binary/fixture hashes; Mac Intel is a reproduction handoff, not a passing execution claim. Preserve historical NOT_READY artifacts. Windows broad legacy tests with POSIX-only fixture roots are recorded separately; migration/dispatcher checks run on Windows and the full owner suite runs on native Linux. Required format/clippy checks still cover all targets. No release/tag or automatic installed-user upgrade follows.
+
+## K-607 current public READY scope
+
+ADR-0030 and the immutable owner pin govern the complete public composition. Native Windows/Linux/Mac Intel GitHub Actions must pass source-bound owner tests, executable command cases and current immutable graph migration. Mac ARM and certification/signing/attestation are not prerequisites. Existing updater integrity/approval rules are unchanged. Current audit tooling is cargo-deny 0.20.2 built separately from the product's pinned Rust 1.85.0; audit parser failures are failures, not ignored advisories.
+
+The operator adapters consume canonical skills-owned bootstrap content; they do not carry a forked policy. Host configurations preview by default, apply only an exact approved project plan and preserve unrelated settings. Gateway verification reports its actual scope rather than inventing installed-host verification.

@@ -236,7 +236,7 @@ impl SkillBundle {
             )
             .with_detail("expected", BUNDLE_SCHEMA_VERSION.to_string()));
         }
-        if self.component != COMPONENT {
+        if self.component != COMPONENT && self.component != "specs" {
             return Err(refuse("unexpected_component", &self.component));
         }
         validate_version(&self.version)?;
@@ -252,6 +252,9 @@ impl SkillBundle {
         let mut seen: Vec<&str> = Vec::with_capacity(self.entries.len());
         for entry in &self.entries {
             entry.validate()?;
+            if self.component == "specs" && entry.is_executable() {
+                return Err(refuse("specs_content_only", &entry.path));
+            }
             if seen.contains(&entry.path.as_str()) {
                 return Err(refuse("duplicate_skill_path", &entry.path));
             }
@@ -534,7 +537,7 @@ pub fn plan_install(
         return Err(refuse("undeclared_file", &file.path));
     }
     Ok(InstallPlan {
-        directory: format!("{BUNDLES_DIR}/{}", bundle.version),
+        directory: format!("{}/{}", bundle.component, bundle.version),
         steps,
         bundle: bundle.clone(),
     })
@@ -671,14 +674,7 @@ impl InstallFs for LocalInstallFs {
     fn rename(&self, from: &str, to: &str) -> Result<(), AxiomError> {
         let source = self.native(from)?;
         let target = self.native(to)?;
-        // A pointer is replaced, not merged: removing the previous pointer file
-        // first is what makes the move work on every supported platform.
-        if target.exists() {
-            std::fs::remove_file(&target).map_err(|error| {
-                refuse("pointer_write_failed", to).with_detail("observed", error.to_string())
-            })?;
-        }
-        std::fs::rename(&source, &target).map_err(|error| {
+        axiom_platform::atomic_file::replace(&source, &target).map_err(|error| {
             refuse("pointer_write_failed", to).with_detail("observed", error.to_string())
         })
     }
@@ -740,7 +736,7 @@ pub fn install(
     let manifest = plan.bundle.manifest_bytes()?;
     fs.write(&format!("{}/{}", plan.directory, MANIFEST_FILE), &manifest)?;
 
-    let pointer_path = format!("{BUNDLES_DIR}/{ACTIVE_POINTER}");
+    let pointer_path = format!("{}/{ACTIVE_POINTER}", plan.bundle.component);
     let temp = format!("{pointer_path}{POINTER_TEMP_SUFFIX}");
     fs.write(&temp, pointer_record(plan, &manifest).as_bytes())?;
     fs.rename(&temp, &pointer_path)?;
@@ -781,7 +777,7 @@ pub fn reactivate_existing(
             return Err(refuse("retained_bundle_changed", &step.path));
         }
     }
-    let pointer_path = format!("{BUNDLES_DIR}/{ACTIVE_POINTER}");
+    let pointer_path = format!("{}/{ACTIVE_POINTER}", plan.bundle.component);
     let temp = format!("{pointer_path}{POINTER_TEMP_SUFFIX}");
     fs.write(&temp, pointer_record(plan, &manifest).as_bytes())?;
     fs.rename(&temp, &pointer_path)?;
@@ -798,7 +794,8 @@ pub fn reactivate_existing(
 /// The activation pointer record for one installed bundle.
 pub(crate) fn pointer_record(plan: &InstallPlan, manifest: &[u8]) -> String {
     format!(
-        "{{\"schema_version\":{BUNDLE_SCHEMA_VERSION},\"component\":\"{COMPONENT}\",\"version\":\"{}\",\"revision\":\"{}\",\"spec_revision\":\"{}\",\"directory\":\"{}\",\"entries\":{},\"installs_executable\":{},\"manifest_sha256\":\"{}\"}}\n",
+        "{{\"schema_version\":{BUNDLE_SCHEMA_VERSION},\"component\":\"{}\",\"version\":\"{}\",\"revision\":\"{}\",\"spec_revision\":\"{}\",\"directory\":\"{}\",\"entries\":{},\"installs_executable\":{},\"manifest_sha256\":\"{}\"}}\n",
+        plan.bundle.component,
         plan.bundle.version,
         plan.bundle.revision,
         plan.bundle.spec_revision,

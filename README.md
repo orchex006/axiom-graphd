@@ -36,31 +36,15 @@ native adapters (`UserDirs`, `CrossProcessGuard`, `AtomicPublisher`,
 `WatchBackend`, `PathIdentity`, `ExecutableLocator`) stay behind narrow
 interfaces inside these crates (CP-02).
 
-## Command surface
+## Public command readiness
 
-Every operator slice below is wired into `parse` (task H-001) and is listed by
-`axiom-graphd help`. Wiring is not implementation: each verb parses its full
-documented argument surface, rejects an unknown flag or a malformed argument
-(`VALIDATION_ERROR`, exit 2), and then answers `NOT_READY` (exit 4) with the
-reason that names the binding it still needs, so an unimplemented slice is never
-an empty success.
+All documented `axiom` forms dispatch to actual native adapters: bootstrap plan/apply/verify/update, host discovery/configuration/gateway verification, skills/specs version/check/approved update, diagnostics and redacted ZIP support artifacts. The existing installation, service, ecosystem update/rollback and immutable graph migration engines remain.
 
-| Verb | Forms | Answers today |
-| --- | --- | --- |
-| `version` | `version [--json]` | the version report (implemented) |
-| `serve` | `serve [--registry <path>] [--json]` | `NOT_READY` - the instance lock is taken, no reconcile loop is bound yet |
-| `doctor` | `doctor [--solution <id>] [--json]` | `NOT_READY` - no status sources in this build |
-| `status` | `status --solution <id> [--json]` | `NOT_READY` - no open store in this build |
-| `solution` | `solution register\|list\|remove ...` | `NOT_READY` - no registry write path in this build |
-| `changed` | `changed --solution <id> --project <p> --path <p> --reason <r>` / `--from-json <f>` | `NOT_READY` - no store binding in this build |
-| `reconcile` | `reconcile --solution <id> --scope dirty\|project\|full ...` | `NOT_READY` - no queue writer in this build |
-| `queue` | `queue list\|retry\|cancel ...` | `NOT_READY` - no open store in this build |
-| `query` | `query context\|impact --solution <id> (--symbol <s>\|--node-id <id>) ...` | `NOT_READY` - no pinned snapshot source in this build |
-| `update` | `update check` / `update apply --plan <file> [--approve-digest <sha>]` | `NOT_READY` - no trusted `axiom` CLI path in this build |
-| `help` | `help`, `--help`, `-h` | the usage text, every wired verb form and the frozen exit table |
+Daemon `changed` validates registered source bytes and persists a durable pending intent; the native writer consumes it on its next bounded pass. Daemon `update` delegates to the same-release sibling executable with program/argv, identity and plan approval checks. A missing real installation/input/host, stale approval or unavailable peer still refuses with its actual reason; no current form has an unbuilt fallback.
 
-`checkpoint` and `snapshot` are documented in the CLI contract but have no owning
-module in this revision, so they are still rejected as unrecognised commands.
+Native READY requires actual Windows x64, Linux x64 and Mac Intel executable and current migration proofs from GitHub Actions. Mac ARM is deferred. GitHub Releases distributes the checked core pair and SHA-256 values; no certification, signing or attestation prerequisite applies. Publication is a separate factual state and is not performed by adding CI.
+
+Host round-trip tests use a hermetic native MCP fixture peer and do not claim an installed licensed AI host was exercised. The adapter retains that distinction in its reports.
 
 ## Build and verify
 
@@ -71,9 +55,7 @@ cargo test --locked --all-targets
 cargo deny check
 ```
 
-`cargo deny` must be built for the pinned toolchain (`cargo-deny 0.18.3` is the
-last release that supports `rustc 1.85.0`); newer releases require a newer
-compiler and are not a substitute result.
+The product compiler remains Rust 1.85.0. Dependency audit uses pinned cargo-deny 0.20.2 (a separate Rust 1.88 audit-tool build), so current CVSS advisories can be parsed. Record the actual audit-tool version; never silently skip an advisory parser failure.
 
 `Cargo.lock` is committed for binary crates. Generate it once with the pinned
 toolchain (`cargo generate-lockfile`) and commit it; every other command uses
@@ -81,28 +63,8 @@ toolchain (`cargo generate-lockfile`) and commit it; every other command uses
 
 ## Specification pin
 
-`spec.lock.json` pins the immutable `axiom-specs` revision this workspace was
-implemented against, plus a SHA256 digest for each contract this runtime is
-built against. It is currently an **unapproved draft pin**: no released
-specification revision exists, so the pin is not owner approval and does not
-carry release coverage. Re-record it against an owner-approved revision before
-any release or compatibility claim. `spec.lock.example.json` is a shape example
-only and is never a valid pin.
+`spec.lock.json` binds an exact owner-approved immutable specification revision and contract digest rollup. Current public composition and release policy follow ADR-0030. Public CI verifies owner implementation and native artifact bytes; private specification-byte validation is recorded by the authorized local handoff.
 
-Validate the pin offline against a checkout of the pinned content:
+## Native scope
 
-```bash
-python tools/spec-lock-check.py --lock spec.lock.json --spec-root <axiom-specs-checkout>
-```
-
-Default mode must accept (`immutable revision and pinned digests verified`).
-`--release` deliberately still rejects with
-`release-coverage-missing:conformance/fixture-index.json`, because release
-coverage is only meaningful against a released revision.
-
-## Platform support status
-
-Windows x64, Linux x64, macOS arm64 and macOS x64 are required native targets.
-No target is certified: there are no released binaries and no native
-install/run/uninstall evidence in this repository yet. Support is never inferred
-from compilation alone (CP-01).
+Windows x64, Linux x64 and Mac Intel are the required READY lanes. Mac ARM is deferred. Existing older native/candidate evidence remains historical; fresh GitHub source-bound reports govern current READY.

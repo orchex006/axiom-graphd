@@ -746,8 +746,22 @@ mod tests {
     #[test]
     fn a_reported_version_is_parsed_and_eligible_for_config() {
         let probe = MemoryHostProbe::default()
-            .with_program("codex", "/opt/hosts/codex")
-            .with_version_output("/opt/hosts/codex", "codex-cli 0.42.0\n");
+            .with_program(
+                "codex",
+                if cfg!(windows) {
+                    "C:/opt/hosts/codex"
+                } else {
+                    "/opt/hosts/codex"
+                },
+            )
+            .with_version_output(
+                if cfg!(windows) {
+                    "C:/opt/hosts/codex"
+                } else {
+                    "/opt/hosts/codex"
+                },
+                "codex-cli 0.42.0\n",
+            );
         let record = detect_host(&probe, HostKind::Codex);
         assert_eq!(record.status, HostStatus::Detected);
         assert_eq!(record.write_eligibility, WriteEligibility::AutoWrite);
@@ -763,15 +777,37 @@ mod tests {
         assert_eq!(record.raw_version.as_deref(), Some("codex-cli 0.42.0"));
         assert_eq!(
             probe.launches(),
-            vec![("/opt/hosts/codex".to_owned(), vec!["--version".to_owned()])]
+            vec![(
+                if cfg!(windows) {
+                    "C:/opt/hosts/codex"
+                } else {
+                    "/opt/hosts/codex"
+                }
+                .to_owned(),
+                vec!["--version".to_owned()]
+            )]
         );
     }
 
     #[test]
     fn an_unknown_version_stays_unconfigured_pending_review() {
         let probe = MemoryHostProbe::default()
-            .with_program("gemini", "/opt/hosts/gemini")
-            .with_version_output("/opt/hosts/gemini", "gemini version unknown\n");
+            .with_program(
+                "gemini",
+                if cfg!(windows) {
+                    "C:/opt/hosts/gemini"
+                } else {
+                    "/opt/hosts/gemini"
+                },
+            )
+            .with_version_output(
+                if cfg!(windows) {
+                    "C:/opt/hosts/gemini"
+                } else {
+                    "/opt/hosts/gemini"
+                },
+                "gemini version unknown\n",
+            );
         let record = detect_host(&probe, HostKind::Gemini);
         assert_eq!(record.status, HostStatus::VersionUnverified);
         assert!(record.version.is_none());
@@ -794,9 +830,20 @@ mod tests {
     #[test]
     fn a_nonzero_exit_is_a_failed_launch_with_the_raw_line_kept() {
         let probe = MemoryHostProbe::default()
-            .with_program("claude", "/opt/hosts/claude")
+            .with_program(
+                "claude",
+                if cfg!(windows) {
+                    "C:/opt/hosts/claude"
+                } else {
+                    "/opt/hosts/claude"
+                },
+            )
             .with_output(
-                "/opt/hosts/claude",
+                if cfg!(windows) {
+                    "C:/opt/hosts/claude"
+                } else {
+                    "/opt/hosts/claude"
+                },
                 ProcessOutput {
                     code: 2,
                     stdout: "claude 1.0.1\n".to_owned(),
@@ -814,10 +861,31 @@ mod tests {
     #[test]
     fn a_denied_launch_reports_the_rule_instead_of_a_version() {
         let probe = MemoryHostProbe::default()
-            .with_program("codex", "/opt/hosts/codex")
-            .with_launch_failure("/opt/hosts/codex", ErrorCode::Forbidden);
+            .with_program(
+                "codex",
+                if cfg!(windows) {
+                    "C:/opt/hosts/codex"
+                } else {
+                    "/opt/hosts/codex"
+                },
+            )
+            .with_launch_failure(
+                if cfg!(windows) {
+                    "C:/opt/hosts/codex"
+                } else {
+                    "/opt/hosts/codex"
+                },
+                ErrorCode::Forbidden,
+            );
         let failure = probe
-            .run("/opt/hosts/codex", &["--version".to_owned()])
+            .run(
+                if cfg!(windows) {
+                    "C:/opt/hosts/codex"
+                } else {
+                    "/opt/hosts/codex"
+                },
+                &["--version".to_owned()],
+            )
             .expect_err("the scripted launch fails");
         assert_eq!(failure.code(), ErrorCode::Forbidden);
         assert_eq!(
@@ -834,8 +902,22 @@ mod tests {
     fn oversized_and_empty_output_stay_unverified() {
         let oversized = "x".repeat(MAX_VERSION_OUTPUT_BYTES + 1);
         let probe = MemoryHostProbe::default()
-            .with_program("codex", "/opt/hosts/codex")
-            .with_version_output("/opt/hosts/codex", &oversized);
+            .with_program(
+                "codex",
+                if cfg!(windows) {
+                    "C:/opt/hosts/codex"
+                } else {
+                    "/opt/hosts/codex"
+                },
+            )
+            .with_version_output(
+                if cfg!(windows) {
+                    "C:/opt/hosts/codex"
+                } else {
+                    "/opt/hosts/codex"
+                },
+                &oversized,
+            );
         let record = detect_host(&probe, HostKind::Codex);
         assert_eq!(record.status, HostStatus::VersionUnverified);
         assert!(record
@@ -843,8 +925,22 @@ mod tests {
             .contains(&RULE_VERSION_OUTPUT_TOO_LARGE.to_owned()));
 
         let empty = MemoryHostProbe::default()
-            .with_program("codex", "/opt/hosts/codex")
-            .with_version_output("/opt/hosts/codex", "   \n\n");
+            .with_program(
+                "codex",
+                if cfg!(windows) {
+                    "C:/opt/hosts/codex"
+                } else {
+                    "/opt/hosts/codex"
+                },
+            )
+            .with_version_output(
+                if cfg!(windows) {
+                    "C:/opt/hosts/codex"
+                } else {
+                    "/opt/hosts/codex"
+                },
+                "   \n\n",
+            );
         let record = detect_host(&empty, HostKind::Codex);
         assert_eq!(record.status, HostStatus::VersionUnverified);
         assert_eq!(record.raw_version, None);
@@ -867,8 +963,22 @@ mod tests {
     #[test]
     fn the_uncertified_stem_is_reported_for_agy() {
         let probe = MemoryHostProbe::default()
-            .with_program("agy", "/opt/hosts/agy")
-            .with_version_output("/opt/hosts/agy", "1.4.0\n");
+            .with_program(
+                "agy",
+                if cfg!(windows) {
+                    "C:/opt/hosts/agy"
+                } else {
+                    "/opt/hosts/agy"
+                },
+            )
+            .with_version_output(
+                if cfg!(windows) {
+                    "C:/opt/hosts/agy"
+                } else {
+                    "/opt/hosts/agy"
+                },
+                "1.4.0\n",
+            );
         let report = detect(&probe);
         let record = report.host(HostKind::Antigravity).expect("a record");
         assert_eq!(record.status, HostStatus::Detected);

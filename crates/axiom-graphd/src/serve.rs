@@ -442,6 +442,7 @@ fn run_bounded(
 ) -> Result<ServeReport, AxiomError> {
     let mut store = runtime::open_store(config, home)?;
     graph_store::migrations::apply(store.connection_mut())?;
+    crate::hint_runtime::ingest(store.connection(), home)?;
 
     let solutions = match selection.solution.as_deref() {
         Some(id) => vec![runtime::solution(store.connection(), id)?],

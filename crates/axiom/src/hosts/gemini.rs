@@ -37,8 +37,6 @@
 //! Nothing here reads or writes a real `~/.gemini/settings.json`;
 //! [`GeminiPlan::apply`] is a pure function of text the caller already holds.
 
-use std::path::Path;
-
 use graph_core::error::{AxiomError, ErrorCode};
 use serde_json::{json, Map, Value};
 
@@ -301,7 +299,7 @@ fn is_safe_root(value: &str) -> bool {
     !trimmed.is_empty()
         && trimmed.len() <= 4096
         && !trimmed.chars().any(char::is_control)
-        && Path::new(trimmed).is_absolute()
+        && graph_core::paths::is_absolute_host_path(trimmed)
 }
 
 /// Resolve a wire scope, refusing one this adapter does not plan for.
@@ -497,10 +495,10 @@ impl GeminiServer {
             GeminiTransport::StreamableHttp { http_url }
             | GeminiTransport::Sse { url: http_url } => validate_url(http_url, &mut violations),
             GeminiTransport::Stdio { command, args } => {
-                if command.trim().is_empty() || !Path::new(command).is_absolute() {
+                if command.trim().is_empty() || !graph_core::paths::is_absolute_host_path(command) {
                     violations.push(RULE_STDIO_COMMAND_NOT_ABSOLUTE.to_owned());
                 }
-                if command.contains(' ') || command.contains('"') {
+                if command.contains('"') || command.chars().any(char::is_control) {
                     violations.push(RULE_STDIO_COMMAND_HAS_SHELL.to_owned());
                 }
                 if args.len() > MAX_ARGS {

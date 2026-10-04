@@ -40,3 +40,8 @@ pub mod serve;
 pub mod telemetry;
 pub mod update_guard;
 pub mod version;
+
+/// Durable local change hints consumed under the daemon writer claim.
+pub mod hint_runtime;
+/// Same-release sibling update delegation.
+pub mod sibling_runtime;

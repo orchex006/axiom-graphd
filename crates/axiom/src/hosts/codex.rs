@@ -32,7 +32,6 @@
 //! byte-to-byte transformation of a document the caller already holds.
 
 use std::collections::BTreeMap;
-use std::path::Path;
 
 use graph_core::error::{AxiomError, ErrorCode};
 
@@ -167,7 +166,7 @@ fn is_safe_root(value: &str) -> bool {
     !trimmed.is_empty()
         && trimmed.len() <= 4096
         && !trimmed.chars().any(char::is_control)
-        && Path::new(trimmed).is_absolute()
+        && graph_core::paths::is_absolute_host_path(trimmed)
 }
 
 /// The documented Codex MCP transports.
@@ -253,10 +252,10 @@ impl CodexServer {
                 }
             }
             CodexTransport::Stdio { command, args } => {
-                if command.trim().is_empty() || !Path::new(command).is_absolute() {
+                if command.trim().is_empty() || !graph_core::paths::is_absolute_host_path(command) {
                     violations.push("stdio-command-not-absolute".to_owned());
                 }
-                if command.contains(' ') || command.contains('"') {
+                if command.contains('"') || command.chars().any(char::is_control) {
                     violations.push("stdio-command-has-shell-metacharacters".to_owned());
                 }
                 for arg in args {

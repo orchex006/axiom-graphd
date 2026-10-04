@@ -116,7 +116,7 @@ fn the_guard_directory_follows_the_frozen_abi_layout() {
     let temp = private_tempdir();
     let environment = override_env(&temp.path().display().to_string());
     let resolved = resolve_state_root(&environment, &NativeStateRootProbe).expect("resolved");
-    assert!(resolved.home().is_ok());
+    assert!(resolved.home().is_ok(), "{:?}", resolved.home());
     let guard = resolved
         .solution_guard_dir("inst-1")
         .expect("guard directory");

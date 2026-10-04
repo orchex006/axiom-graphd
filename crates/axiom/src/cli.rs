@@ -106,17 +106,11 @@ impl FormSpec {
 }
 
 /// Why the `bootstrap` forms are reachable but do no work yet.
-const NOT_READY_BOOTSTRAP: &str = "the `crate::bootstrap` engine is unit tested, but bootstrapping a solution from the documented entrypoint is not composed in this build (task I-003 exposes the argv surface only)";
 /// Why the `host` forms are reachable but do no work yet.
-const NOT_READY_HOSTS: &str = "the `crate::hosts` detector is unit tested, but configuring a host client from the documented entrypoint is not composed in this build (task I-003 exposes the argv surface only)";
 /// Why the `skills` forms are reachable but do no work yet.
-const NOT_READY_SKILLS: &str = "the `crate::skills` engine is unit tested, but checking or updating skills from the documented entrypoint is not composed in this build (task I-003 exposes the argv surface only)";
 /// Why the `specs` forms are reachable but do no work yet.
-const NOT_READY_SPECS: &str = "the managed specification bundle slice is not composed into the `axiom` entrypoint in this build (task I-003 exposes the argv surface only)";
 /// Why the `doctor` form is reachable but does no work yet.
-const NOT_READY_DOCTOR: &str = "the diagnostics slice is not composed into the `axiom` entrypoint in this build (task I-003 exposes the argv surface only)";
 /// Why the `support-bundle` form is reachable but does no work yet.
-const NOT_READY_SUPPORT: &str = "the `crate::support` bundle slice is unit tested, but writing a support bundle from the documented entrypoint is not composed in this build (task I-003 exposes the argv surface only)";
 /// `--all`, accepted by `version`, `update check` and `doctor`.
 const OPT_ALL: OptionSpec = OptionSpec {
     name: "--all",
@@ -248,13 +242,13 @@ pub const VERBS: &[FormSpec] = &[
         verb: "specs",
         subcommands: &["version"],
         options: &[],
-        not_ready: Some(NOT_READY_SPECS),
+        not_ready: None,
     },
     FormSpec {
         verb: "skills",
         subcommands: &["version"],
         options: &[],
-        not_ready: Some(NOT_READY_SKILLS),
+        not_ready: None,
     },
     FormSpec {
         verb: "install",
@@ -313,86 +307,143 @@ pub const VERBS: &[FormSpec] = &[
     FormSpec {
         verb: "bootstrap",
         subcommands: &["plan"],
-        options: &[OPT_SOLUTION, OPT_HOSTS, OPT_OUT],
-        not_ready: Some(NOT_READY_BOOTSTRAP),
+        options: &[
+            OPT_SOLUTION,
+            OPT_HOSTS,
+            OPT_OUT,
+            OptionSpec {
+                required: false,
+                ..OPT_BUNDLE
+            },
+        ],
+        not_ready: None,
     },
     FormSpec {
         verb: "bootstrap",
         subcommands: &["apply"],
         options: &[OPT_PLAN, OPT_APPROVE_DIGEST],
-        not_ready: Some(NOT_READY_BOOTSTRAP),
+        not_ready: None,
     },
     FormSpec {
         verb: "bootstrap",
         subcommands: &["verify"],
-        options: &[OPT_SOLUTION],
-        not_ready: Some(NOT_READY_BOOTSTRAP),
+        options: &[
+            OPT_SOLUTION,
+            OptionSpec {
+                required: false,
+                ..OPT_BUNDLE
+            },
+        ],
+        not_ready: None,
     },
     FormSpec {
         verb: "bootstrap",
         subcommands: &["update", "plan"],
-        options: &[OPT_SOLUTION, OPT_TO],
-        not_ready: Some(NOT_READY_BOOTSTRAP),
+        options: &[
+            OPT_SOLUTION,
+            OPT_TO,
+            OPT_OUT,
+            OptionSpec {
+                required: false,
+                ..OPT_BUNDLE
+            },
+        ],
+        not_ready: None,
     },
     FormSpec {
         verb: "bootstrap",
         subcommands: &["update", "apply"],
         options: &[OPT_PLAN, OPT_APPROVE_DIGEST],
-        not_ready: Some(NOT_READY_BOOTSTRAP),
+        not_ready: None,
     },
     FormSpec {
         verb: "host",
         subcommands: &["detect"],
         options: &[],
-        not_ready: Some(NOT_READY_HOSTS),
+        not_ready: None,
     },
     FormSpec {
         verb: "host",
         subcommands: &["configure"],
-        options: &[OPT_HOST, OPT_DRY_RUN],
-        not_ready: Some(NOT_READY_HOSTS),
+        options: &[
+            OPT_HOST,
+            OPT_DRY_RUN,
+            OPT_OUT,
+            OptionSpec {
+                required: false,
+                ..OPT_PLAN
+            },
+            OPT_APPROVE_DIGEST,
+        ],
+        not_ready: None,
     },
     FormSpec {
         verb: "host",
         subcommands: &["verify"],
         options: &[OPT_HOST],
-        not_ready: Some(NOT_READY_HOSTS),
+        not_ready: None,
     },
     FormSpec {
         verb: "skills",
         subcommands: &["check"],
-        options: &[OPT_UPDATES],
-        not_ready: Some(NOT_READY_SKILLS),
+        options: &[
+            OPT_UPDATES,
+            OptionSpec {
+                required: false,
+                ..OPT_BUNDLE
+            },
+        ],
+        not_ready: None,
     },
     FormSpec {
         verb: "skills",
         subcommands: &["update", "plan"],
-        options: &[OPT_TO],
-        not_ready: Some(NOT_READY_SKILLS),
+        options: &[
+            OPT_TO,
+            OPT_OUT,
+            OptionSpec {
+                required: false,
+                ..OPT_BUNDLE
+            },
+        ],
+        not_ready: None,
     },
     FormSpec {
         verb: "skills",
         subcommands: &["update", "apply"],
-        options: &[OPT_PLAN],
-        not_ready: Some(NOT_READY_SKILLS),
+        options: &[OPT_PLAN, OPT_APPROVE_DIGEST],
+        not_ready: None,
     },
     FormSpec {
         verb: "specs",
         subcommands: &["check"],
-        options: &[OPT_UPDATES],
-        not_ready: Some(NOT_READY_SPECS),
+        options: &[
+            OPT_UPDATES,
+            OptionSpec {
+                required: false,
+                ..OPT_BUNDLE
+            },
+        ],
+        not_ready: None,
     },
     FormSpec {
         verb: "specs",
         subcommands: &["update", "plan"],
-        options: &[OPT_TO],
-        not_ready: Some(NOT_READY_SPECS),
+        options: &[
+            OPT_TO,
+            OPT_OUT,
+            OptionSpec {
+                required: false,
+                ..OPT_BUNDLE
+            },
+        ],
+        not_ready: None,
     },
     FormSpec {
         verb: "specs",
         subcommands: &["update", "apply"],
-        options: &[OPT_PLAN],
-        not_ready: Some(NOT_READY_SPECS),
+        options: &[OPT_PLAN, OPT_APPROVE_DIGEST],
+        not_ready: None,
     },
     FormSpec {
         verb: "update",
@@ -429,13 +480,13 @@ pub const VERBS: &[FormSpec] = &[
         verb: "doctor",
         subcommands: &[],
         options: &[OPT_ALL],
-        not_ready: Some(NOT_READY_DOCTOR),
+        not_ready: None,
     },
     FormSpec {
         verb: "support-bundle",
         subcommands: &[],
         options: &[OPT_OUT_REQUIRED, OPT_REDACT],
-        not_ready: Some(NOT_READY_SUPPORT),
+        not_ready: None,
     },
     FormSpec {
         verb: "migrate",
@@ -487,20 +538,20 @@ Commands:
   service stop --component <id>  stop the managed service
   service status --component <id>  report the managed service status
   service uninstall --component <id>  remove the managed service
-  bootstrap plan --solution <id> [--hosts <list>] [--out <file>]  plan a solution bootstrap for the named hosts
+  bootstrap plan --solution <id> [--hosts <list>] [--out <file>] [--bundle <dir>]  plan a solution bootstrap for the named hosts
   bootstrap apply --plan <file> [--approve-digest <sha256>]  apply an approved bootstrap plan
-  bootstrap verify --solution <id>  verify a bootstrapped solution
-  bootstrap update plan --solution <id> [--to <version>]  plan a bootstrap update
+  bootstrap verify --solution <id> [--bundle <dir>]  verify a bootstrapped solution
+  bootstrap update plan --solution <id> [--to <version>] [--out <file>] [--bundle <dir>]  plan a bootstrap update
   bootstrap update apply --plan <file> [--approve-digest <sha256>]  apply an approved bootstrap update plan
   host detect  detect the installed agent hosts
-  host configure --host <name> [--dry-run]  configure one agent host client
+  host configure --host <name> [--dry-run] [--out <file>] [--plan <file>] [--approve-digest <sha256>]  configure one agent host client
   host verify --host <name>  verify one configured agent host client
-  skills check [--updates]  check the managed skills bundle
-  skills update plan [--to <target>]  plan a skills update
-  skills update apply --plan <file>  apply an approved skills update plan
-  specs check [--updates]  check the managed specification bundle
-  specs update plan [--to <version>]  plan a specification update
-  specs update apply --plan <file>  apply an approved specification update plan
+  skills check [--updates] [--bundle <dir>]  check the managed skills bundle
+  skills update plan [--to <target>] [--out <file>] [--bundle <dir>]  plan a skills update
+  skills update apply --plan <file> [--approve-digest <sha256>]  apply an approved skills update plan
+  specs check [--updates] [--bundle <dir>]  check the managed specification bundle
+  specs update plan [--to <version>] [--out <file>] [--bundle <dir>]  plan a specification update
+  specs update apply --plan <file> [--approve-digest <sha256>]  apply an approved specification update plan
   update check [--all]  check every updatable component
   update plan --to <version> --bundle <dir> --out <file>  plan a local ecosystem update
   update apply --plan <file> [--approve-digest <sha256>]  apply an approved core update plan
@@ -532,14 +583,7 @@ Exit codes:
 /// between "not built yet" and "not a command" honest, and
 /// `pending_verbs_match_the_declared_surface` proves this list still names
 /// exactly the verbs whose declared forms are unbuilt.
-pub const PENDING_VERBS: &[&str] = &[
-    "bootstrap",
-    "host",
-    "skills",
-    "specs",
-    "doctor",
-    "support-bundle",
-];
+pub const PENDING_VERBS: &[&str] = &[];
 
 /// The frozen exit-code table, rendered from [`ExitCode`] itself.
 #[must_use]
@@ -651,6 +695,8 @@ pub enum Command {
         /// Why that form does not run yet.
         reason: &'static str,
     },
+    /// A composed native operator form.
+    Operator(crate::operator_runtime::Request),
     /// Print usage.
     Help,
     /// The arguments were rejected; the error carries the reason.
@@ -862,6 +908,22 @@ fn resolve(arguments: &[String]) -> Result<Command, AxiomError> {
                 all: seen.contains(&"--all"),
             }),
             "help" => Ok(Command::Help),
+            path if path.starts_with("bootstrap ")
+                || path.starts_with("host ")
+                || path.starts_with("skills ")
+                || path.starts_with("specs ")
+                || path == "doctor"
+                || path == "support-bundle" =>
+            {
+                Ok(Command::Operator(crate::operator_runtime::Request {
+                    form: path.to_owned(),
+                    values: values
+                        .iter()
+                        .map(|(k, v)| (k.to_string(), v.clone()))
+                        .collect(),
+                    flags: seen.iter().map(|k| k.to_string()).collect(),
+                }))
+            }
             "install plan" => Ok(Command::InstallPlan {
                 bundle: required("--bundle")?,
                 out: optional("--out"),
@@ -1025,6 +1087,9 @@ fn validated(reports: Vec<VersionReport>) -> Result<Vec<VersionReport>, AxiomErr
 fn execute(command: &Command, json: bool) -> Result<String, AxiomError> {
     match command {
         Command::Help => Ok(usage()),
+        Command::Operator(request) => {
+            render_lifecycle(&crate::operator_runtime::run(request)?, json)
+        }
         Command::Rejected { error } => Err(error.clone()),
         // `version --json` is the frozen single-component object; `version --all`
         // is one envelope object, because machine-readable mode writes exactly
@@ -1400,7 +1465,10 @@ fn plan_with_probe(
     let context = EcosystemContext::new(plan_id, created_at, host_identifier(), install_root);
     // The probe runs, and any blocking row refuses, before the bundle is opened
     // and before `--out` is written, so clause 1 and clause 2 are one code path.
-    let plan = plan_ecosystem(probe, bundle, &context)?;
+    let plan = plan_ecosystem(probe, bundle, &context).map_err(|error| {
+        AxiomError::new(error.code(), format!("--bundle: {}", error.message()))
+            .with_detail("cause", error.to_string())
+    })?;
     let document = plan.to_json()?;
     let written = match out {
         Some(requested) => Some(write_host_file(requested, document.as_bytes())?),
@@ -1804,7 +1872,15 @@ mod tests {
     #[test]
     fn every_advertised_form_is_dispatchable() {
         for form in VERBS {
-            let argv = sample_argv(form, false);
+            let temporary = tempfile::tempdir().expect("isolated dispatcher outputs");
+            let mut argv = sample_argv(form, false);
+            if let Some(at) = argv.iter().position(|value| value == "--out") {
+                argv[at + 1] = temporary
+                    .path()
+                    .join("report.json")
+                    .to_string_lossy()
+                    .into_owned();
+            }
             let invocation = parse(&argv);
             if let Command::Rejected { error } = invocation.command() {
                 panic!(
@@ -1882,7 +1958,7 @@ mod tests {
     }
 
     #[test]
-    fn unbuilt_slices_answer_not_ready_with_a_stated_reason() {
+    fn all_public_forms_are_composed() {
         let mut unbuilt = 0;
         for form in VERBS {
             let Some(reason) = form.not_ready else {
@@ -1918,7 +1994,7 @@ mod tests {
             );
             assert!(!stderr.is_empty());
         }
-        assert!(unbuilt > 0, "this build must still have unbuilt forms");
+        assert_eq!(unbuilt, 0, "READY may not contain an unbuilt public form");
     }
 
     #[test]

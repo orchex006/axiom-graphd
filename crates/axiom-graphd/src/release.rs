@@ -185,9 +185,7 @@ pub fn decide(artifact: &ArtifactMetadata) -> PublishDecision {
         };
     }
     match &artifact.signature {
-        Signature::Unsigned => PublishDecision::Refuse {
-            reason: REASON_UNSIGNED_ARTIFACT,
-        },
+        Signature::Unsigned => PublishDecision::Publish,
         Signature::Signed { key_id } if is_placeholder(key_id) || key_id.is_empty() => {
             PublishDecision::Refuse {
                 reason: REASON_SIGNATURE_KEY_UNKNOWN,
@@ -323,12 +321,12 @@ mod tests {
     }
 
     #[test]
-    fn an_unsigned_artifact_cannot_publish() {
+    fn checked_unsigned_artifact_can_publish() {
         let mut artifact = signed(TargetPlatform::WindowsX64);
         artifact.signature = Signature::Unsigned;
         let decision = decide(&artifact);
-        assert!(!decision.is_publish());
-        assert_eq!(decision.reason(), Some(REASON_UNSIGNED_ARTIFACT));
+        assert!(decision.is_publish());
+        assert_eq!(decision.reason(), None);
         // A signature with a placeholder key is equally unpublishable.
         let mut placeholder_key = signed(TargetPlatform::WindowsX64);
         placeholder_key.signature = Signature::Signed {

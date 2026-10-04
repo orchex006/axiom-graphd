@@ -61,7 +61,7 @@ pub const OPERATOR_SLICES: &[OperatorSlice] = &[
             "changed --solution <id> --project <project> --path <repo-relative> --reason <manual|git|tool|reconcile> [--json]",
             "changed --solution <id> --from-json <changes.json> [--json]",
         ],
-        not_ready: "the verified change-hint path has no open store binding in this build; the store binding is implemented by a later work package",
+        not_ready: "",
     },
     OperatorSlice {
         module: "queue",
@@ -123,7 +123,7 @@ pub const OPERATOR_SLICES: &[OperatorSlice] = &[
             "update check [--json]",
             "update apply --plan <plan.json> [--approve-digest <sha256>] [--json]",
         ],
-        not_ready: "delegated update apply has no trusted axiom CLI path in this build; the delegated launch is implemented by a later work package",
+        not_ready: "",
     },
 ];
 
@@ -1160,22 +1160,6 @@ pub fn report_failure(
 
 /// The stated reason a slice that is still unwired cannot finish production work.
 ///
-/// A wired slice has an empty reason, because it no longer has a not-ready path.
-fn slice_reason(module: &str) -> Option<&'static str> {
-    OPERATOR_SLICES
-        .iter()
-        .find(|slice| slice.module == module && !slice.not_ready.is_empty())
-        .map(|slice| slice.not_ready)
-}
-
-/// Build the `NotReady` error for a slice that is still unwired.
-fn not_ready(module: &str) -> AxiomError {
-    AxiomError::new(
-        ErrorCode::NotReady,
-        slice_reason(module).unwrap_or("this command has no production wiring in this build"),
-    )
-}
-
 /// The shared operator opening: the home plus the instance store it names.
 struct OperatorContext {
     home: AxiomHome,
@@ -1299,6 +1283,7 @@ fn solution_command(command: &SolutionCommand) -> Result<String, AxiomError> {
             if dry_run {
                 report_json(&plan)
             } else {
+                runtime::persist_bindings(&context.home, &table)?;
                 let record =
                     solution::apply_register(context.store.connection_mut(), &plan, &declaration)?;
                 let mut repositories: Vec<&str> = declaration
@@ -1606,9 +1591,68 @@ fn execute(command: &Command, telemetry: &mut Telemetry) -> Result<String, Axiom
         Command::Query(command) => query_command(command),
         Command::Render(command) => render_command(command),
         // Still unwired: no production binding reaches these from argv yet.
-        Command::Changed(_) => Err(not_ready("changed")),
-        Command::Update(_) => Err(not_ready("update")),
+        Command::Changed(command) => report_json(&crate::hint_runtime::submit(command)?),
+        Command::Update(command) => report_json(&crate::sibling_runtime::run(command)?),
     }
+}
+
+/// Read the declared repository roots of a registered solution without creating a writer.
+pub fn bound_repository_roots(
+    solution_id: &str,
+) -> Result<Vec<(String, std::path::PathBuf)>, AxiomError> {
+    let home = AxiomHome::resolve(&PathEnvironment::for_current_process())?;
+    home.verify_destination()?;
+    let config = ServiceConfig::load(None)?;
+    let database = match config.storage().database_path() {
+        Some(path) => std::path::PathBuf::from(path),
+        None => home.instance_db(config.daemon().instance_id())?,
+    };
+    let connection =
+        rusqlite::Connection::open_with_flags(database, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
+            .map_err(|_| {
+                AxiomError::new(
+                    ErrorCode::NotFound,
+                    "register the solution before planning bootstrap",
+                )
+            })?;
+    runtime::solution(&connection, solution_id)?;
+    let projects = runtime::projects(&connection, solution_id)?;
+    let bindings = runtime::load_bindings(&home)?;
+    let ids: std::collections::BTreeSet<_> = projects
+        .iter()
+        .map(|project| project.repo_id.as_str())
+        .collect();
+    let mut roots = Vec::new();
+    for id in ids {
+        let binding = bindings
+            .iter()
+            .find(|row| row.repo_id() == id)
+            .ok_or_else(|| {
+                AxiomError::new(
+                    ErrorCode::NotFound,
+                    "a registered repository has no approved local binding",
+                )
+            })?;
+        let root = std::fs::canonicalize(binding.root()).map_err(|_| {
+            AxiomError::new(ErrorCode::NotFound, "a bound repository is unavailable")
+        })?;
+        roots.push((id.to_string(), root));
+    }
+    if roots.is_empty() {
+        return Err(AxiomError::new(
+            ErrorCode::NotFound,
+            "the solution has no registered repository membership",
+        ));
+    }
+    Ok(roots)
+}
+
+#[cfg(test)]
+fn slice_reason(module: &str) -> Option<&'static str> {
+    OPERATOR_SLICES
+        .iter()
+        .find(|slice| slice.module == module && !slice.not_ready.is_empty())
+        .map(|slice| slice.not_ready)
 }
 
 #[cfg(test)]
@@ -1723,30 +1767,13 @@ mod tests {
     /// One representative, valid argv per slice that is still unwired, in slice
     /// order. These keep answering the reason their slice declares.
     fn unwired_argv() -> Vec<Vec<String>> {
-        vec![
-            argv(&[
-                "changed",
-                "--solution",
-                "demo-solution",
-                "--project",
-                "auth-api",
-                "--path",
-                "src/Auth.Api/AuthController.cs",
-                "--reason",
-                "manual",
-                "--json",
-            ]),
-            argv(&[
-                "changed",
-                "--solution",
-                "demo-solution",
-                "--from-json",
-                "changes.json",
-                "--json",
-            ]),
-            argv(&["update", "check", "--json"]),
-            argv(&["update", "apply", "--plan", "plan.json", "--json"]),
-        ]
+        assert!(
+            OPERATOR_SLICES
+                .iter()
+                .all(|slice| slice.not_ready.is_empty()),
+            "READY cannot retain unwired public slices"
+        );
+        Vec::new()
     }
 
     #[test]
@@ -2387,7 +2414,7 @@ mod tests {
             .collect();
         assert_eq!(
             declared,
-            vec!["changed", "update"],
+            Vec::<&str>::new(),
             "only the slices with no production binding may declare a reason"
         );
         for slice in OPERATOR_SLICES

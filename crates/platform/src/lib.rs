@@ -44,3 +44,6 @@ pub use state_root::{
     StateRootSource,
 };
 pub use unicode::{canonical_combining_class, nfd, UNICODE_DATA_VERSION};
+
+/// Native same-volume atomic file replacement.
+pub mod atomic_file;

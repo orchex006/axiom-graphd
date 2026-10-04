@@ -46,6 +46,7 @@ dependencies = [
 name = "axiom-graphd"
 version = "0.1.1"
 dependencies = [
+ "axiom-platform",
  "graph-analyze",
  "graph-core",
  "graph-export",
@@ -75,6 +76,7 @@ version = "0.1.1"
 dependencies = [
  "graph-core",
  "tempfile",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]

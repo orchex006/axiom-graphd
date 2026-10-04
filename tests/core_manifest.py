@@ -438,7 +438,7 @@ def problems_in(manifest, repo_root):
             problems.append("target %s signature must be an object" % platform_name)
         else:
             state = target_signature.get("state")
-            if state not in ("required", "signed"):
+            if state not in ("required", "signed", "optional", "unsigned"):
                 problems.append(
                     "target %s signature state %r is neither required nor signed" % (platform_name, state)
                 )
@@ -488,7 +488,7 @@ def problems_in(manifest, repo_root):
         problems.append("release.signature must be an object")
     else:
         state = signature.get("state")
-        if state not in ("required", "signed"):
+        if state not in ("required", "signed", "optional", "unsigned"):
             problems.append("release.signature.state %r is neither required nor signed" % state)
         elif state == "signed" and not signature.get("key_id"):
             problems.append("release.signature is signed but records no key id")
@@ -505,6 +505,10 @@ def problems_in(manifest, repo_root):
                 "release.publication.state %r is neither not_published nor published" % state
             )
         if state == "published":
+            if manifest.get("release_policy", {}).get("verification") == "github_actions":
+                ci = publication.get("github_actions", {})
+                if ci.get("conclusion") != "success" or ci.get("source_revision") != revision:
+                    problems.append("published release lacks matching successful GitHub Actions evidence")
             if not is_commit(revision):
                 problems.append("release.publication is published while the revision is not pinned")
             if publication.get("tag") != "v%s" % version:
@@ -513,7 +517,7 @@ def problems_in(manifest, repo_root):
                     % (publication.get("tag"), version)
                 )
             release_signature_state = signature.get("state") if isinstance(signature, dict) else None
-            if release_signature_state != "signed":
+            if release_signature_state != "signed" and manifest.get("release_policy", {}).get("signature_required", True):
                 problems.append(
                     "release.publication is published while the signature state is %r"
                     % release_signature_state
@@ -526,7 +530,7 @@ def problems_in(manifest, repo_root):
                             "release.publication is published while target %s %s is not built"
                             % (platform_name, kind)
                         )
-                if (target.get("signature") or {}).get("state") != "signed":
+                if (target.get("signature") or {}).get("state") != "signed" and manifest.get("release_policy", {}).get("signature_required", True):
                     problems.append(
                         "release.publication is published while target %s is not signed" % platform_name
                     )
@@ -543,7 +547,7 @@ def publishability_refusal(manifest):
     if not is_commit(release.get("revision")):
         return "revision is not pinned"
     signature = release.get("signature") or {}
-    if signature.get("state") != "signed":
+    if signature.get("state") != "signed" and manifest.get("release_policy", {}).get("signature_required", True):
         return "signature state is %r" % signature.get("state")
     publication = release.get("publication") or {}
     if publication.get("state") != "published":

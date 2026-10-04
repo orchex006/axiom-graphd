@@ -554,6 +554,12 @@ fn check(
             Ok(())
         }
         VerifyStep::TestQuery => {
+            if result.get("isError").and_then(Value::as_bool) == Some(true) {
+                return Err(fail(
+                    RULE_TEST_QUERY_UNPARSED,
+                    "MCP tool refused the query".to_owned(),
+                ));
+            }
             let records = count_records(result);
             if records < expectations.min_records {
                 return Err(fail(
