@@ -1,3 +1,7 @@
+## 0.1.2 — K-613
+
+- Release the completed core/CLI public composition on three native x64 lanes with current skills input and exact source/assets through GitHub Releases; WSL uses the same Linux bytes with separate native verification.
+
 ## Unreleased — K-607
 
 - Compose all public operator forms, durable changed intents and same-release sibling updates; verify native x64 READY through GitHub CI without certification.

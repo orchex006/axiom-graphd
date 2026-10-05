@@ -1,14 +1,14 @@
 {
   "spec_version": "2.0.0-draft.1",
   "spec_repository": "axiom-specs",
-  "spec_revision": "8ef80c3cb3c05a6fb0eac344319994d1ef9c842d",
-  "spec_content_sha256": "337e69f0408559f88bdc397dd2c854bf5fe26a4cb4523478516696b622a26285",
+  "spec_revision": "2564d53d6a39f7a9b4b1c99528387807eee7b73d",
+  "spec_content_sha256": "30b51a7709a88ca3b37464297c41b1a9bd3cb89eead96ff23ff7a33c93aedbc6",
   "owner_repository": "axiom-graphd",
   "workspace_layout": 2,
   "graph_payload_schema": 1,
-  "verification": "K-607: owner-approved ADR-0030 immutable Git blobs and digest rollup verified. Public composition and native GitHub CI scope; no certification gate. Actual readiness requires native reports.",
+  "verification": "K-613 exact Git bytes/rollup verified; owner authorized current 0.1.2 GitHub publication.",
   "contract_digests": {
-    "Development.md": "740e6352d3de638d9b111ea43031156b9adcb780c4c134cc8025934eda81b749",
+    "Development.md": "e82c268677b6574928819bfc5753eb881fb175e9adf6e9652af94ee44f5264bb",
     "adrs/ADR-0015.md": "22699c8518263fb5f21c7a9cda48b27da2229b19bf6c336d7dec72a980139716",
     "adrs/ADR-0019.md": "aae92d700b3019a535ab0a57cf91bf4e01771f02890ebb043ff8aaecd3e44fbd",
     "adrs/ADR-0020.md": "8a53b170dcc8e2a6635b35e77dec252037941fd5690de6e41e802344840c8d72",
@@ -27,10 +27,12 @@
     "specs/v2/K-release-readiness.md": "a5c94280d0f6be8403c6bd000d6534e16b9f86d4f2e3d8dd78128e8c2d517d44",
     "tasks/K/K-310.md": "04383daf249200f4a851aec4790318ff9b01d8b7258563b6954386f417222f81",
     "tasks/K/scope-map.json": "5690a2f5b8b5d95f68120ab97e165826e3c734758e08c9d0e8efeb4f7c071fc7",
-    "tasks/tasks.json": "55a6f27a9d6f51f2368e789ca22194a01ef2aa1badfb330bb83668a1b997ec24",
+    "tasks/tasks.json": "61f2b43badf186a90cb07f164c083e849ba7b4da1e40ce40cb276dd53392840e",
     "tools/specctl.py": "2353a4ca139b5d52f0904fb98a2cacfb14ffb08acee9a828d4d299e812db099f",
     "adrs/ADR-0030.md": "ceef7442a2fb947fe49bd30f512191c3a3acc648f6b12b13bb18456f2050765d",
     "contracts/graphd-readiness.md": "d2516c8df9d198e70ec734aea870b179f4238cc3c59c451d2d77fbfbd74e1715",
-    "conformance/graphd_readiness.py": "84b645f7fef942654dde8ed88e8e26653685c6322a5a1ba7090283b10fe30697"
+    "conformance/graphd_readiness.py": "84b645f7fef942654dde8ed88e8e26653685c6322a5a1ba7090283b10fe30697",
+    "adrs/ADR-0032.md": "edf0a5fe1dcbf3fd48804b5b2e79d6e217218a40765950d47799a16a587ae518",
+    "release/v0.1.2-plan.json": "7a72701a80917cfb5457f6687c53e718d96d440bd869cbfe9094c54a35427d2d"
   }
 }
