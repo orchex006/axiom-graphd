@@ -1,23 +1,25 @@
 {
-  "state": "READY",
+  "state": "PUBLISHED",
   "ready": true,
+  "version": "0.1.2",
+  "published": true,
+  "source_revision": "9a847ec1d6d1cd96023435cf77d7f165720057f2",
+  "release_url": "https://github.com/orchex006/axiom-graphd/releases/tag/v0.1.2",
+  "github_actions": "https://github.com/orchex006/axiom-graphd/actions/runs/37276532009",
   "certification_required": false,
-  "source_revision": "846ce6fda31f8589c97f882286590efa3320f277",
-  "github_actions": "https://github.com/orchex006/axiom-graphd/actions/runs/37199262460",
-  "native_lanes": [
-    {
-      "platform": "linux-x64",
-      "report_sha256": "42c52f1e6d644a27ae8802775992673c1a133c2487304796e5df4feda28dcb71"
-    },
-    {
-      "platform": "macos-x64",
-      "report_sha256": "24c0b5d073f39c4cd48b92fff1d27641c0c5a23b78ef61ffc938494d87019909"
-    },
-    {
-      "platform": "windows-x64",
-      "report_sha256": "62d5235ef87ac338b811a95e75dd05c4a1b525c92b706780c2356962088f0ec6"
-    }
+  "verified_environments": [
+    "windows-x64",
+    "macos-x64",
+    "linux-x64",
+    "wsl2-linux-x64"
   ],
-  "macos_arm64": "deferred",
-  "published": false
+  "macos_arm64": "excluded",
+  "receipt": "release/v0.1.2-receipt.json",
+  "limitations": [
+    "Mac ARM excluded.",
+    "Licensed AI host applications are not claimed exercised.",
+    "Mac Intel native package/entrypoint/install-plan and installed MCP/core CI passed; full desktop service registration/apply is not inferred from this runner.",
+    "Use the extracted Windows/Linux CLI for management; optional user-PATH entrypoint installers are explicit actions. Embedded local channels are offline verified descriptions; signed automatic update feeds remain separate.",
+    "Default static-analysis profile remains bounded; a single-line C# namespace-plus-class test fixture was not resolved as a class. Multiline real-source watcher/query passed."
+  ]
 }
