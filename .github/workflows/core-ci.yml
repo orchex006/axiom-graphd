@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: orchex006/axiom-skills
-          ref: 00c6a281ecb0d2803d10456dc6650465bbdcc0f7
+          ref: 3500a6406e31793e191ada3e3bfa95f29a866fa8
           path: _ci/skills
       - uses: actions/setup-python@v5
         with:
