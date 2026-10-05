@@ -1,0 +1,96 @@
+{
+  "repository": "orchex006/axiom-graphd",
+  "version": "0.1.2",
+  "tag": "v0.1.2",
+  "published": true,
+  "release_url": "https://github.com/orchex006/axiom-graphd/releases/tag/v0.1.2",
+  "published_at": "2026-10-05T07:28:00Z",
+  "source_revision": "9a847ec1d6d1cd96023435cf77d7f165720057f2",
+  "github_actions": "https://github.com/orchex006/axiom-graphd/actions/runs/37276532009",
+  "assets": [
+    {
+      "name": "RELEASE-NOTES.md",
+      "sha256": "097b5de9a92061c94ad3959706483c9bda35990041133bda93b0590c90fcb974",
+      "bytes": 363
+    },
+    {
+      "name": "SOURCE-REVISION.txt",
+      "sha256": "91d498202c8b2438275c4ddcade7e9f9908b443a72daf24b9c7a30e8c817cc44",
+      "bytes": 41
+    },
+    {
+      "name": "axiom-0.1.2-linux-x64.sbom.json",
+      "sha256": "6ca37d266b4bc62b0288f211c231ff1b871db51f2383c05e8363d16ef93b4bb8",
+      "bytes": 12401
+    },
+    {
+      "name": "axiom-0.1.2-linux-x64.tar.gz",
+      "sha256": "fcaa44e370900ac2170fe49334224d4f4cc3ba1e381e5ce9b61c0f4380179be6",
+      "bytes": 4715675
+    },
+    {
+      "name": "axiom-0.1.2-macos-x64.sbom.json",
+      "sha256": "6ca37d266b4bc62b0288f211c231ff1b871db51f2383c05e8363d16ef93b4bb8",
+      "bytes": 12401
+    },
+    {
+      "name": "axiom-0.1.2-macos-x64.tar.gz",
+      "sha256": "b919e3c893e6e4662db92d42785e7359519edd9b71d87d5cfada8f1ce3bbfb18",
+      "bytes": 4471792
+    },
+    {
+      "name": "axiom-0.1.2-windows-x64.sbom.json",
+      "sha256": "6ca37d266b4bc62b0288f211c231ff1b871db51f2383c05e8363d16ef93b4bb8",
+      "bytes": 12401
+    },
+    {
+      "name": "axiom-0.1.2-windows-x64.zip",
+      "sha256": "9b07e87245ee566e541eae7ae1c88393bab925ded26ec666bda7f4d5b77b3147",
+      "bytes": 9576773
+    },
+    {
+      "name": "linux-x64-manifest.json",
+      "sha256": "0e54a4967f64ac01eaff663075f0f607dfc4bd0cc963e45cc08665b882bde2d4",
+      "bytes": 2458
+    },
+    {
+      "name": "linux-x64-native-report.json",
+      "sha256": "bf810858bcf4b101872b82dbda3978bf9de24abbc4c770736d6a355e43a88c8d",
+      "bytes": 11489
+    },
+    {
+      "name": "macos-x64-manifest.json",
+      "sha256": "0a47e7feaa162b76dc26259526d33b1ddf47e013e25a00413f2dfc9ca8996f50",
+      "bytes": 2450
+    },
+    {
+      "name": "macos-x64-native-report.json",
+      "sha256": "85345bc1da12a09ea0a1ed64f142f830116a423afb2f4ddfc0a959d5ce59c7d6",
+      "bytes": 11489
+    },
+    {
+      "name": "windows-x64-manifest.json",
+      "sha256": "f81b77d9a6e349ba4a33cf3038bfb7f707a0ce4d31df6a90a16bf32f1f35306f",
+      "bytes": 2536
+    },
+    {
+      "name": "windows-x64-native-report.json",
+      "sha256": "bb2a3ec841221325e9cfc4abe93dfcf9fe0ed856332c54a9d1abe75f8b0b03f8",
+      "bytes": 11490
+    }
+  ],
+  "certification_required": false,
+  "verified_environments": [
+    "windows-x64",
+    "macos-x64",
+    "linux-x64",
+    "wsl2-linux-x64"
+  ],
+  "limitations": [
+    "Mac ARM excluded.",
+    "Licensed AI host applications are not claimed exercised.",
+    "Mac Intel native package/entrypoint/install-plan and installed MCP/core CI passed; full desktop service registration/apply is not inferred from this runner.",
+    "Use the extracted Windows/Linux CLI for management; optional user-PATH entrypoint installers are explicit actions. Embedded local channels are offline verified descriptions; signed automatic update feeds remain separate.",
+    "Default static-analysis profile remains bounded; a single-line C# namespace-plus-class test fixture was not resolved as a class. Multiline real-source watcher/query passed."
+  ]
+}

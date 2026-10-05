@@ -1,0 +1,12 @@
+{
+  "task_id": "K-613",
+  "status": "done",
+  "branch": "feature/k-613-release-012",
+  "delivery_state": "integrated",
+  "published": true,
+  "tag": "v0.1.2",
+  "release_source_revision": "9a847ec1d6d1cd96023435cf77d7f165720057f2",
+  "github_release": "https://github.com/orchex006/axiom-graphd/releases/tag/v0.1.2",
+  "publication_ci": "https://github.com/orchex006/axiom-graphd/actions/runs/37276532009",
+  "certification_required": false
+}
