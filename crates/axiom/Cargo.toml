@@ -21,11 +21,11 @@ graph-export.workspace = true
 # prerequisite report renders its WAL baseline from the store's own constant
 # instead of copying the version, so a baseline change moves the report with it.
 graph-store.workspace = true
-axiom-migration = { version = "0.1.2", path = "../migration" }
-axiom-graphd = { version = "0.1.2", path = "../axiom-graphd" }
+axiom-migration = { version = "0.1.3", path = "../migration" }
+axiom-graphd = { version = "0.1.3", path = "../axiom-graphd" }
 serde.workspace = true
 serde_json.workspace = true
-axiom-platform = { version = "0.1.2", path = "../platform" }
+axiom-platform = { version = "0.1.3", path = "../platform" }
 getrandom.workspace = true
 tempfile.workspace = true
 
