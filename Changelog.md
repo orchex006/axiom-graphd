@@ -1,3 +1,7 @@
+## 0.1.3 — one-line install release
+
+- Version 0.1.3 for the ADR-0033 one-line install; carries L-010 (reinstall after uninstall restores the skills bundle).
+
 ## Unreleased — L-010 reinstall after uninstall
 
 - `install apply` now reinstalls a skills version over the remnant an ecosystem uninstall keeps (only the identical reviewed `bundle.json`), restoring every declared file and the pointer, instead of refusing `retained_bundle_changed`. A directory holding an edited or undeclared file, or a different manifest, keeps its refusal. Found by axiom-cli L-007 fresh-runner CI (install, uninstall, reinstall) (R15, R16, R22).
