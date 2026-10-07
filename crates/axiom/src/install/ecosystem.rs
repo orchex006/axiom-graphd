@@ -143,9 +143,10 @@ use crate::install::plan::{
     PLAN_KIND as COMPONENT_PLAN_KIND,
 };
 use crate::skills::install::{
-    install as install_skills, plan_install as plan_skills,
-    reactivate_existing as reactivate_skills, InstallFs as SkillsFs, InstallPlan as SkillsPlan,
-    InstallStep as SkillsStep, LocalPayloadSource, PayloadSource, SkillBundle, ACTIVE_POINTER,
+    install as install_skills, is_uninstall_remnant as skills_remnant, plan_install as plan_skills,
+    reactivate_existing as reactivate_skills, reinstall_over_remnant as reinstall_skills,
+    InstallFs as SkillsFs, InstallPlan as SkillsPlan, InstallStep as SkillsStep,
+    LocalPayloadSource, PayloadSource, SkillBundle, ACTIVE_POINTER,
     BUNDLES_DIR as SKILLS_BUNDLES_DIR, MANIFEST_FILE as SKILLS_MANIFEST_FILE,
     MAX_MANIFEST_BYTES as SKILLS_MAX_MANIFEST_BYTES,
 };
@@ -2016,7 +2017,10 @@ pub fn apply_ecosystem(
     let mut skills_report: Option<(String, String)> = None;
     if !skills_ready {
         let skills_plan = skills.install_plan();
-        let report = if skills_fs.exists(&skills.directory) {
+        let report = if skills_remnant(&skills_plan, skills_fs)? {
+            // An earlier uninstall kept only the reviewed manifest; reinstall the files.
+            reinstall_skills(&skills_plan, skills_source, skills_fs)?
+        } else if skills_fs.exists(&skills.directory) {
             reactivate_skills(&skills_plan, skills_fs)?
         } else {
             install_skills(&skills_plan, skills_source, skills_fs)?

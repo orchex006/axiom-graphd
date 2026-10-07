@@ -1,0 +1,35 @@
+{
+  "task_id": "L-010",
+  "status": "verified",
+  "branch": "feature/l-010-skills-reinstall-after-uninstall",
+  "base_revision": "4b2dafe",
+  "lanes": {
+    "windows-x64": "verified (real host: axiom-cli install, uninstall, reinstall, doctor exit 0, uninstall with this engine build)",
+    "linux-x64": "owner CI",
+    "macos-x64": "out of owner scope (2026-10-07)"
+  },
+  "commands": [
+    {
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0
+    },
+    {
+      "command": "cargo clippy --locked --all-targets -- -D warnings",
+      "exit_code": 0,
+      "artifact": "evidence/L-010/clippy.txt"
+    },
+    {
+      "command": "cargo test --locked -p axiom",
+      "exit_code": 0,
+      "artifact": "evidence/L-010/test-axiom.txt"
+    },
+    {
+      "command": "axiom-cli install --yes; uninstall --yes; install --yes; doctor; uninstall --yes (fresh LOCALAPPDATA, this engine)",
+      "exit_code": 0,
+      "artifact": "evidence/L-010/windows-x64-reinstall.txt"
+    }
+  ],
+  "limitations": [
+    "The published 0.1.2 engine still has the defect; the one-line install reinstall path needs a release that carries this engine (L-007 release step)"
+  ]
+}

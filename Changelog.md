@@ -1,3 +1,7 @@
+## Unreleased — L-010 reinstall after uninstall
+
+- `install apply` now reinstalls a skills version over the remnant an ecosystem uninstall keeps (only the identical reviewed `bundle.json`), restoring every declared file and the pointer, instead of refusing `retained_bundle_changed`. A directory holding an edited or undeclared file, or a different manifest, keeps its refusal. Found by axiom-cli L-007 fresh-runner CI (install, uninstall, reinstall) (R15, R16, R22).
+
 ## 0.1.2 — K-613
 
 - Release the completed core/CLI public composition on three native x64 lanes with current skills input and exact source/assets through GitHub Releases; WSL uses the same Linux bytes with separate native verification.
