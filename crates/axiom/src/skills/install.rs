@@ -751,6 +751,67 @@ pub fn install(
     })
 }
 
+/// True when `plan.directory` holds exactly what an uninstall leaves behind for
+/// an untouched bundle: only the reviewed manifest, byte for byte.
+///
+/// The ecosystem uninstall removes every declared file it still owns but keeps
+/// `bundle.json` (and any edited or undeclared file). A directory with anything
+/// besides the identical manifest is not a remnant and keeps its refusal.
+pub fn is_uninstall_remnant(plan: &InstallPlan, fs: &dyn InstallFs) -> Result<bool, AxiomError> {
+    plan.bundle.validate()?;
+    if !fs.exists(&plan.directory) {
+        return Ok(false);
+    }
+    // A host that cannot prove the complete listing keeps the reactivation path.
+    match fs.files_under(&plan.directory) {
+        Ok(files) if files == [MANIFEST_FILE.to_string()] => {}
+        _ => return Ok(false),
+    }
+    Ok(fs.read(&format!("{}/{}", plan.directory, MANIFEST_FILE))?
+        == plan.bundle.manifest_bytes()?)
+}
+
+/// Reinstall over an uninstall remnant ([`is_uninstall_remnant`]): write every
+/// declared file from `source`, then the manifest, then the pointer - the same
+/// order and checks as [`install`], without the `version_directory_exists` refusal.
+///
+/// # Errors
+///
+/// `retained_bundle_changed` when the directory is not a remnant, plus the
+/// refusals of [`install`].
+pub fn reinstall_over_remnant(
+    plan: &InstallPlan,
+    source: &dyn PayloadSource,
+    fs: &dyn InstallFs,
+) -> Result<InstallReport, AxiomError> {
+    if !is_uninstall_remnant(plan, fs)? {
+        return Err(refuse("retained_bundle_changed", &plan.directory));
+    }
+    let mut installed = Vec::with_capacity(plan.steps.len());
+    for step in &plan.steps {
+        let bytes = source.read(&step.path)?;
+        if bytes.len() as u64 != step.size_bytes || sha256_hex(&bytes) != step.sha256 {
+            return Err(refuse("staged_file_changed_since_plan", &step.path));
+        }
+        fs.write(&format!("{}/{}", plan.directory, step.path), &bytes)?;
+        installed.push(step.path.clone());
+    }
+    let manifest = plan.bundle.manifest_bytes()?;
+    fs.write(&format!("{}/{}", plan.directory, MANIFEST_FILE), &manifest)?;
+    let pointer_path = format!("{}/{ACTIVE_POINTER}", plan.bundle.component);
+    let temp = format!("{pointer_path}{POINTER_TEMP_SUFFIX}");
+    fs.write(&temp, pointer_record(plan, &manifest).as_bytes())?;
+    fs.rename(&temp, &pointer_path)?;
+    Ok(InstallReport {
+        version: plan.bundle.version.clone(),
+        directory: plan.directory.clone(),
+        installed,
+        manifest_sha256: sha256_hex(&manifest),
+        pointer: pointer_path,
+        installs_executable: plan.installs_executable(),
+    })
+}
+
 /// Reactivate a retained version only after every file and the full directory
 /// inventory still match the reviewed bundle. Used after a pointer rollback.
 pub fn reactivate_existing(
@@ -1004,6 +1065,16 @@ mod tests {
     }
 
     impl InstallFs for MemoryFs {
+        fn files_under(&self, path: &str) -> Result<Vec<String>, AxiomError> {
+            let prefix = format!("{path}/");
+            Ok(self
+                .files
+                .borrow()
+                .keys()
+                .filter_map(|key| key.strip_prefix(&prefix).map(String::from))
+                .collect())
+        }
+
         fn exists(&self, path: &str) -> bool {
             let files = self.files.borrow();
             files.contains_key(path)
@@ -1038,6 +1109,68 @@ mod tests {
 
     fn rule_of(error: &AxiomError) -> Option<&str> {
         error.details().get("rule").map(String::as_str)
+    }
+
+    #[test]
+    fn a_reinstall_over_an_uninstall_remnant_restores_every_file() {
+        let payload = MemoryPayload::with(&[("axiom-analyze/SKILL.md", SKILL_MD)]);
+        let declared = bundle(vec![instruction()]);
+        let plan = plan_install(&declared, &payload).expect("plan");
+        let fs = MemoryFs::default();
+        install(&plan, &payload, &fs).expect("first install");
+        // What the ecosystem uninstall leaves for an untouched bundle: the manifest only.
+        fs.files
+            .borrow_mut()
+            .remove("skills/0.1.0/axiom-analyze/SKILL.md");
+        fs.files.borrow_mut().remove("skills/current");
+        assert!(is_uninstall_remnant(&plan, &fs).expect("remnant check"));
+        assert_eq!(
+            rule_of(&install(&plan, &payload, &fs).expect_err("plain install refuses")),
+            Some("version_directory_exists")
+        );
+        let report = reinstall_over_remnant(&plan, &payload, &fs).expect("reinstall");
+        assert_eq!(report.version, "0.1.0");
+        assert_eq!(
+            fs.get("skills/0.1.0/axiom-analyze/SKILL.md").as_deref(),
+            Some(SKILL_MD)
+        );
+        assert!(fs.get("skills/current").is_some());
+    }
+
+    #[test]
+    fn a_remnant_with_an_edited_or_extra_file_is_not_reinstalled_over() {
+        let payload = MemoryPayload::with(&[("axiom-analyze/SKILL.md", SKILL_MD)]);
+        let plan = plan_install(&bundle(vec![instruction()]), &payload).expect("plan");
+        let fs = MemoryFs::default();
+        install(&plan, &payload, &fs).expect("first install");
+        fs.files.borrow_mut().remove("skills/current");
+        // Uninstall preserved a human-edited file: never overwrite it.
+        fs.files.borrow_mut().insert(
+            "skills/0.1.0/axiom-analyze/SKILL.md".into(),
+            b"# human edit
+"
+            .to_vec(),
+        );
+        assert!(!is_uninstall_remnant(&plan, &fs).expect("remnant check"));
+        assert_eq!(
+            rule_of(&reinstall_over_remnant(&plan, &payload, &fs).expect_err("refused")),
+            Some("retained_bundle_changed")
+        );
+        assert_eq!(
+            fs.get("skills/0.1.0/axiom-analyze/SKILL.md").as_deref(),
+            Some(
+                &b"# human edit
+"[..]
+            )
+        );
+        // A manifest that differs from the reviewed one is not a remnant either.
+        fs.files
+            .borrow_mut()
+            .remove("skills/0.1.0/axiom-analyze/SKILL.md");
+        fs.files
+            .borrow_mut()
+            .insert("skills/0.1.0/bundle.json".into(), b"{}".to_vec());
+        assert!(!is_uninstall_remnant(&plan, &fs).expect("remnant check"));
     }
 
     #[test]

@@ -1,0 +1,6 @@
+install=0
+uninstall=0
+reinstall=0
+doctor=0
+installed: 0.1.2 channel=stable generation=install-a1c5cf4d13e4230f at=2026-10-07T03:58:18Z
+uninstall2=0
