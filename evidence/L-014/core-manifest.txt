@@ -1,0 +1,7 @@
+$ python -m unittest discover -s tests -p test_release_delivery.py -q && python tests/core_manifest.py
+
+OK
+not_run: clean-user installation evidence from a signed artifact: every target records installation_evidence.state = not_run with the command it would run
+not_run: cargo test --locked -p axiom-graphd (this Python manifest checker does not run Rust tests; record those separately)
+ok: E-048/V2-021 one core release carries axiom-graphd and axiom from the same version and revision, with per-target provenance, executable metadata and honest installation evidence; 3 positive legs hold and 12 negative legs were rejected as required
+exit=0
