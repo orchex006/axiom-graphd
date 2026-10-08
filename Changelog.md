@@ -1,3 +1,7 @@
+## 0.1.5 — short command axm release
+
+- Version 0.1.5 to keep one release version across the ADR-0036 short command `axm` (axiom-cli L-016); no functional change [L-019].
+
 ## 0.1.4 — one-line update release
 
 - Version 0.1.4 to keep one release version across the ADR-0035 one-line update script (axiom-cli L-013); no functional change [L-014].
