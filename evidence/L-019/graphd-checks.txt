@@ -1,0 +1,10 @@
+cargo 1.85.0 (d73d2caf9 2024-12-31)
+$ cargo metadata --locked --offline
+exit=0
+$ cargo check --locked --offline --workspace
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 23.98s
+exit=0
+$ test_release_delivery + tests/core_manifest.py
+OK
+ok: E-048/V2-021 one core release carries axiom-graphd and axiom from the same version and revision, with per-target provenance, executable metadata and honest installation evidence; 3 positive legs hold and 12 negative legs were rejected as required
+exit=0
