@@ -1,0 +1,8 @@
+cargo 1.85.0 (d73d2caf9 2024-12-31)
+$ cargo metadata --locked --offline
+exit=0
+$ cargo check --locked --offline --workspace
+    Checking axiom v0.1.4 (<checkout>\crates\axiom)
+    Checking axiom-cli v0.1.4 (<checkout>\crates\axiom-cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 26.13s
+exit=0

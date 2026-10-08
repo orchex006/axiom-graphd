@@ -25,4 +25,4 @@ serde_json.workspace = true
 tempfile.workspace = true
 # The daemon is the other half of the core release; the CLI tests compare both
 # halves so a drifting second version fails in CI rather than at release time.
-axiom-graphd = { version = "0.1.3", path = "../axiom-graphd" }
+axiom-graphd = { version = "0.1.4", path = "../axiom-graphd" }

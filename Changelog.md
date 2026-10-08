@@ -1,3 +1,7 @@
+## 0.1.4 — one-line update release
+
+- Version 0.1.4 to keep one release version across the ADR-0035 one-line update script (axiom-cli L-013); no functional change [L-014].
+
 ## 0.1.3 — one-line install release
 
 - Version 0.1.3 for the ADR-0033 one-line install; carries L-010 (reinstall after uninstall restores the skills bundle).
